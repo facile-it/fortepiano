@@ -1,0 +1,24 @@
+{
+  "name": "fortepiano",
+  "version": "0.1.0",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/facile-it/fortepiano.git"
+  },
+  "author": "Alberto Villa <alberto.villa@facile.it>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/facile-it/fortepiano/issues"
+  },
+  "homepage": "https://github.com/facile-it/fortepiano#readme",
+  "dependencies": {
+    "fp-ts": "^2.10.5"
+  },
+  "devDependencies": {
+    "typescript": "^4.2.4"
+  }
+}
