@@ -1,14 +1,15 @@
+import * as Ap from 'fp-ts/Apply'
+import * as _E from 'fp-ts/Eq'
 import { constTrue, pipe } from 'fp-ts/function'
-import { apply, readonlyArray as RA } from 'fp-ts'
+import * as RA from 'fp-ts/ReadonlyArray'
+import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
+import * as $Ag from './Aggregate'
 import { curry } from './function'
-import { Eq } from 'fp-ts/Eq'
-import { aggregate } from './Aggregate'
-import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
 
 /**
  * {@link https://en.wikipedia.org/wiki/Cartesian_product}
  */
-const cartesian = apply.sequenceT(RA.Apply)
+export const cartesian = Ap.sequenceT(RA.Apply)
 
 /**
  * {@link https://en.wikipedia.org/wiki/Word_(group_theory)}
@@ -43,47 +44,49 @@ const cartesian = apply.sequenceT(RA.Apply)
  *   'Lizard defeats Spock',
  * ])
  */
-function words<A>(
-  size: 3
+export function words<A>(
+  size: 3,
 ): (alphabeth: ReadonlyArray<A>) => ReadonlyArray<Readonly<[A, A, A]>>
-function words<A>(
-  size: 2
+export function words<A>(
+  size: 2,
 ): (alphabeth: ReadonlyArray<A>) => ReadonlyArray<Readonly<[A, A]>>
-function words<A>(
-  size: 1
+export function words<A>(
+  size: 1,
 ): (alphabeth: ReadonlyArray<A>) => ReadonlyArray<Readonly<[A]>>
-function words<A>(
-  size: number
+export function words<A>(
+  size: number,
 ): (
-  alphabeth: ReadonlyArray<A>
+  alphabeth: ReadonlyArray<A>,
 ) =>
   | Readonly<[Readonly<[]>]>
   | ReadonlyArray<Readonly<[A, ...ReadonlyArray<A>]>>
-function words<A>(size: number) {
+export function words<A>(size: number) {
   return (
-    alphabet: ReadonlyArray<A>
+    alphabet: ReadonlyArray<A>,
   ):
     | Readonly<[Readonly<[]>]>
     | ReadonlyArray<Readonly<[A, ...ReadonlyArray<A>]>> =>
     size < 1
       ? ([[]] as const)
       : pipe(alphabet, curry(RA.replicate)(size), ([head, ...tail]) =>
-          cartesian(head, ...tail)
+          cartesian(head, ...tail),
         )
 }
 
-const allElems = <A>(E: Eq<A>) => (...elems: ReadonlyNonEmptyArray<A>) => (
-  as: ReadonlyArray<A>
-): as is ReadonlyNonEmptyArray<A> =>
-  pipe(elems, RA.intersection(E)(as), curry(EqSize.equals)(elems))
+export const allElems =
+  <A>(E: _E.Eq<A>) =>
+  (...elems: RNEA.ReadonlyNonEmptyArray<A>) =>
+  (as: ReadonlyArray<A>): as is RNEA.ReadonlyNonEmptyArray<A> =>
+    pipe(elems, RA.intersection(E)(as), curry(EqSize.equals)(elems))
 
-const anyElem = <A>(E: Eq<A>) => (...elems: ReadonlyNonEmptyArray<A>) => (
-  as: ReadonlyArray<A>
-): as is ReadonlyNonEmptyArray<A> =>
-  pipe(
-    elems,
-    RA.some((elem) => pipe(as, RA.elem(E)(elem)))
-  )
+export const anyElem =
+  <A>(E: _E.Eq<A>) =>
+  (...elems: RNEA.ReadonlyNonEmptyArray<A>) =>
+  (as: ReadonlyArray<A>): as is RNEA.ReadonlyNonEmptyArray<A> =>
+    pipe(
+      elems,
+      RA.some((elem) => pipe(as, RA.elem(E)(elem))),
+    )
 
 /**
  * @example
@@ -112,22 +115,14 @@ const anyElem = <A>(E: Eq<A>) => (...elems: ReadonlyNonEmptyArray<A>) => (
  *   ])
  * ).toBe(true)
  */
-const same = <A>(E: Eq<A>) => (as: ReadonlyArray<A>): boolean =>
-  pipe(
-    as,
-    RA.matchLeft(constTrue, (head, tail) =>
-      pipe(tail, RA.every(curry(E.equals)(head)))
+export const same =
+  <A>(E: _E.Eq<A>) =>
+  (as: ReadonlyArray<A>): boolean =>
+    pipe(
+      as,
+      RA.matchLeft(constTrue, (head, tail) =>
+        pipe(tail, RA.every(curry(E.equals)(head))),
+      ),
     )
-  )
 
-const EqSize = aggregate.getEq(RA)
-
-export const readonlyArray = {
-  ...RA,
-  cartesian,
-  words,
-  allElems,
-  anyElem,
-  same,
-  EqSize,
-}
+export const EqSize = $Ag.getEq(RA)

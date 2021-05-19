@@ -1,15 +1,15 @@
 import { pipe } from 'fp-ts/function'
-import { Binary, binary } from './Binary'
-import { readonlyArray } from './ReadonlyArray'
+import * as $B from './Binary'
+import * as $RA from './ReadonlyArray'
 
 describe('Binary', () => {
   describe('MonoidOr', () => {
-    const { empty, concat } = binary.MonoidOr
-    const digits: ReadonlyArray<Binary> = [0, 1]
+    const { empty, concat } = $B.MonoidOr
+    const digits: ReadonlyArray<$B.Binary> = [0, 1]
 
     it('associativity', () => {
-      pipe(digits, readonlyArray.words(3)).forEach(([a, b, c]) =>
-        expect(concat(a, concat(b, c))).toBe(concat(concat(a, b), c))
+      pipe(digits, $RA.words(3)).forEach(([a, b, c]) =>
+        expect(concat(a, concat(b, c))).toBe(concat(concat(a, b), c)),
       )
     })
     it('identity', () => {
@@ -20,8 +20,9 @@ describe('Binary', () => {
       }
     })
     it('should implement binary OR logic', () => {
-      pipe(digits, readonlyArray.words(2)).forEach(([a, b]) =>
-        expect(concat(a, b)).toBe(a | b)
+      pipe(digits, $RA.words(2)).forEach(([a, b]) =>
+        // eslint-disable-next-line no-bitwise
+        expect(concat(a, b)).toBe(a | b),
       )
     })
   })

@@ -1,10 +1,10 @@
-import { eq as E, string } from 'fp-ts'
-import { Eq } from 'fp-ts/Eq'
+import * as E from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
+import * as S from 'fp-ts/string'
 
-const eqType: Eq<unknown> = pipe(
-  string.Eq,
-  E.contramap((a) => typeof a)
+const eqType: E.Eq<unknown> = pipe(
+  S.Eq,
+  E.contramap((a) => typeof a),
 )
 
 export const eq = { ...E, eqType }

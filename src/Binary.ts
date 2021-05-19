@@ -1,10 +1,8 @@
-import { Monoid } from 'fp-ts/Monoid'
+import * as M from 'fp-ts/Monoid'
 
 export type Binary = 0 | 1
 
-const MonoidOr: Monoid<Binary> = {
+export const MonoidOr: M.Monoid<Binary> = {
   empty: 0,
-  concat: (x, y) => +(!!x || !!y) as Binary,
+  concat: (x, y) => Number(Boolean(x) || Boolean(y)) as Binary,
 }
-
-export const binary = { MonoidOr }

@@ -2,7 +2,7 @@ import { readonlyRecord as RR } from 'fp-ts'
 import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 import { ReadonlyRecord } from 'fp-ts/ReadonlyRecord'
-import { readonlyArray } from './ReadonlyArray'
+import * as $RA from './ReadonlyArray'
 
 const values = <A>(as: ReadonlyRecord<string, A>): ReadonlyArray<A> =>
   Object.values(as)
@@ -10,7 +10,9 @@ const values = <A>(as: ReadonlyRecord<string, A>): ReadonlyArray<A> =>
 /**
  * @see readonlyArray
  */
-const same = <A>(E: Eq<A>) => (as: ReadonlyRecord<string, A>): boolean =>
-  pipe(as, values, readonlyArray.same(E))
+const same =
+  <A>(E: Eq<A>) =>
+  (as: ReadonlyRecord<string, A>): boolean =>
+    pipe(as, values, $RA.same(E))
 
 export const readonlyRecord = { ...RR, values, same }

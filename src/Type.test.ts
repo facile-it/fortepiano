@@ -1,14 +1,14 @@
 import * as t from 'io-ts'
-import { readonlyArray } from './ReadonlyArray'
+import * as $RA from './ReadonlyArray'
 import { type } from './Type'
 
 describe('Type', () => {
   describe('alias', () => {
     it('should return an equivalent codec with a different name', () => {
-      readonlyArray
+      $RA
         .cartesian(
           [t.boolean, t.number, t.string, t.UnknownArray, t.UnknownRecord],
-          [true, 1138, 'foo', [], {}]
+          [true, 1138, 'foo', [], {}],
         )
         .forEach(([codec, a]) => {
           expect(type.alias('foo', codec).is(a)).toBe(codec.is(a))

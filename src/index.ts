@@ -1,3 +1,7 @@
+import * as $aggregate from './Aggregate'
+import * as $binary from './Binary'
+import * as $readonlyArray from './ReadonlyArray'
+
 export type PartialDeep<A> = A extends { readonly [x: string]: unknown }
   ? Partial<{ readonly [K in keyof A]: PartialDeep<A[K]> }>
   : A
@@ -17,3 +21,5 @@ export type IntersectionDeep<A, B> = A extends { readonly [x: string]: unknown }
         >
       }
   : B
+
+export { $aggregate, $binary, $readonlyArray }

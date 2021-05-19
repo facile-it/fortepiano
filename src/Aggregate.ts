@@ -1,13 +1,11 @@
-import { eq, number } from 'fp-ts'
-import { Eq } from 'fp-ts/Eq'
+import * as E from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
+import * as N from 'fp-ts/number'
 
 export interface Aggregate<A> {
   isEmpty: (a: A) => boolean
   size: (a: A) => number
 }
 
-const getEq = <A>(A: Aggregate<A>): Eq<A> =>
-  pipe(number.Eq, eq.contramap(A.size))
-
-export const aggregate = { getEq }
+export const getEq = <A>(A: Aggregate<A>): E.Eq<A> =>
+  pipe(N.Eq, E.contramap(A.size))
