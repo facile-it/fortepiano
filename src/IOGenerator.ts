@@ -331,6 +331,17 @@ export const prime: IOGenerator<number> = pipe(
   ),
 )
 
+export const exp: IOGenerator<number> = pipe(
+  range(0),
+  map((n) => Math.exp(n)),
+)
+
+export const fibonacci: IOGenerator<number> = function* () {
+  for (let as = [1, 0] as [number, number]; true; as = [as[1], as[0] + as[1]]) {
+    yield as[1]
+  }
+}
+
 export const flatten = <A>(as: IOGenerator<IOGenerator<A>>): IOGenerator<A> =>
   function* () {
     for (const a of as()) {

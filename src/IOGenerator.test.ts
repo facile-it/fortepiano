@@ -14,6 +14,8 @@ import {
   Compactable,
   drop,
   elem,
+  exp,
+  fibonacci,
   filter,
   filterMap,
   filterMapWithIndex,
@@ -83,6 +85,26 @@ describe('IOGenerator', () => {
     it('should return a list of prime numbers', () => {
       expect(pipe(prime, take(5), toReadonlyArray)).toStrictEqual([
         2, 3, 5, 7, 11,
+      ])
+    })
+  })
+
+  describe('exp', () => {
+    it('should return the exponential function', () => {
+      expect(pipe(exp, take(5), toReadonlyArray)).toStrictEqual([
+        Math.exp(0),
+        Math.exp(1),
+        Math.exp(2),
+        Math.exp(3),
+        Math.exp(4),
+      ])
+    })
+  })
+
+  describe('fibonacci', () => {
+    it('should return the Fibonacci sequence', () => {
+      expect(pipe(fibonacci, take(10), toReadonlyArray)).toStrictEqual([
+        0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
       ])
     })
   })
