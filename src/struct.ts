@@ -2,7 +2,7 @@ import { pipe, Predicate } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as S from 'fp-ts/struct'
-import { IntersectionDeep, PartialDeep, ValuesDeep } from '.'
+import { IntersectionDeep, PartialDeep } from '.'
 import { curry } from './function'
 import * as $t from './Type'
 
@@ -14,7 +14,7 @@ export const toReadonlyArray = <A extends struct>(
 ): ReadonlyArray<Readonly<[keyof A, A[keyof A]]>> => RR.toReadonlyArray(a)
 
 export const filterDeep =
-  <A extends struct>(f: Predicate<ValuesDeep<A>>) =>
+  <A extends struct>(f: Predicate<unknown /*ValuesDeep<A>*/>) =>
   (a: A): PartialDeep<A> =>
     pipe(
       a,
@@ -24,7 +24,12 @@ export const filterDeep =
         $t.struct.is(value)
           ? ([
               key,
-              pipe(value, filterDeep(f as Predicate<ValuesDeep<typeof value>>)),
+              pipe(
+                value,
+                filterDeep(
+                  f as Predicate<unknown /*ValuesDeep<typeof value>*/>,
+                ),
+              ),
             ] as const)
           : ([key, value] as const),
       ),
