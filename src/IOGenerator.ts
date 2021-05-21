@@ -41,10 +41,13 @@ import * as MIO from 'fp-ts/MonadIO'
 import * as Mono from 'fp-ts/Monoid'
 import * as O from 'fp-ts/Option'
 import * as P from 'fp-ts/Pointed'
+import * as R from 'fp-ts/Random'
 import * as RA from 'fp-ts/ReadonlyArray'
+import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as S from 'fp-ts/Separated'
 import * as T from 'fp-ts/Traversable'
 import * as TWI from 'fp-ts/TraversableWithIndex'
+import { Int } from 'io-ts'
 import { curry } from './function'
 
 export const URI = 'IOGenerator'
@@ -528,6 +531,34 @@ export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): IOGenerator<A> =>
       yield a
     }
   }
+
+export const random: IOGenerator<number> = pipe(range(0), map(R.random))
+
+export const randomInt = (low: number, high: number): IOGenerator<Int> =>
+  pipe(
+    range(0),
+    map(
+      pipe(
+        R.randomInt(
+          Math.floor(low),
+          Math.max(Math.floor(low), Math.floor(high)),
+        ),
+        IO.map((a) => Math.floor(a)),
+      ) as IO.IO<Int>,
+    ),
+  )
+
+export const randomRange = (min: number, max: number): IOGenerator<number> =>
+  pipe(range(0), map(R.randomRange(min, Math.max(min, max))))
+
+export const randomBool: IOGenerator<boolean> = pipe(
+  range(0),
+  map(R.randomBool),
+)
+
+export const randomElem = <A>(
+  as: RNEA.ReadonlyNonEmptyArray<A>,
+): IOGenerator<A> => pipe(range(0), map(R.randomElem(as)))
 
 export const sieve =
   <A>(f: (init: ReadonlyArray<A>, a: A) => boolean) =>
