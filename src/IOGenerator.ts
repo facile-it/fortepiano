@@ -15,7 +15,6 @@ import {
   constFalse,
   constTrue,
   flip,
-  flow,
   Lazy,
   not,
   pipe,
@@ -127,25 +126,13 @@ export const Monad: Mona.Monad1<URI> = { ...Applicative, ...Chain }
 
 export const FromIO: FIO.FromIO1<URI> = {
   URI,
-  fromIO: (fa) => () => Pointed.of(fa())(),
+  fromIO: (fa) => pipe(range(0), map(fa)),
 }
 
 export const fromIO = FromIO.fromIO
 export const fromIOK = FIO.fromIOK(FromIO)
 export const chainIOK = FIO.chainIOK(FromIO, Chain)
 export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
-
-export const fromIOReadonlyArray = <A>(
-  fa: IO.IO<ReadonlyArray<A>>,
-): IOGenerator<A> => pipe(fa, fromIO, chain(fromReadonlyArray))
-
-export const fromIOReadonlyArrayK = <A extends ReadonlyArray<unknown>, B>(
-  f: (...a: A) => IO.IO<ReadonlyArray<B>>,
-) => flow(f, fromIOReadonlyArray)
-
-export const chainIOReadonlyArrayK = <A, B>(
-  f: (a: A) => IO.IO<ReadonlyArray<B>>,
-) => chain(fromIOReadonlyArrayK(f))
 
 export const MonadIO: MIO.MonadIO1<URI> = { ...Monad, ...FromIO }
 
@@ -532,33 +519,24 @@ export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): IOGenerator<A> =>
     }
   }
 
-export const random: IOGenerator<number> = pipe(range(0), map(R.random))
+export const random: IOGenerator<number> = fromIO(R.random)
 
 export const randomInt = (low: number, high: number): IOGenerator<Int> =>
-  pipe(
-    range(0),
-    map(
-      pipe(
-        R.randomInt(
-          Math.floor(low),
-          Math.max(Math.floor(low), Math.floor(high)),
-        ),
-        IO.map((a) => Math.floor(a)),
-      ) as IO.IO<Int>,
-    ),
+  fromIO(
+    R.randomInt(
+      Math.floor(low),
+      Math.max(Math.floor(low), Math.floor(high)),
+    ) as IO.IO<Int>,
   )
 
 export const randomRange = (min: number, max: number): IOGenerator<number> =>
-  pipe(range(0), map(R.randomRange(min, Math.max(min, max))))
+  fromIO(R.randomRange(min, Math.max(min, max)))
 
-export const randomBool: IOGenerator<boolean> = pipe(
-  range(0),
-  map(R.randomBool),
-)
+export const randomBool: IOGenerator<boolean> = fromIO(R.randomBool)
 
 export const randomElem = <A>(
   as: RNEA.ReadonlyNonEmptyArray<A>,
-): IOGenerator<A> => pipe(range(0), map(R.randomElem(as)))
+): IOGenerator<A> => fromIO(R.randomElem(as))
 
 export const sieve =
   <A>(f: (init: ReadonlyArray<A>, a: A) => boolean) =>

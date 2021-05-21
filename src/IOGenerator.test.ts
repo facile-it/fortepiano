@@ -12,7 +12,6 @@ import {
   Applicative,
   Apply,
   Chain,
-  chainIOReadonlyArrayK,
   Compactable,
   drop,
   elem,
@@ -24,6 +23,7 @@ import {
   filterWithIndex,
   find,
   flatten,
+  FromIO,
   fromReadonlyArray,
   Functor,
   FunctorWithIndex,
@@ -610,33 +610,17 @@ describe('IOGenerator', () => {
   })
 
   describe('FromIO', () => {
-    describe('chainIOReadonlyArrayK', () => {
-      it('should chain a generator with an IO of a list', () => {
-        const M = pipe(
-          prime,
-          drop(5),
-          take(3),
-          chainIOReadonlyArrayK((n) => () => [
-            n * Math.random(),
-            n * Math.random(),
-            n * Math.random(),
-          ]),
+    describe('fromIO', () => {
+      it('should generate values using an IO', () => {
+        const now = Date.now()
+        const as = pipe(
+          FromIO.fromIO(() => Date.now()),
+          take(100),
+          toReadonlyArray,
         )
 
-        for (let i = 0; i < 10; i++) {
-          const x = pipe(M, toReadonlyArray)
-
-          expect(x).toHaveLength(9)
-          expect(x[0]).toBeLessThan(13)
-          expect(x[1]).toBeLessThan(13)
-          expect(x[2]).toBeLessThan(13)
-          expect(x[3]).toBeLessThan(17)
-          expect(x[4]).toBeLessThan(17)
-          expect(x[5]).toBeLessThan(17)
-          expect(x[6]).toBeLessThan(19)
-          expect(x[7]).toBeLessThan(19)
-          expect(x[8]).toBeLessThan(19)
-        }
+        expect(as[0]).toBeGreaterThanOrEqual(now)
+        expect(as[99]).toBeLessThanOrEqual(Date.now())
       })
     })
   })
