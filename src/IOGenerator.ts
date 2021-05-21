@@ -46,6 +46,7 @@ import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as S from 'fp-ts/Separated'
 import * as T from 'fp-ts/Traversable'
 import * as TWI from 'fp-ts/TraversableWithIndex'
+import * as U from 'fp-ts/Unfoldable'
 import { Int } from 'io-ts'
 import { curry } from './function'
 
@@ -499,6 +500,18 @@ export const TraversableWithIndex: TWI.TraversableWithIndex1<URI, number> = {
   traverseWithIndex: _traverseWithIndex,
 }
 
+export const Unfoldable: U.Unfoldable1<URI> = {
+  URI,
+  unfold: (b, f) =>
+    function* () {
+      for (let _b = b, ab = f(_b); O.isSome(ab); _b = ab.value[1], ab = f(_b)) {
+        yield ab.value[0]
+      }
+    },
+}
+
+export const unfold = Unfoldable.unfold
+
 export const range = (start: number): IOGenerator<number> =>
   function* () {
     for (let i = start; true; i++) {
@@ -506,18 +519,16 @@ export const range = (start: number): IOGenerator<number> =>
     }
   }
 
-export const replicate = <A>(a: A): IOGenerator<A> =>
-  pipe(
-    range(0),
-    map(() => a),
-  )
+export const replicate = <A>(a: A): IOGenerator<A> => fromIO(() => a)
 
 export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): IOGenerator<A> =>
-  function* () {
-    for (const a of as) {
-      yield a
-    }
-  }
+  unfold(
+    as,
+    RA.matchLeft(
+      () => O.none,
+      (head, tail) => O.some([head, tail]),
+    ),
+  )
 
 export const random: IOGenerator<number> = fromIO(R.random)
 
