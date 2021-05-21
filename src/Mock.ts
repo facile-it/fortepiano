@@ -16,6 +16,7 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as Se from 'fp-ts/Semigroup'
+import * as t from 'io-ts'
 import { PartialDeep } from '.'
 import { curry, recurse, run } from './function'
 import * as $St from './struct'
@@ -46,8 +47,6 @@ export const map = curry(flip(Functor.map))
 export const flap = F.flap(Functor)
 export const bindTo = F.bindTo(Functor)
 
-const isUndefined = (a: unknown): a is undefined => undefined === a
-
 export const Pointed: P.Pointed1<URI> = {
   URI,
   of:
@@ -62,7 +61,7 @@ export const Pointed: P.Pointed1<URI> = {
             () => a,
             (_a) =>
               $t.struct.is(a) && $t.struct.is(_a)
-                ? (pipe(_a, $St.filterDeep(not(isUndefined)), (_a) =>
+                ? (pipe(_a, $St.filterDeep(not(t.undefined.is)), (_a) =>
                     $St.patch<A & $St.struct, PartialDeep<A & $St.struct>>(
                       _a as PartialDeep<A & $St.struct>,
                     )(a),
