@@ -1,3 +1,5 @@
+import * as _Alt from 'fp-ts/Alt'
+import * as Alte from 'fp-ts/Alternative'
 import * as Appli from 'fp-ts/Applicative'
 import * as _Apply from 'fp-ts/Apply'
 import * as Ch from 'fp-ts/Chain'
@@ -6,6 +8,8 @@ import * as Ei from 'fp-ts/Either'
 import * as Eq from 'fp-ts/Eq'
 import * as Fi from 'fp-ts/Filterable'
 import * as FiWI from 'fp-ts/FilterableWithIndex'
+import * as Fo from 'fp-ts/Foldable'
+import * as FoWI from 'fp-ts/FoldableWithIndex'
 import * as FIO from 'fp-ts/FromIO'
 import {
   constFalse,
@@ -20,6 +24,17 @@ import {
 } from 'fp-ts/function'
 import * as Fu from 'fp-ts/Functor'
 import * as FuWI from 'fp-ts/FunctorWithIndex'
+import {
+  HKT,
+  Kind,
+  Kind2,
+  Kind3,
+  Kind4,
+  URIS,
+  URIS2,
+  URIS3,
+  URIS4,
+} from 'fp-ts/HKT'
 import * as IO from 'fp-ts/IO'
 import * as Mona from 'fp-ts/Monad'
 import * as MIO from 'fp-ts/MonadIO'
@@ -28,6 +43,8 @@ import * as O from 'fp-ts/Option'
 import * as P from 'fp-ts/Pointed'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as S from 'fp-ts/Separated'
+import * as T from 'fp-ts/Traversable'
+import * as TWI from 'fp-ts/TraversableWithIndex'
 import { curry } from './function'
 
 export const URI = 'IOGenerator'
@@ -45,15 +62,10 @@ export type IOGenerator<A> = IO.IO<Generator<A>>
 export const getMonoid = <A>(): Mono.Monoid<IOGenerator<A>> => ({
   empty: fromReadonlyArray([]),
   concat: (x, y) =>
-    pipe(
-      IO.Do,
-      IO.apS('_x', x),
-      IO.apS('_y', y),
-      IO.map(function* ({ _x, _y }) {
-        yield* _x
-        yield* _y
-      }),
-    ),
+    function* () {
+      yield* x()
+      yield* y()
+    },
 })
 
 export const Functor: Fu.Functor1<URI> = {
@@ -70,12 +82,6 @@ export const map = curry(flip(Functor.map))
 export const flap = Fu.flap(Functor)
 export const bindTo = Fu.bindTo(Functor)
 
-export const FunctorWithIndex: FuWI.FunctorWithIndex1<URI, number> = {
-  ...Functor,
-  mapWithIndex: (fa, f) =>
-    Functor.map(pipe(range(0), zip(fa)), ([i, a]) => f(i, a)),
-}
-
 export const Pointed: P.Pointed1<URI> = {
   URI,
   of: (a) =>
@@ -86,6 +92,12 @@ export const Pointed: P.Pointed1<URI> = {
 
 export const of = Pointed.of
 export const Do = Pointed.of({})
+
+export const FunctorWithIndex: FuWI.FunctorWithIndex1<URI, number> = {
+  ...Functor,
+  mapWithIndex: (fa, f) =>
+    Functor.map(pipe(fa, zip(range(0))), ([a, i]) => f(i, a)),
+}
 
 export const Apply: _Apply.Apply1<URI> = {
   ...Functor,
@@ -134,6 +146,35 @@ export const chainIOReadonlyArrayK = <A, B>(
 
 export const MonadIO: MIO.MonadIO1<URI> = { ...Monad, ...FromIO }
 
+export const Alt: _Alt.Alt1<URI> = {
+  ...Functor,
+  alt: <A>(fa: IOGenerator<A>, that: Lazy<IOGenerator<A>>) =>
+    getMonoid<A>().concat(fa, that()),
+}
+
+export const alt = curry(flip(Alt.alt))
+
+export const Alternative: Alte.Alternative1<URI> = {
+  ...Applicative,
+  ...Alt,
+  zero: <A>() => getMonoid<A>().empty,
+}
+
+export const zero = Alternative.zero
+
+export const Compactable: Co.Compactable1<URI> = {
+  URI,
+  compact: (fa) => Functor.map(Filterable.filter(fa, O.isSome), (a) => a.value),
+  separate: (fa) =>
+    S.separated(
+      Functor.map(Filterable.filter(fa, Ei.isLeft), (a) => a.left),
+      Functor.map(Filterable.filter(fa, Ei.isRight), (a) => a.right),
+    ),
+}
+
+export const compact = Compactable.compact
+export const separate = Compactable.separate
+
 function _filter<A, B extends A>(
   fa: IOGenerator<A>,
   refinement: Refinement<A, B>,
@@ -151,19 +192,6 @@ function _filter<A>(fa: IOGenerator<A>, predicate: Predicate<A>) {
   }
 }
 
-export const Compactable: Co.Compactable1<URI> = {
-  URI,
-  compact: (fa) => Functor.map(Filterable.filter(fa, O.isSome), (a) => a.value),
-  separate: (fa) =>
-    S.separated(
-      Functor.map(_filter(fa, Ei.isLeft), (a) => a.left),
-      Functor.map(_filter(fa, Ei.isRight), (a) => a.right),
-    ),
-}
-
-export const compact = Compactable.compact
-export const separate = Compactable.separate
-
 function _partition<A, B extends A>(
   fa: IOGenerator<A>,
   refinement: Refinement<A, B>,
@@ -173,7 +201,10 @@ function _partition<A>(
   predicate: Predicate<A>,
 ): S.Separated<IOGenerator<A>, IOGenerator<A>>
 function _partition<A>(fa: IOGenerator<A>, predicate: Predicate<A>) {
-  return S.separated(_filter(fa, not(predicate)), _filter(fa, predicate))
+  return S.separated(
+    Filterable.filter(fa, not(predicate)),
+    Filterable.filter(fa, predicate),
+  )
 }
 
 export const Filterable: Fi.Filterable1<URI> = {
@@ -286,6 +317,198 @@ export const partitionMapWithIndex = curry(
   flip(FilterableWithIndex.partitionMapWithIndex),
 )
 
+export const Foldable: Fo.Foldable1<URI> = {
+  URI,
+  reduce: (fa, b, f) =>
+    FoldableWithIndex.reduceWithIndex(fa, b, (_, _b, a) => f(_b, a)),
+  foldMap: (M) => (fa, f) =>
+    FoldableWithIndex.foldMapWithIndex(M)(fa, (_, a) => f(a)),
+  reduceRight: (fa, b, f) =>
+    FoldableWithIndex.reduceRightWithIndex(fa, b, (_, a, _b) => f(a, _b)),
+}
+
+export const reduce =
+  <A, B>(b: B, f: (b: B, a: A) => B) =>
+  (fa: IOGenerator<A>) =>
+    Foldable.reduce(fa, b, f)
+export const foldMap =
+  <M>(M: Mono.Monoid<M>) =>
+  <A>(f: (a: A) => M) =>
+  (fa: IOGenerator<A>) =>
+    Foldable.foldMap(M)(fa, f)
+export const reduceRight =
+  <A, B>(b: B, f: (a: A, b: B) => B) =>
+  (fa: IOGenerator<A>) =>
+    Foldable.reduceRight(fa, b, f)
+
+export const FoldableWithIndex: FoWI.FoldableWithIndex1<URI, number> = {
+  ...Foldable,
+  reduceWithIndex: (fa, b, f) =>
+    pipe(fa, zip(range(0)), (_fa) => {
+      let _b = b
+      for (const [a, i] of _fa()) {
+        _b = f(i, _b, a)
+      }
+
+      return _b
+    }),
+  foldMapWithIndex: (M) => (fa, f) =>
+    FoldableWithIndex.reduceWithIndex(fa, M.empty, (i, b, a) =>
+      M.concat(b, f(i, a)),
+    ),
+  reduceRightWithIndex: (fa, b, f) =>
+    pipe(fa, toReadonlyArray, RA.reduceRightWithIndex(b, f)),
+}
+
+export const reduceWithIndex =
+  <A, B>(b: B, f: (i: number, b: B, a: A) => B) =>
+  (fa: IOGenerator<A>) =>
+    FoldableWithIndex.reduceWithIndex(fa, b, f)
+export const foldMapWithIndex =
+  <M>(M: Mono.Monoid<M>) =>
+  <A>(f: (i: number, a: A) => M) =>
+  (fa: IOGenerator<A>) =>
+    FoldableWithIndex.foldMapWithIndex(M)(fa, f)
+export const reduceRightWithIndex =
+  <A, B>(b: B, f: (i: number, a: A, b: B) => B) =>
+  (fa: IOGenerator<A>) =>
+    FoldableWithIndex.reduceRightWithIndex(fa, b, f)
+
+function _traverse<F extends URIS4>(
+  F: Appli.Applicative4<F>,
+): <A, S, R, E, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind4<F, S, R, E, B>,
+) => Kind4<F, S, R, E, IOGenerator<B>>
+function _traverse<F extends URIS3>(
+  F: Appli.Applicative3<F>,
+): <A, R, E, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind3<F, R, E, B>,
+) => Kind3<F, R, E, IOGenerator<B>>
+function _traverse<F extends URIS3, E>(
+  F: Appli.Applicative3C<F, E>,
+): <A, R, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind3<F, R, E, B>,
+) => Kind3<F, R, E, IOGenerator<B>>
+function _traverse<F extends URIS2>(
+  F: Appli.Applicative2<F>,
+): <A, E, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind2<F, E, B>,
+) => Kind2<F, E, IOGenerator<B>>
+function _traverse<F extends URIS2, E>(
+  F: Appli.Applicative2C<F, E>,
+): <A, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind2<F, E, B>,
+) => Kind2<F, E, IOGenerator<B>>
+function _traverse<F extends URIS>(
+  F: Appli.Applicative1<F>,
+): <A, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind<F, B>,
+) => Kind<F, IOGenerator<B>>
+function _traverse<F>(F: Appli.Applicative<F>) {
+  return <A, B>(ta: IOGenerator<A>, f: (a: A) => HKT<F, B>) =>
+    TraversableWithIndex.traverseWithIndex(F)(ta, (_: number, a: A) => f(a))
+}
+
+function _sequence<F extends URIS4>(
+  F: Appli.Applicative4<F>,
+): <S, R, E, A>(
+  ta: IOGenerator<Kind4<F, S, R, E, A>>,
+) => Kind4<F, S, R, E, IOGenerator<A>>
+function _sequence<F extends URIS3>(
+  F: Appli.Applicative3<F>,
+): <R, E, A>(
+  ta: IOGenerator<Kind3<F, R, E, A>>,
+) => Kind3<F, R, E, IOGenerator<A>>
+function _sequence<F extends URIS3, E>(
+  F: Appli.Applicative3C<F, E>,
+): <R, A>(ta: IOGenerator<Kind3<F, R, E, A>>) => Kind3<F, R, E, IOGenerator<A>>
+function _sequence<F extends URIS2>(
+  F: Appli.Applicative2<F>,
+): <E, A>(ta: IOGenerator<Kind2<F, E, A>>) => Kind2<F, E, IOGenerator<A>>
+function _sequence<F extends URIS2, E>(
+  F: Appli.Applicative2C<F, E>,
+): <A>(ta: IOGenerator<Kind2<F, E, A>>) => Kind2<F, E, IOGenerator<A>>
+function _sequence<F extends URIS>(
+  F: Appli.Applicative1<F>,
+): <A>(ta: IOGenerator<Kind<F, A>>) => Kind<F, IOGenerator<A>>
+function _sequence<F>(
+  F: Appli.Applicative<F>,
+): <A>(ta: IOGenerator<HKT<F, A>>) => HKT<F, IOGenerator<A>> {
+  return <A>(ta: IOGenerator<HKT<F, A>>) =>
+    Foldable.reduce(ta, F.of(zero<A>()), (fas, fa) =>
+      F.ap(
+        F.map(fas, (fa) => (a: A) => Alt.alt(fa, () => of(a))),
+        fa,
+      ),
+    )
+}
+
+export const Traversable: T.Traversable1<URI> = {
+  ...Functor,
+  ...Foldable,
+  traverse: _traverse,
+  sequence: _sequence,
+}
+
+function _traverseWithIndex<F extends URIS4>(
+  F: Appli.Applicative4<F>,
+): <A, S, R, E, B>(
+  ta: IOGenerator<A>,
+  f: (i: number, a: A) => Kind4<F, S, R, E, B>,
+) => Kind4<F, S, R, E, IOGenerator<B>>
+function _traverseWithIndex<F extends URIS3>(
+  F: Appli.Applicative3<F>,
+): <A, R, E, B>(
+  ta: IOGenerator<A>,
+  f: (i: number, a: A) => Kind3<F, R, E, B>,
+) => Kind3<F, R, E, IOGenerator<B>>
+function _traverseWithIndex<F extends URIS3, E>(
+  F: Appli.Applicative3C<F, E>,
+): <A, R, B>(
+  ta: IOGenerator<A>,
+  f: (i: number, a: A) => Kind3<F, R, E, B>,
+) => Kind3<F, R, E, IOGenerator<B>>
+function _traverseWithIndex<F extends URIS2>(
+  F: Appli.Applicative2<F>,
+): <A, E, B>(
+  ta: IOGenerator<A>,
+  f: (i: number, a: A) => Kind2<F, E, B>,
+) => Kind2<F, E, IOGenerator<B>>
+function _traverseWithIndex<F extends URIS2, E>(
+  F: Appli.Applicative2C<F, E>,
+): <A, B>(
+  ta: IOGenerator<A>,
+  f: (i: number, a: A) => Kind2<F, E, B>,
+) => Kind2<F, E, IOGenerator<B>>
+function _traverseWithIndex<F extends URIS>(
+  F: Appli.Applicative1<F>,
+): <A, B>(
+  ta: IOGenerator<A>,
+  f: (i: number, a: A) => Kind<F, B>,
+) => Kind<F, IOGenerator<B>>
+function _traverseWithIndex<F>(F: Appli.Applicative<F>) {
+  return <A, B>(ta: IOGenerator<A>, f: (i: number, a: A) => HKT<F, B>) =>
+    FoldableWithIndex.reduceWithIndex(ta, F.of(zero<B>()), (i, fbs, a) =>
+      F.ap(
+        F.map(fbs, (bs) => (b: B) => Alt.alt(bs, () => of(b))),
+        f(i, a),
+      ),
+    )
+}
+
+export const TraversableWithIndex: TWI.TraversableWithIndex1<URI, number> = {
+  ...FunctorWithIndex,
+  ...FoldableWithIndex,
+  ...Traversable,
+  traverseWithIndex: _traverseWithIndex,
+}
+
 export const range = (start: number): IOGenerator<number> =>
   function* () {
     for (let i = start; true; i++) {
@@ -308,10 +531,10 @@ export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): IOGenerator<A> =>
 
 export const sieve =
   <A>(f: (init: ReadonlyArray<A>, a: A) => boolean) =>
-  (as: IOGenerator<A>): IOGenerator<A> =>
+  (ma: IOGenerator<A>): IOGenerator<A> =>
     function* () {
       const init: Array<A> = []
-      for (const a of as()) {
+      for (const a of ma()) {
         if (!f(init, a)) {
           continue
         }
@@ -342,18 +565,18 @@ export const fibonacci: IOGenerator<number> = function* () {
   }
 }
 
-export const flatten = <A>(as: IOGenerator<IOGenerator<A>>): IOGenerator<A> =>
+export const flatten = <A>(mma: IOGenerator<IOGenerator<A>>): IOGenerator<A> =>
   function* () {
-    for (const a of as()) {
-      yield* a()
+    for (const ma of mma()) {
+      yield* ma()
     }
   }
 
 export const take =
   <A>(n: number) =>
-  (as: IOGenerator<A>): IOGenerator<A> =>
+  (ma: IOGenerator<A>): IOGenerator<A> =>
     function* () {
-      for (const [i, a] of pipe(range(0), zip(as))()) {
+      for (const [a, i] of pipe(ma, zip(range(0)))()) {
         if (i >= n) {
           break
         }
@@ -364,9 +587,9 @@ export const take =
 
 export const drop =
   <A>(n: number) =>
-  (as: IOGenerator<A>): IOGenerator<A> =>
+  (ma: IOGenerator<A>): IOGenerator<A> =>
     function* () {
-      for (const [i, a] of pipe(range(0), zip(as))()) {
+      for (const [a, i] of pipe(ma, zip(range(0)))()) {
         if (i < n) {
           continue
         }
@@ -376,12 +599,12 @@ export const drop =
     }
 
 export const zip =
-  <A, B>(bs: IOGenerator<B>) =>
-  (as: IOGenerator<A>): IOGenerator<Readonly<[A, B]>> =>
+  <A, B>(mb: IOGenerator<B>) =>
+  (ma: IOGenerator<A>): IOGenerator<Readonly<[A, B]>> =>
     function* () {
-      const _bs = bs()
-      for (const a of as()) {
-        const b = _bs.next()
+      const bs = mb()
+      for (const a of ma()) {
+        const b = bs.next()
         if (b.done) {
           break
         }
@@ -395,19 +618,12 @@ export const uniq = <A>(E: Eq.Eq<A>) =>
 
 export const match =
   <A, B>(onEmpty: Lazy<B>, onNonEmpty: (head: A, tail: IOGenerator<A>) => B) =>
-  (as: IOGenerator<A>): B =>
-    pipe(as().next(), (a) =>
-      a.done ? onEmpty() : onNonEmpty(a.value, pipe(as, drop(1))),
+  (ma: IOGenerator<A>): B =>
+    pipe(ma().next(), (a) =>
+      a.done ? onEmpty() : onNonEmpty(a.value, pipe(ma, drop(1))),
     )
 
-export const toReadonlyArray = <A>(as: IOGenerator<A>): ReadonlyArray<A> => {
-  const _as: Array<A> = []
-  for (const a of as()) {
-    _as.push(a)
-  }
-
-  return _as
-}
+export const toReadonlyArray = Fo.toReadonlyArray(Foldable)
 
 export const isEmpty = match(constTrue, constFalse)
 
@@ -415,11 +631,11 @@ export const isNonEmpty = not(isEmpty)
 
 export const lookup =
   <A>(i: number) =>
-  (as: IOGenerator<A>): O.Option<A> =>
+  (ma: IOGenerator<A>): O.Option<A> =>
     i < 0
       ? O.none
       : pipe(
-          as,
+          ma,
           drop(i),
           match(
             () => O.none,
@@ -427,17 +643,17 @@ export const lookup =
           ),
         )
 
-export const head = <A>(as: IOGenerator<A>): O.Option<A> => pipe(as, lookup(0))
+export const head = <A>(ma: IOGenerator<A>): O.Option<A> => pipe(ma, lookup(0))
 
 export function find<A, B extends A>(
   refinement: Refinement<A, B>,
-): (as: IOGenerator<A>) => O.Option<B>
+): (ma: IOGenerator<A>) => O.Option<B>
 export function find<A>(
   predicate: Predicate<A>,
-): (as: IOGenerator<A>) => O.Option<A>
+): (ma: IOGenerator<A>) => O.Option<A>
 export function find<A>(predicate: Predicate<A>) {
-  return (as: IOGenerator<A>) => {
-    for (const a of as()) {
+  return (ma: IOGenerator<A>) => {
+    for (const a of ma()) {
       if (predicate(a)) {
         return O.some(a)
       }

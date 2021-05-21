@@ -7,6 +7,8 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import * as Se from 'fp-ts/Separated'
 import * as St from 'fp-ts/string'
 import {
+  Alt,
+  Alternative,
   Applicative,
   Apply,
   Chain,
@@ -636,6 +638,98 @@ describe('IOGenerator', () => {
           expect(x[8]).toBeLessThan(19)
         }
       })
+    })
+  })
+
+  describe('Alt', () => {
+    const fa = fromReadonlyArray([0, 1, 2])
+    const ga = fromReadonlyArray([3, 4, 5])
+    const ha = fromReadonlyArray([6, 7, 8])
+
+    it('associativity', () => {
+      expect(
+        pipe(
+          Alt.alt(
+            Alt.alt(fa, () => ga),
+            () => ha,
+          ),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual(
+        pipe(
+          Alt.alt(fa, () => Alt.alt(ga, () => ha)),
+          toReadonlyArray,
+        ),
+      )
+    })
+    it('distributivity', () => {
+      const ab = (a: number) => a + 1
+
+      expect(
+        pipe(
+          Alt.map(
+            Alt.alt(fa, () => ga),
+            ab,
+          ),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual(
+        pipe(
+          Alt.alt(Alt.map(fa, ab), () => Alt.map(ga, ab)),
+          toReadonlyArray,
+        ),
+      )
+    })
+  })
+
+  describe('Alternative', () => {
+    const fa = fromReadonlyArray([0, 1, 2])
+
+    it('left identity', () => {
+      expect(
+        pipe(
+          Alternative.alt(Alternative.zero(), () => fa),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual(pipe(fa, toReadonlyArray))
+    })
+    it('right identity', () => {
+      expect(
+        pipe(Alternative.alt(fa, Alternative.zero), toReadonlyArray),
+      ).toStrictEqual(pipe(fa, toReadonlyArray))
+    })
+    it('annihilation', () => {
+      const f = (a: number) => a + 1
+
+      expect(
+        pipe(Alternative.map(Alternative.zero(), f), toReadonlyArray),
+      ).toStrictEqual(pipe(Alternative.zero(), toReadonlyArray))
+    })
+    it('distributivity', () => {
+      const fab = of((a: number) => a + 1)
+      const gab = of((a: number) => a / 2)
+
+      expect(
+        pipe(
+          Alternative.ap(
+            Alternative.alt(fab, () => gab),
+            fa,
+          ),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual(
+        pipe(
+          Alternative.alt(Alternative.ap(fab, fa), () =>
+            Alternative.ap(gab, fa),
+          ),
+          toReadonlyArray,
+        ),
+      )
+    })
+    it('annihilation', () => {
+      expect(
+        pipe(Alternative.ap(Alternative.zero(), fa), toReadonlyArray),
+      ).toStrictEqual(pipe(Alternative.zero(), toReadonlyArray))
     })
   })
 
