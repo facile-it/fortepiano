@@ -5,8 +5,7 @@
   "types": "lib/index.s.ts",
   "scripts": {
     "build": "tsc",
-    "coverage": "jest --coverage",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "repository": {
     "type": "git",

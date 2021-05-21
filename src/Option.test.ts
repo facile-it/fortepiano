@@ -1,10 +1,11 @@
-import { option } from './Option'
+import * as O from 'fp-ts/Option'
+import { toBoolean } from './Option'
 
 describe('Option', () => {
   describe('toBoolean', () => {
     it('should convert an Option to a boolean', () => {
-      expect(option.toBoolean(option.none)).toBe(false)
-      expect(option.toBoolean(option.some(null))).toBe(true)
+      expect(toBoolean(O.none)).toBe(false)
+      expect(toBoolean(O.some(null))).toBe(true)
     })
   })
 })

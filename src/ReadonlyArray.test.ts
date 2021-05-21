@@ -1,8 +1,8 @@
-import { eq, string } from 'fp-ts'
-import { Eq } from 'fp-ts/Eq'
+import * as E from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
-import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
+import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
+import * as S from 'fp-ts/string'
 import {
   allElems,
   anyElem,
@@ -14,7 +14,7 @@ import {
 
 const arrays: ReadonlyArray<
   [
-    ReadonlyNonEmptyArray<ReadonlyArray<unknown>>,
+    RNEA.ReadonlyNonEmptyArray<ReadonlyArray<unknown>>,
     ReadonlyArray<ReadonlyArray<unknown>>,
   ]
 > = [
@@ -125,59 +125,57 @@ describe('ReadonlyArray', () => {
 
   describe('allElems', () => {
     it('should return false when the array has no elements', () => {
-      expect(allElems(string.Eq)('a')([])).toBe(false)
+      expect(allElems(S.Eq)('a')([])).toBe(false)
     })
     it('should return false when all elements are missing', () => {
-      expect(allElems(string.Eq)('a')(['b'])).toBe(false)
+      expect(allElems(S.Eq)('a')(['b'])).toBe(false)
     })
     it('should return false when some elements are missing', () => {
-      expect(allElems(string.Eq)('a', 'b')(['a'])).toBe(false)
+      expect(allElems(S.Eq)('a', 'b')(['a'])).toBe(false)
     })
     it('should return true when all elements are found', () => {
-      expect(allElems(string.Eq)('a', 'b')(['b', 'a'])).toBe(true)
+      expect(allElems(S.Eq)('a', 'b')(['b', 'a'])).toBe(true)
     })
     it('should return true when all elements are found along with others', () => {
-      expect(allElems(string.Eq)('a', 'b')(['c', 'b', 'a'])).toBe(true)
+      expect(allElems(S.Eq)('a', 'b')(['c', 'b', 'a'])).toBe(true)
     })
     it('should return true when duplicate elements are found', () => {
-      expect(
-        allElems(string.Eq)('a', 'a', 'b')(['b', 'b', 'a', 'a', 'a']),
-      ).toBe(true)
-    })
-  })
-
-  describe('anyElem', () => {
-    it('should return false when the array has no elements', () => {
-      expect(anyElem(string.Eq)('a')([])).toBe(false)
-    })
-    it('should return false when all elements are missing', () => {
-      expect(anyElem(string.Eq)('a')(['b'])).toBe(false)
-    })
-    it('should return true when some elements are found', () => {
-      expect(anyElem(string.Eq)('a', 'b')(['a'])).toBe(true)
-    })
-    it('should return true when all elements are found', () => {
-      expect(anyElem(string.Eq)('a', 'b')(['b', 'a'])).toBe(true)
-    })
-    it('should return true when all elements are found along with others', () => {
-      expect(anyElem(string.Eq)('a', 'b')(['c', 'b', 'a'])).toBe(true)
-    })
-    it('should return true when duplicate elements are found', () => {
-      expect(anyElem(string.Eq)('a', 'a', 'b')(['b', 'b', 'a', 'a', 'a'])).toBe(
+      expect(allElems(S.Eq)('a', 'a', 'b')(['b', 'b', 'a', 'a', 'a'])).toBe(
         true,
       )
     })
   })
 
+  describe('anyElem', () => {
+    it('should return false when the array has no elements', () => {
+      expect(anyElem(S.Eq)('a')([])).toBe(false)
+    })
+    it('should return false when all elements are missing', () => {
+      expect(anyElem(S.Eq)('a')(['b'])).toBe(false)
+    })
+    it('should return true when some elements are found', () => {
+      expect(anyElem(S.Eq)('a', 'b')(['a'])).toBe(true)
+    })
+    it('should return true when all elements are found', () => {
+      expect(anyElem(S.Eq)('a', 'b')(['b', 'a'])).toBe(true)
+    })
+    it('should return true when all elements are found along with others', () => {
+      expect(anyElem(S.Eq)('a', 'b')(['c', 'b', 'a'])).toBe(true)
+    })
+    it('should return true when duplicate elements are found', () => {
+      expect(anyElem(S.Eq)('a', 'a', 'b')(['b', 'b', 'a', 'a', 'a'])).toBe(true)
+    })
+  })
+
   describe('same', () => {
     it('should return true on empty arrays', () => {
-      expect(same(string.Eq)([])).toBe(true)
+      expect(same(S.Eq)([])).toBe(true)
     })
     it('should return true when there is a single element', () => {
-      expect(same(string.Eq)(['a'])).toBe(true)
+      expect(same(S.Eq)(['a'])).toBe(true)
     })
     it('should return false when the elements differ', () => {
-      expect(same(string.Eq)(['a', 'b'])).toBe(false)
+      expect(same(S.Eq)(['a', 'b'])).toBe(false)
     })
     it('should return true when all elements match', () => {
       interface User {
@@ -185,13 +183,13 @@ describe('ReadonlyArray', () => {
         mother: string
         father: string
       }
-      const eqParents: Eq<User> = pipe(
-        eq.tuple(string.Eq, string.Eq),
-        eq.contramap(({ mother, father }) => [mother, father] as const),
+      const eqParents: E.Eq<User> = pipe(
+        E.tuple(S.Eq, S.Eq),
+        E.contramap(({ mother, father }) => [mother, father] as const),
       )
       const siblings = same(eqParents)
 
-      expect(same(string.Eq)(['a', 'a'])).toBe(true)
+      expect(same(S.Eq)(['a', 'a'])).toBe(true)
       expect(
         siblings([
           {

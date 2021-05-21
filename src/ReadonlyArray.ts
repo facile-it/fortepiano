@@ -1,5 +1,5 @@
 import * as Ap from 'fp-ts/Apply'
-import * as _E from 'fp-ts/Eq'
+import * as E from 'fp-ts/Eq'
 import { constTrue, pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
@@ -74,13 +74,13 @@ export function words<A>(size: number) {
 }
 
 export const allElems =
-  <A>(E: _E.Eq<A>) =>
+  <A>(E: E.Eq<A>) =>
   (...elems: RNEA.ReadonlyNonEmptyArray<A>) =>
   (as: ReadonlyArray<A>): as is RNEA.ReadonlyNonEmptyArray<A> =>
     pipe(elems, RA.intersection(E)(as), curry(EqSize.equals)(elems))
 
 export const anyElem =
-  <A>(E: _E.Eq<A>) =>
+  <A>(E: E.Eq<A>) =>
   (...elems: RNEA.ReadonlyNonEmptyArray<A>) =>
   (as: ReadonlyArray<A>): as is RNEA.ReadonlyNonEmptyArray<A> =>
     pipe(
@@ -116,7 +116,7 @@ export const anyElem =
  * ).toBe(true)
  */
 export const same =
-  <A>(E: _E.Eq<A>) =>
+  <A>(E: E.Eq<A>) =>
   (as: ReadonlyArray<A>): boolean =>
     pipe(
       as,

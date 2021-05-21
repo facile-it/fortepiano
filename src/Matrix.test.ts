@@ -1,7 +1,7 @@
-import { matrix, MatrixC } from './Matrix'
+import * as E from 'fp-ts/Either'
+import { constNull, pipe } from 'fp-ts/function'
 import * as t from 'io-ts'
-import { constNull, pipe } from 'fp-ts/lib/function'
-import { either } from 'fp-ts'
+import { MatrixC, transpose } from './Matrix'
 
 const arrays = [
   [[], true],
@@ -51,7 +51,7 @@ describe('Matrix', () => {
     describe('is', () => {
       it('should refine two-dimensional arrays into matrices', () => {
         arrays.forEach(([x, isMatrix]) =>
-          expect(MatrixC(t.number).is(x)).toStrictEqual(isMatrix)
+          expect(MatrixC(t.number).is(x)).toStrictEqual(isMatrix),
         )
       })
     })
@@ -61,23 +61,15 @@ describe('Matrix', () => {
     it('should return the transposition of a matrix', () => {
       matrices.forEach(([a, b]) =>
         expect(
-          pipe(
-            a,
-            MatrixC(t.number).decode,
-            either.matchW(constNull, matrix.transpose)
-          )
-        ).toStrictEqual(b)
+          pipe(a, MatrixC(t.number).decode, E.matchW(constNull, transpose)),
+        ).toStrictEqual(b),
       )
     })
     it('should invert the transposition of a matrix', () => {
       matrices.forEach(([a, b]) =>
         expect(
-          pipe(
-            b,
-            MatrixC(t.number).decode,
-            either.matchW(constNull, matrix.transpose)
-          )
-        ).toStrictEqual(a)
+          pipe(b, MatrixC(t.number).decode, E.matchW(constNull, transpose)),
+        ).toStrictEqual(a),
       )
     })
   })

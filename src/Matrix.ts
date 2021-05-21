@@ -1,15 +1,15 @@
-import { either } from 'fp-ts'
+import * as E from 'fp-ts/Either'
 import { constFalse, constNull, constTrue, pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
-import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
-import { ReadonlyRecord } from 'fp-ts/ReadonlyRecord'
+import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
+import * as RR from 'fp-ts/ReadonlyRecord'
 import * as t from 'io-ts'
 import { readonlyNonEmptyArray } from 'io-ts-types'
 import * as $RA from './ReadonlyArray'
-import { readonlyRecord } from './ReadonlyRecord'
+import * as $RR from './ReadonlyRecord'
 
 export type Matrix<A> = t.Branded<
-  ReadonlyArray<ReadonlyNonEmptyArray<A>>,
+  ReadonlyArray<RNEA.ReadonlyNonEmptyArray<A>>,
   { readonly Matrix: unique symbol }
 >
 
@@ -19,29 +19,27 @@ const is =
     pipe(
       u,
       t.readonlyArray(readonlyNonEmptyArray(item)).decode,
-      either.filterOrElseW($RA.same($RA.EqSize), constNull),
-      either.match(constFalse, constTrue),
+      E.filterOrElseW($RA.same($RA.EqSize), constNull),
+      E.match(constFalse, constTrue),
     )
 
 export const MatrixC = <C extends t.Mixed>(item: C) =>
   t.brand(t.readonlyArray(readonlyNonEmptyArray(item)), is(item), 'Matrix')
 
-const transpose = <A>(as: Matrix<A>): Matrix<A> =>
+export const transpose = <A>(as: Matrix<A>): Matrix<A> =>
   pipe(
     as,
     RA.reduceWithIndex(
-      {} as ReadonlyRecord<string, ReadonlyRecord<string, A>>,
+      {} as RR.ReadonlyRecord<string, RR.ReadonlyRecord<string, A>>,
       (i, bs, row) =>
         pipe(
           row,
-          RA.reduceWithIndex(bs, (j, _bs, a) => ({
-            ..._bs,
-            [String(j)]: { ..._bs[String(j)], [String(i)]: a },
+          RA.reduceWithIndex(bs, (j, bs, a) => ({
+            ...bs,
+            [String(j)]: { ...bs[String(j)], [String(i)]: a },
           })),
         ),
     ),
-    readonlyRecord.map(readonlyRecord.values),
-    readonlyRecord.values,
+    RR.map($RR.values),
+    $RR.values,
   ) as Matrix<A>
-
-export const matrix = { transpose }

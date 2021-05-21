@@ -1,33 +1,25 @@
-import {
-  apply,
-  chain,
-  fromIO,
-  functor,
-  io,
-  number,
-  option,
-  ord,
-  random,
-  readonlyArray,
-  readonlyNonEmptyArray,
-  readonlyRecord,
-  semigroup,
-} from 'fp-ts'
-import { Applicative1 } from 'fp-ts/Applicative'
-import { Apply1 } from 'fp-ts/Apply'
-import { Chain1 } from 'fp-ts/Chain'
-import { FromIO1 } from 'fp-ts/FromIO'
+import * as Appli from 'fp-ts/Applicative'
+import * as _Apply from 'fp-ts/Apply'
+import * as C from 'fp-ts/Chain'
+import * as FIO from 'fp-ts/FromIO'
 import { flip, not, pipe } from 'fp-ts/function'
-import { Functor1 } from 'fp-ts/Functor'
-import { IO } from 'fp-ts/IO'
-import { Monad1 } from 'fp-ts/Monad'
-import { MonadIO1 } from 'fp-ts/MonadIO'
-import { Pointed1 } from 'fp-ts/Pointed'
-import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
-import { ReadonlyRecord } from 'fp-ts/ReadonlyRecord'
+import * as F from 'fp-ts/Functor'
+import * as IO from 'fp-ts/IO'
+import * as M from 'fp-ts/Monad'
+import * as MIO from 'fp-ts/MonadIO'
+import * as N from 'fp-ts/number'
+import * as Op from 'fp-ts/Option'
+import * as Or from 'fp-ts/Ord'
+import * as P from 'fp-ts/Pointed'
+import * as R from 'fp-ts/Random'
+import * as RA from 'fp-ts/ReadonlyArray'
+import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
+import * as RR from 'fp-ts/ReadonlyRecord'
+import * as Se from 'fp-ts/Semigroup'
 import { PartialDeep } from '.'
 import { curry, recurse, run } from './function'
-import { struct } from './struct'
+import * as $St from './struct'
+import * as $t from './Type'
 
 export const URI = 'Mock'
 
@@ -42,132 +34,144 @@ declare module 'fp-ts/HKT' {
 type EnforceNonEmptyRecord<R> = keyof R extends never ? never : R
 
 export interface Mock<A> {
-  (...as: ReadonlyArray<PartialDeep<A>>): IO<A>
+  (...as: ReadonlyArray<PartialDeep<A>>): IO.IO<A>
 }
 
-const Functor: Functor1<URI> = {
+export const Functor: F.Functor1<URI> = {
   URI,
-  map: (fa, f) => pipe(fa(), io.map(f), FromIO.fromIO),
+  map: (fa, f) => pipe(fa(), IO.map(f), FromIO.fromIO),
 }
 
-const map = curry(flip(Functor.map))
-const flap = functor.flap(Functor)
-const bindTo = functor.bindTo(Functor)
+export const map = curry(flip(Functor.map))
+export const flap = F.flap(Functor)
+export const bindTo = F.bindTo(Functor)
 
 const isUndefined = (a: unknown): a is undefined => undefined === a
-const isObject = <A>(a: A): a is A & object =>
-  null !== a && 'object' === typeof a && !Array.isArray(a)
 
-const Pointed: Pointed1<URI> = {
+export const Pointed: P.Pointed1<URI> = {
   URI,
-  of: <A>(a: A): Mock<A> => (...as) =>
-    pipe(
-      as,
-      readonlyNonEmptyArray.fromReadonlyArray,
-      option.map(random.randomElem),
-      option.sequence(io.Applicative),
-      io.map(
-        option.match(
-          () => a,
-          (_a) =>
-            isObject(a) && isObject(_a)
-              ? (pipe(_a, struct.filterDeep(not(isUndefined)), (_a) =>
-                  struct.patch<A & object, PartialDeep<A & object>>(
-                    _a as PartialDeep<A & object>
-                  )(a)
-                ) as A)
-              : (_a as A)
-        )
-      )
-    ),
+  of:
+    <A>(a: A): Mock<A> =>
+    (...as) =>
+      pipe(
+        as,
+        RNEA.fromReadonlyArray,
+        Op.traverse(IO.Applicative)(R.randomElem),
+        IO.map(
+          Op.match(
+            () => a,
+            (_a) =>
+              $t.struct.is(a) && $t.struct.is(_a)
+                ? (pipe(_a, $St.filterDeep(not(isUndefined)), (_a) =>
+                    $St.patch<A & $St.struct, PartialDeep<A & $St.struct>>(
+                      _a as PartialDeep<A & $St.struct>,
+                    )(a),
+                  ) as A)
+                : (_a as A),
+          ),
+        ),
+      ),
 }
 
-const of = Pointed.of
-const Do = Pointed.of({})
+export const of = Pointed.of
+export const Do = Pointed.of({})
 
-const Apply: Apply1<URI> = {
+export const Apply: _Apply.Apply1<URI> = {
   ...Functor,
   ap: (fab, fa) => Chain.chain(fab, curry(Functor.map)(fa)),
 }
 
-const ap = curry(flip(Apply.ap))
-const apFirst = apply.apFirst(Apply)
-const apSecond = apply.apSecond(Apply)
-const apS = apply.apS(Apply)
+export const ap = curry(flip(Apply.ap))
+export const apFirst = _Apply.apFirst(Apply)
+export const apSecond = _Apply.apSecond(Apply)
+export const apS = _Apply.apS(Apply)
 
-const Applicative: Applicative1<URI> = { ...Pointed, ...Apply }
+export const Applicative: Appli.Applicative1<URI> = { ...Pointed, ...Apply }
 
-const Chain: Chain1<URI> = {
+export const Chain: C.Chain1<URI> = {
   ...Apply,
   chain: (fa, f) => Functor.map(Functor.map(fa, f), (fb) => fb()()),
 }
 
-const _chain = curry(flip(Chain.chain))
-const chainFirst = chain.chainFirst(Chain)
-const bind = chain.bind(Chain)
+export const chain = curry(flip(Chain.chain))
+export const chainFirst = C.chainFirst(Chain)
+export const bind = C.bind(Chain)
 
-const Monad: Monad1<URI> = { ...Applicative, ...Chain }
+export const Monad: M.Monad1<URI> = { ...Applicative, ...Chain }
 
-const FromIO: FromIO1<URI> = {
+export const FromIO: FIO.FromIO1<URI> = {
   URI,
-  fromIO: (fa) => (...as) =>
-    pipe(
-      fa,
-      io.chain((a) => Pointed.of(a)(...as))
-    ),
+  fromIO:
+    (fa) =>
+    (...as) =>
+      pipe(
+        fa,
+        IO.chain((a) => Pointed.of(a)(...as)),
+      ),
 }
 
-const _fromIO = FromIO.fromIO
-const fromIOK = fromIO.fromIOK(FromIO)
-const chainIOK = fromIO.chainIOK(FromIO, Chain)
-const chainFirstIOK = fromIO.chainFirstIOK(FromIO, Chain)
+export const fromIO = FromIO.fromIO
+export const fromIOK = FIO.fromIOK(FromIO)
+export const chainIOK = FIO.chainIOK(FromIO, Chain)
+export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
 
-const MonadIO: MonadIO1<URI> = { ...Monad, ...FromIO }
+export const MonadIO: MIO.MonadIO1<URI> = { ...Monad, ...FromIO }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const _void: Mock<void> = () => () => {}
 const _undefined: Mock<undefined> = () => () => undefined
 const _null: Mock<null> = () => () => null
-const boolean: Mock<boolean> = _fromIO(random.randomBool)
 
-const float = (
-  min = Number.MIN_SAFE_INTEGER * 1e-6,
-  max = Number.MAX_SAFE_INTEGER * 1e-6
-): Mock<number> => (...as) =>
-  pipe(
-    _fromIO(random.randomRange(min, Math.max(min + Number.EPSILON, max)))(
-      ...as
-    ),
-    io.map(
-      ord.clamp(number.Ord)(
-        min,
-        Math.max(min + Number.EPSILON, max - Number.EPSILON)
-      )
+export const boolean: Mock<boolean> = fromIO(R.randomBool)
+
+export const float =
+  (
+    min = Number.MIN_SAFE_INTEGER * 1e-6,
+    max = Number.MAX_SAFE_INTEGER * 1e-6,
+  ): Mock<number> =>
+  (...as) =>
+    pipe(
+      fromIO(R.randomRange(min, Math.max(min + Number.EPSILON, max)))(...as),
+      IO.map(
+        Or.clamp(N.Ord)(
+          min,
+          Math.max(min + Number.EPSILON, max - Number.EPSILON),
+        ),
+      ),
     )
-  )
 
-const integer = (
-  min = Number.MIN_SAFE_INTEGER * 1e-6,
-  max = Number.MAX_SAFE_INTEGER * 1e-6
-): Mock<number> => (...as) => pipe(float(min, max)(...as), io.map(Math.floor))
+export const integer =
+  (
+    min = Number.MIN_SAFE_INTEGER * 1e-6,
+    max = Number.MAX_SAFE_INTEGER * 1e-6,
+  ): Mock<number> =>
+  (...as) =>
+    pipe(float(min, max)(...as), IO.map(Math.floor))
 
-const _number = (
-  min = Number.MIN_SAFE_INTEGER * 1e-6,
-  max = Number.MAX_SAFE_INTEGER * 1e-6
-): Mock<number> => (...as) =>
-  pipe(
-    union(float(min, max), integer(min, max))(...as),
-    io.map(
-      ord.clamp(number.Ord)(
-        min,
-        Math.max(min + Number.EPSILON, max - Number.EPSILON)
-      )
+export const number =
+  (
+    min = Number.MIN_SAFE_INTEGER * 1e-6,
+    max = Number.MAX_SAFE_INTEGER * 1e-6,
+  ): Mock<number> =>
+  (...as) =>
+    pipe(
+      union(float(min, max), integer(min, max))(...as),
+      IO.map(
+        Or.clamp(N.Ord)(
+          min,
+          Math.max(min + Number.EPSILON, max - Number.EPSILON),
+        ),
+      ),
     )
-  )
 
-const string: Mock<string> = _fromIO(
-  () => Math.random().toString(36).split('.')[1]
+export const string: Mock<string> = fromIO(
+  () => Math.random().toString(36).split('.')[1],
 )
 
-const unknown = (depth = 10): Mock<unknown> =>
+export const literal = <A extends boolean | number | string>(a: A): Mock<A> =>
+  of(a)
+
+export const unknown = (depth = 10): Mock<unknown> =>
   recurse(
     (_unknown, _depth) =>
       (_depth < depth
@@ -175,30 +179,31 @@ const unknown = (depth = 10): Mock<unknown> =>
             _undefined,
             _null,
             boolean,
-            _number(),
+            number(),
             string,
-            _readonlyArray(_unknown),
-            _readonlyRecord(string, _unknown)
+            readonlyArray(_unknown),
+            readonlyRecord(string, _unknown),
           )
-        : union(_undefined, _null, boolean, _number(), string)) as Mock<unknown>
+        : union(_undefined, _null, boolean, number(), string)) as Mock<unknown>,
   )
 
-const nullable = <A>(M: Mock<A>): Mock<A | undefined> => union(M, _undefined)
-const literal = <A extends boolean | number | string>(a: A): Mock<A> => of(a)
+export const nullable = <A>(M: Mock<A>): Mock<A | undefined> =>
+  union(M, _undefined)
 
-const _struct = apply.sequenceS(Apply)
-const _tuple = apply.sequenceT(Apply)
+export const tuple = _Apply.sequenceT(Apply)
 
-const partial = <A>(
-  Ms: EnforceNonEmptyRecord<{ readonly [K in keyof A]: Mock<A[K]> }>
+export const struct = _Apply.sequenceS(Apply)
+
+export const partial = <A>(
+  Ms: EnforceNonEmptyRecord<{ readonly [K in keyof A]: Mock<A[K]> }>,
 ): Mock<Partial<Readonly<A>>> =>
   pipe(
-    Ms as ReadonlyRecord<string, Mock<unknown>>,
-    readonlyRecord.map(nullable),
-    _struct
+    Ms as RR.ReadonlyRecord<string, Mock<unknown>>,
+    RR.map(nullable),
+    struct,
   ) as any
 
-function union<A, B, C, D, E, F, G, H, I, J>(
+export function union<A, B, C, D, E, F, G, H, I, J>(
   a: Mock<A>,
   b: Mock<B>,
   c: Mock<C>,
@@ -208,9 +213,9 @@ function union<A, B, C, D, E, F, G, H, I, J>(
   g: Mock<G>,
   h: Mock<H>,
   i: Mock<I>,
-  j: Mock<J>
+  j: Mock<J>,
 ): Mock<A | B | C | D | E | F | G | H | I | J>
-function union<A, B, C, D, E, F, G, H, I>(
+export function union<A, B, C, D, E, F, G, H, I>(
   a: Mock<A>,
   b: Mock<B>,
   c: Mock<C>,
@@ -219,9 +224,9 @@ function union<A, B, C, D, E, F, G, H, I>(
   f: Mock<F>,
   g: Mock<G>,
   h: Mock<H>,
-  i: Mock<I>
+  i: Mock<I>,
 ): Mock<A | B | C | D | E | F | G | H | I>
-function union<A, B, C, D, E, F, G, H>(
+export function union<A, B, C, D, E, F, G, H>(
   a: Mock<A>,
   b: Mock<B>,
   c: Mock<C>,
@@ -229,121 +234,79 @@ function union<A, B, C, D, E, F, G, H>(
   e: Mock<E>,
   f: Mock<F>,
   g: Mock<G>,
-  h: Mock<H>
+  h: Mock<H>,
 ): Mock<A | B | C | D | E | F | G | H>
-function union<A, B, C, D, E, F, G>(
+export function union<A, B, C, D, E, F, G>(
   a: Mock<A>,
   b: Mock<B>,
   c: Mock<C>,
   d: Mock<D>,
   e: Mock<E>,
   f: Mock<F>,
-  g: Mock<G>
+  g: Mock<G>,
 ): Mock<A | B | C | D | E | F | G>
-function union<A, B, C, D, E, F>(
+export function union<A, B, C, D, E, F>(
   a: Mock<A>,
   b: Mock<B>,
   c: Mock<C>,
   d: Mock<D>,
   e: Mock<E>,
-  f: Mock<F>
+  f: Mock<F>,
 ): Mock<A | B | C | D | E | F>
-function union<A, B, C, D, E>(
+export function union<A, B, C, D, E>(
   a: Mock<A>,
   b: Mock<B>,
   c: Mock<C>,
   d: Mock<D>,
-  e: Mock<E>
+  e: Mock<E>,
 ): Mock<A | B | C | D | E>
-function union<A, B, C, D>(
+export function union<A, B, C, D>(
   a: Mock<A>,
   b: Mock<B>,
   c: Mock<C>,
-  d: Mock<D>
+  d: Mock<D>,
 ): Mock<A | B | C | D>
-function union<A, B, C>(a: Mock<A>, b: Mock<B>, c: Mock<C>): Mock<A | B | C>
-function union<A, B>(a: Mock<A>, b: Mock<B>): Mock<A | B>
-function union(...Ms: ReadonlyNonEmptyArray<Mock<unknown>>) {
-  return pipe(Ms, random.randomElem, io.chain(run), _fromIO)
+export function union<A, B, C>(
+  a: Mock<A>,
+  b: Mock<B>,
+  c: Mock<C>,
+): Mock<A | B | C>
+export function union<A, B>(a: Mock<A>, b: Mock<B>): Mock<A | B>
+export function union(...Ms: RNEA.ReadonlyNonEmptyArray<Mock<unknown>>) {
+  return pipe(Ms, R.randomElem, IO.chain(run), fromIO)
 }
 
-const _readonlyArray = <A>(
+export const readonlyArray = <A>(
   M: Mock<A>,
   min = 0,
-  max = 10
+  max = 10,
 ): Mock<ReadonlyArray<A>> =>
   pipe(
-    random.randomInt(Math.max(0, min), Math.max(0, min, max)),
-    io.map(curry(flip(readonlyArray.replicate))(M())),
-    io.chain(readonlyArray.sequence(io.Applicative)),
-    _fromIO
+    R.randomInt(Math.max(0, min), Math.max(0, min, max)),
+    IO.map(curry(flip(RA.replicate))(M())),
+    IO.chain(RA.sequence(IO.Applicative)),
+    fromIO,
   )
 
-const _readonlyNonEmptyArray = <A>(
+export const readonlyNonEmptyArray = <A>(
   M: Mock<A>,
   min = 1,
-  max = 10
-): Mock<ReadonlyNonEmptyArray<A>> =>
-  (_readonlyArray(
-    M,
-    Math.max(1, min),
-    Math.max(1, min, max)
-  ) as unknown) as Mock<ReadonlyNonEmptyArray<A>>
+  max = 10,
+): Mock<RNEA.ReadonlyNonEmptyArray<A>> =>
+  readonlyArray(M, Math.max(1, min), Math.max(1, min, max)) as unknown as Mock<
+    RNEA.ReadonlyNonEmptyArray<A>
+  >
 
-const _readonlyRecord = <K extends string, T>(
+export const readonlyRecord = <K extends string, T>(
   KM: Mock<K>,
   TM: Mock<T>,
   min = 0,
-  max = 10
-): Mock<ReadonlyRecord<K, T>> =>
+  max = 10,
+): Mock<RR.ReadonlyRecord<K, T>> =>
   pipe(
-    _readonlyArray(_tuple(KM, TM), Math.max(0, min), Math.max(0, min, max))(),
-    io.map(
-      readonlyRecord.fromFoldable(semigroup.last<T>(), readonlyArray.Foldable)
-    ),
-    _fromIO
+    readonlyArray(tuple(KM, TM), Math.max(0, min), Math.max(0, min, max))(),
+    IO.map(RR.fromFoldable(Se.last<T>(), RA.Foldable)),
+    fromIO,
   )
 
-export const mock = {
-  undefined: _undefined,
-  null: _null,
-  boolean,
-  float,
-  integer,
-  number: _number,
-  string,
-  unknown,
-  nullable,
-  literal,
-  struct: _struct,
-  tuple: _tuple,
-  partial,
-  union,
-  readonlyArray: _readonlyArray,
-  readonlyNonEmptyArray: _readonlyNonEmptyArray,
-  readonlyRecord: _readonlyRecord,
-  map,
-  flap,
-  bindTo,
-  of,
-  Do,
-  ap,
-  apFirst,
-  apSecond,
-  apS,
-  chain: _chain,
-  chainFirst,
-  bind,
-  fromIO: _fromIO,
-  fromIOK,
-  chainIOK,
-  chainFirstIOK,
-  Functor,
-  Pointed,
-  Apply,
-  Applicative,
-  Chain,
-  Monad,
-  FromIO,
-  MonadIO,
-}
+export { _void as void, _undefined as undefined, _null as null }

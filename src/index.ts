@@ -1,6 +1,17 @@
 import * as $aggregate from './Aggregate'
 import * as $binary from './Binary'
+import * as $eq from './Eq'
+import * as $ioGenerator from './IOGenerator'
+import * as $magma from './Magma'
+import * as $matrix from './Matrix'
+import * as $mock from './Mock'
+import * as $optics from './Optics'
+import * as $option from './Option'
 import * as $readonlyArray from './ReadonlyArray'
+import * as $readonlyRecord from './ReadonlyRecord'
+import * as $struct from './struct'
+import * as $type from './Type'
+import * as $validation from './Validation'
 
 export type PartialDeep<A> = A extends { readonly [x: string]: unknown }
   ? Partial<{ readonly [K in keyof A]: PartialDeep<A[K]> }>
@@ -22,4 +33,19 @@ export type IntersectionDeep<A, B> = A extends { readonly [x: string]: unknown }
       }
   : B
 
-export { $aggregate, $binary, $readonlyArray }
+export {
+  $aggregate,
+  $binary,
+  $eq,
+  $ioGenerator,
+  $magma,
+  $matrix,
+  $mock,
+  $optics,
+  $option,
+  $readonlyArray,
+  $readonlyRecord,
+  $struct,
+  $type,
+  $validation,
+}

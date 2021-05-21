@@ -1,10 +1,10 @@
-import { option } from 'fp-ts'
 import { flow } from 'fp-ts/function'
-import { Option } from 'fp-ts/Option'
+import * as O from 'fp-ts/Option'
+import * as $S from './struct'
 
-export type Getter<S extends object, A> = (s: S) => A
-export type Setter<S extends object, A> = (a: A) => (s: S) => S
-export type Modifier<S extends object, A> = (f: (a: A) => A) => (s: S) => S
+export type Getter<S extends $S.struct, A> = (s: S) => A
+export type Setter<S extends $S.struct, A> = (a: A) => (s: S) => S
+export type Modifier<S extends $S.struct, A> = (f: (a: A) => A) => (s: S) => S
 
 /**
  * @example
@@ -18,9 +18,10 @@ export type Modifier<S extends object, A> = (f: (a: A) => A) => (s: S) => S
  * expect(adult({ name: 'Scott', age: 7 })).toBe(false)
  * expect(adult({ name: 'Jonathan', age: 33 })).toBe(true)
  */
-const get = <S extends object, P extends keyof S>(p: P): Getter<S, S[P]> => (
-  s
-) => s[p]
+export const get =
+  <S extends $S.struct, P extends keyof S>(p: P): Getter<S, S[P]> =>
+  (s) =>
+    s[p]
 
 /**
  * @example
@@ -42,9 +43,9 @@ const get = <S extends object, P extends keyof S>(p: P): Getter<S, S[P]> => (
  * )
  * expect(home({ name: 'Mary' })).toBe('Mary is homeless')
  */
-const getOption = <S extends object, P extends keyof S>(
-  p: P
-): Getter<S, Option<NonNullable<S[P]>>> => flow(get(p), option.fromNullable)
+export const getOption = <S extends $S.struct, P extends keyof S>(
+  p: P,
+): Getter<S, O.Option<NonNullable<S[P]>>> => flow(get(p), O.fromNullable)
 
 /**
  * @example
@@ -60,10 +61,12 @@ const getOption = <S extends object, P extends keyof S>(
  *   { name: 'Jonathan', age: 34, }
  * )
  */
-const modify = <S extends object, P extends keyof S>(
-  p: P,
-  f: (a: S[P]) => S[P]
-): ReturnType<Modifier<S, S[P]>> => (s) => ({ ...s, [p]: f(s[p]) })
+export const modify =
+  <S extends $S.struct, P extends keyof S>(
+    p: P,
+    f: (a: S[P]) => S[P],
+  ): ReturnType<Modifier<S, S[P]>> =>
+  (s) => ({ ...s, [p]: f(s[p]) })
 
 /**
  * @example
@@ -79,9 +82,9 @@ const modify = <S extends object, P extends keyof S>(
  *   { name: 'Thomas', status: 'Unemployed' }
  * )
  */
-const set = <S extends object, P extends keyof S>(
+export const set = <S extends $S.struct, P extends keyof S>(
   p: P,
-  a: S[P]
+  a: S[P],
 ): ReturnType<Setter<S, S[P]>> => modify(p, () => a)
 
 export const optics = { get, getOption, modify, set }

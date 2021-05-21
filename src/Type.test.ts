@@ -1,6 +1,6 @@
 import * as t from 'io-ts'
 import * as $RA from './ReadonlyArray'
-import { type } from './Type'
+import { alias, literalUnion } from './Type'
 
 describe('Type', () => {
   describe('alias', () => {
@@ -11,16 +11,16 @@ describe('Type', () => {
           [true, 1138, 'foo', [], {}],
         )
         .forEach(([codec, a]) => {
-          expect(type.alias('foo', codec).is(a)).toBe(codec.is(a))
-          expect(type.alias('bar', codec).name).toBe('bar')
+          expect(alias('foo', codec).is(a)).toBe(codec.is(a))
+          expect(alias('bar', codec).name).toBe('bar')
         })
     })
   })
 
   describe('literalUnion', () => {
     it('should optimize literal union decoding', () => {
-      const number = type.literalUnion([1138, 1337])
-      const string = type.literalUnion(['foo', 'bar'])
+      const number = literalUnion([1138, 1337])
+      const string = literalUnion(['foo', 'bar'])
 
       expect(number.is(1138)).toBe(true)
       expect(number.is(Infinity)).toBe(false)

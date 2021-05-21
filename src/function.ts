@@ -4,7 +4,7 @@ export const run = <A>(f: Lazy<A>): A => f()
 
 export function curry<A, B, C>(f: (a: A, b: B) => C): (a: A) => (b: B) => C
 export function curry<A, B, C, D>(
-  f: (a: A, b: B, c: C) => D
+  f: (a: A, b: B, c: C) => D,
 ): (a: A) => (b: B) => (c: C) => D
 export function curry(f: (...args: any) => any) {
   return function curried(...head: ReadonlyArray<unknown>) {
@@ -15,10 +15,10 @@ export function curry(f: (...args: any) => any) {
 }
 
 export function uncurry<A, B, C, D>(
-  f: (a: A) => (b: B) => (c: C) => D
+  f: (a: A) => (b: B) => (c: C) => D,
 ): D extends (...args: any) => any ? never : (a: A, b: B, c: C) => D
 export function uncurry<A, B, C>(
-  f: (a: A) => (b: B) => C
+  f: (a: A) => (b: B) => C,
 ): C extends (...args: any) => any ? never : (a: A, b: B) => C
 export function uncurry(f: (...args: any) => any) {
   return (...args: ReadonlyArray<unknown>) =>
@@ -63,7 +63,7 @@ export const memoize = <A extends (...args: any) => any>(f: A): A => {
  */
 export const recurse = <A extends (...args: any) => any>(
   f: (self: A, depth: number) => A,
-  cache = false
+  cache = false,
 ): A => {
   let depth = 0
   let _cache: A | null = null
@@ -114,9 +114,11 @@ export const recurse = <A extends (...args: any) => any>(
  *   )
  * ).toBeCloseTo(-12190)
  */
-export const match = <A extends { readonly _tag: string }, B>(
-  onCases: {
-    readonly [K in A['_tag']]: (a: Extract<A, { readonly _tag: K }>) => B
-  }
-) => (a: A): B =>
-  onCases[a._tag as A['_tag']](a as Extract<A, { _tag: A['_tag'] }>)
+export const match =
+  <A extends { readonly _tag: string }, B>(
+    onCases: {
+      readonly [K in A['_tag']]: (a: Extract<A, { readonly _tag: K }>) => B
+    },
+  ) =>
+  (a: A): B =>
+    onCases[a._tag as A['_tag']](a as Extract<A, { _tag: A['_tag'] }>)

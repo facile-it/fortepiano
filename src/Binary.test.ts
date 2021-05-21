@@ -1,11 +1,11 @@
 import { pipe } from 'fp-ts/function'
-import * as $B from './Binary'
+import { Binary, MonoidOr } from './Binary'
 import * as $RA from './ReadonlyArray'
 
 describe('Binary', () => {
   describe('MonoidOr', () => {
-    const { empty, concat } = $B.MonoidOr
-    const digits: ReadonlyArray<$B.Binary> = [0, 1]
+    const { empty, concat } = MonoidOr
+    const digits: ReadonlyArray<Binary> = [0, 1]
 
     it('associativity', () => {
       pipe(digits, $RA.words(3)).forEach(([a, b, c]) =>
