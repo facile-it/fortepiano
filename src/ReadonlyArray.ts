@@ -3,7 +3,7 @@ import * as E from 'fp-ts/Eq'
 import { constTrue, pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
-import * as $Ag from './Aggregate'
+import * as $E from './Eq'
 import { curry } from './function'
 
 /**
@@ -77,7 +77,7 @@ export const allElems =
   <A>(E: E.Eq<A>) =>
   (...elems: RNEA.ReadonlyNonEmptyArray<A>) =>
   (as: ReadonlyArray<A>): as is RNEA.ReadonlyNonEmptyArray<A> =>
-    pipe(elems, RA.intersection(E)(as), curry(EqSize.equals)(elems))
+    pipe(elems, RA.intersection(E)(as), curry($E.getEqSize(RA).equals)(elems))
 
 export const anyElem =
   <A>(E: E.Eq<A>) =>
@@ -124,5 +124,3 @@ export const same =
         pipe(tail, RA.every(curry(E.equals)(head))),
       ),
     )
-
-export const EqSize = $Ag.getEq(RA)
