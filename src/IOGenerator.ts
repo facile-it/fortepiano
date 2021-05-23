@@ -6,6 +6,7 @@ import * as Ch from 'fp-ts/Chain'
 import * as Co from 'fp-ts/Compactable'
 import * as Ei from 'fp-ts/Either'
 import * as Eq from 'fp-ts/Eq'
+import * as Ex from 'fp-ts/Extend'
 import * as Fi from 'fp-ts/Filterable'
 import * as FiWI from 'fp-ts/FilterableWithIndex'
 import * as Fo from 'fp-ts/Foldable'
@@ -15,6 +16,8 @@ import {
   constFalse,
   constTrue,
   flip,
+  flow,
+  identity,
   Lazy,
   not,
   pipe,
@@ -38,15 +41,18 @@ import * as IO from 'fp-ts/IO'
 import * as Mona from 'fp-ts/Monad'
 import * as MIO from 'fp-ts/MonadIO'
 import * as Mono from 'fp-ts/Monoid'
-import * as O from 'fp-ts/Option'
+import * as Op from 'fp-ts/Option'
+import * as Or from 'fp-ts/Ord'
 import * as P from 'fp-ts/Pointed'
 import * as R from 'fp-ts/Random'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
+import * as RR from 'fp-ts/ReadonlyRecord'
 import * as S from 'fp-ts/Separated'
 import * as T from 'fp-ts/Traversable'
 import * as TWI from 'fp-ts/TraversableWithIndex'
 import * as U from 'fp-ts/Unfoldable'
+import * as W from 'fp-ts/Witherable'
 import { Int } from 'io-ts'
 import { curry } from './function'
 
@@ -70,6 +76,37 @@ export const getMonoid = <A>(): Mono.Monoid<IOGenerator<A>> => ({
       yield* y()
     },
 })
+
+export const getEq = <A>(E: Eq.Eq<A>): Eq.Eq<IOGenerator<A>> =>
+  Eq.fromEquals((x, y) => {
+    const bs = y()
+    for (const a of x()) {
+      const b = bs.next()
+      if (b.done || !E.equals(a, b.value)) {
+        return false
+      }
+    }
+
+    return Boolean(bs.next().done)
+  })
+
+export const getOrd = <A>(O: Or.Ord<A>): Or.Ord<IOGenerator<A>> =>
+  Or.fromCompare((first, second) => {
+    const bs = second()
+    for (const a of first()) {
+      const b = bs.next()
+      if (b.done) {
+        return 1
+      }
+
+      const ordering = O.compare(a, b.value)
+      if (0 !== ordering) {
+        return ordering
+      }
+    }
+
+    return !bs.next().done ? -1 : 0
+  })
 
 export const Functor: Fu.Functor1<URI> = {
   URI,
@@ -101,6 +138,8 @@ export const FunctorWithIndex: FuWI.FunctorWithIndex1<URI, number> = {
   mapWithIndex: (fa, f) =>
     Functor.map(pipe(fa, zip(range(0))), ([a, i]) => f(i, a)),
 }
+
+export const mapWithIndex = curry(flip(FunctorWithIndex.mapWithIndex))
 
 export const Apply: _Apply.Apply1<URI> = {
   ...Functor,
@@ -137,6 +176,22 @@ export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
 
 export const MonadIO: MIO.MonadIO1<URI> = { ...Monad, ...FromIO }
 
+export const Unfoldable: U.Unfoldable1<URI> = {
+  URI,
+  unfold: (b, f) =>
+    function* () {
+      for (
+        let _b = b, ab = f(_b);
+        Op.isSome(ab);
+        _b = ab.value[1], ab = f(_b)
+      ) {
+        yield ab.value[0]
+      }
+    },
+}
+
+export const unfold = Unfoldable.unfold
+
 export const Alt: _Alt.Alt1<URI> = {
   ...Functor,
   alt: <A>(fa: IOGenerator<A>, that: Lazy<IOGenerator<A>>) =>
@@ -153,9 +208,22 @@ export const Alternative: Alte.Alternative1<URI> = {
 
 export const zero = Alternative.zero
 
+export const Extend: Ex.Extend1<URI> = {
+  ...Functor,
+  extend: (wa, f) =>
+    pipe(
+      wa,
+      mapWithIndex((i) => pipe(wa, drop(i), f)),
+    ),
+}
+
+export const extend = curry(flip(Extend.extend))
+export const duplicate = <A>(fa: IOGenerator<A>) => pipe(fa, extend(identity))
+
 export const Compactable: Co.Compactable1<URI> = {
   URI,
-  compact: (fa) => Functor.map(Filterable.filter(fa, O.isSome), (a) => a.value),
+  compact: (fa) =>
+    Functor.map(Filterable.filter(fa, Op.isSome), (a) => a.value),
   separate: (fa) =>
     S.separated(
       Functor.map(Filterable.filter(fa, Ei.isLeft), (a) => a.left),
@@ -242,7 +310,7 @@ function _filterWithIndex<A>(
 ) {
   return Compactable.compact(
     FunctorWithIndex.mapWithIndex(fa, (i, a) =>
-      predicateWithIndex(i, a) ? O.some(a) : O.none,
+      predicateWithIndex(i, a) ? Op.some(a) : Op.none,
     ),
   )
 }
@@ -406,29 +474,29 @@ function _traverse<F>(F: Appli.Applicative<F>) {
     TraversableWithIndex.traverseWithIndex(F)(ta, (_: number, a: A) => f(a))
 }
 
-function _sequence<F extends URIS4>(
+export function sequence<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <S, R, E, A>(
   ta: IOGenerator<Kind4<F, S, R, E, A>>,
 ) => Kind4<F, S, R, E, IOGenerator<A>>
-function _sequence<F extends URIS3>(
+export function sequence<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <R, E, A>(
   ta: IOGenerator<Kind3<F, R, E, A>>,
 ) => Kind3<F, R, E, IOGenerator<A>>
-function _sequence<F extends URIS3, E>(
+export function sequence<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <R, A>(ta: IOGenerator<Kind3<F, R, E, A>>) => Kind3<F, R, E, IOGenerator<A>>
-function _sequence<F extends URIS2>(
+export function sequence<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <E, A>(ta: IOGenerator<Kind2<F, E, A>>) => Kind2<F, E, IOGenerator<A>>
-function _sequence<F extends URIS2, E>(
+export function sequence<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A>(ta: IOGenerator<Kind2<F, E, A>>) => Kind2<F, E, IOGenerator<A>>
-function _sequence<F extends URIS>(
+export function sequence<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A>(ta: IOGenerator<Kind<F, A>>) => Kind<F, IOGenerator<A>>
-function _sequence<F>(
+export function sequence<F>(
   F: Appli.Applicative<F>,
 ): <A>(ta: IOGenerator<HKT<F, A>>) => HKT<F, IOGenerator<A>> {
   return <A>(ta: IOGenerator<HKT<F, A>>) =>
@@ -444,7 +512,43 @@ export const Traversable: T.Traversable1<URI> = {
   ...Functor,
   ...Foldable,
   traverse: _traverse,
-  sequence: _sequence,
+  sequence,
+}
+
+export function traverse<F extends URIS4>(
+  F: Appli.Applicative4<F>,
+): <A, S, R, E, B>(
+  f: (a: A) => Kind4<F, S, R, E, B>,
+) => (ta: IOGenerator<A>) => Kind4<F, S, R, E, IOGenerator<B>>
+export function traverse<F extends URIS3>(
+  F: Appli.Applicative3<F>,
+): <A, R, E, B>(
+  f: (a: A) => Kind3<F, R, E, B>,
+) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+export function traverse<F extends URIS3, E>(
+  F: Appli.Applicative3C<F, E>,
+): <A, R, B>(
+  f: (a: A) => Kind3<F, R, E, B>,
+) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+export function traverse<F extends URIS2>(
+  F: Appli.Applicative2<F>,
+): <A, E, B>(
+  f: (a: A) => Kind2<F, E, B>,
+) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+export function traverse<F extends URIS2, E>(
+  F: Appli.Applicative2C<F, E>,
+): <A, B>(
+  f: (a: A) => Kind2<F, E, B>,
+) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+export function traverse<F extends URIS>(
+  F: Appli.Applicative1<F>,
+): <A, B>(
+  f: (a: A) => Kind<F, B>,
+) => (ta: IOGenerator<A>) => Kind<F, IOGenerator<B>>
+export function traverse<F>(F: Appli.Applicative<F>) {
+  return <A, B>(f: (a: A) => HKT<F, B>) =>
+    (ta: IOGenerator<A>) =>
+      Traversable.traverse(F)(ta, f)
 }
 
 function _traverseWithIndex<F extends URIS4>(
@@ -500,17 +604,189 @@ export const TraversableWithIndex: TWI.TraversableWithIndex1<URI, number> = {
   traverseWithIndex: _traverseWithIndex,
 }
 
-export const Unfoldable: U.Unfoldable1<URI> = {
-  URI,
-  unfold: (b, f) =>
-    function* () {
-      for (let _b = b, ab = f(_b); O.isSome(ab); _b = ab.value[1], ab = f(_b)) {
-        yield ab.value[0]
-      }
-    },
+export function traverseWithIndex<F extends URIS4>(
+  F: Appli.Applicative4<F>,
+): <A, S, R, E, B>(
+  f: (i: number, a: A) => Kind4<F, S, R, E, B>,
+) => (ta: IOGenerator<A>) => Kind4<F, S, R, E, IOGenerator<B>>
+export function traverseWithIndex<F extends URIS3>(
+  F: Appli.Applicative3<F>,
+): <A, R, E, B>(
+  f: (i: number, a: A) => Kind3<F, R, E, B>,
+) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+export function traverseWithIndex<F extends URIS3, E>(
+  F: Appli.Applicative3C<F, E>,
+): <A, R, B>(
+  f: (i: number, a: A) => Kind3<F, R, E, B>,
+) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+export function traverseWithIndex<F extends URIS2>(
+  F: Appli.Applicative2<F>,
+): <A, E, B>(
+  f: (i: number, a: A) => Kind2<F, E, B>,
+) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+export function traverseWithIndex<F extends URIS2, E>(
+  F: Appli.Applicative2C<F, E>,
+): <A, B>(
+  f: (i: number, a: A) => Kind2<F, E, B>,
+) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+export function traverseWithIndex<F extends URIS>(
+  F: Appli.Applicative1<F>,
+): <A, B>(
+  f: (i: number, a: A) => Kind<F, B>,
+) => (ta: IOGenerator<A>) => Kind<F, IOGenerator<B>>
+export function traverseWithIndex<F>(F: Appli.Applicative<F>) {
+  return <A, B>(f: (i: number, a: A) => HKT<F, B>) =>
+    (ta: IOGenerator<A>) =>
+      TraversableWithIndex.traverseWithIndex(F)(ta, f)
 }
 
-export const unfold = Unfoldable.unfold
+function _wilt<F extends URIS3>(
+  F: Appli.Applicative3<F>,
+): <A, R, E, B, C>(
+  wa: IOGenerator<A>,
+  f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
+) => Kind3<F, R, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+function _wilt<F extends URIS3, E>(
+  F: Appli.Applicative3C<F, E>,
+): <A, R, B, C>(
+  wa: IOGenerator<A>,
+  f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
+) => Kind3<F, R, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+function _wilt<F extends URIS2>(
+  F: Appli.Applicative2<F>,
+): <A, E, B, C>(
+  wa: IOGenerator<A>,
+  f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
+) => Kind2<F, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+function _wilt<F extends URIS2, E>(
+  F: Appli.Applicative2C<F, E>,
+): <A, B, C>(
+  wa: IOGenerator<A>,
+  f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
+) => Kind2<F, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+function _wilt<F extends URIS>(
+  F: Appli.Applicative1<F>,
+): <A, B, C>(
+  wa: IOGenerator<A>,
+  f: (a: A) => Kind<F, Ei.Either<B, C>>,
+) => Kind<F, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+function _wilt<F>(F: Appli.Applicative<F>) {
+  return <A, B, C>(wa: IOGenerator<A>, f: (a: A) => HKT<F, Ei.Either<B, C>>) =>
+    F.map(Traversable.traverse(F)(wa, f), separate)
+}
+
+function _wither<F extends URIS3>(
+  F: Appli.Applicative3<F>,
+): <A, R, E, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
+) => Kind3<F, R, E, IOGenerator<B>>
+function _wither<F extends URIS3, E>(
+  F: Appli.Applicative3C<F, E>,
+): <A, R, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
+) => Kind3<F, R, E, IOGenerator<B>>
+function _wither<F extends URIS2>(
+  F: Appli.Applicative2<F>,
+): <A, E, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind2<F, E, Op.Option<B>>,
+) => Kind2<F, E, IOGenerator<B>>
+function _wither<F extends URIS2, E>(
+  F: Appli.Applicative2C<F, E>,
+): <A, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind2<F, E, Op.Option<B>>,
+) => Kind2<F, E, IOGenerator<B>>
+function _wither<F extends URIS>(
+  F: Appli.Applicative1<F>,
+): <A, B>(
+  ta: IOGenerator<A>,
+  f: (a: A) => Kind<F, Op.Option<B>>,
+) => Kind<F, IOGenerator<B>>
+function _wither<F>(F: Appli.Applicative<F>) {
+  return <A, B>(ta: IOGenerator<A>, f: (a: A) => HKT<F, Op.Option<B>>) =>
+    F.map(Traversable.traverse(F)(ta, f), compact)
+}
+
+export const Witherable: W.Witherable1<URI> = {
+  ...Traversable,
+  ...Filterable,
+  wilt: _wilt,
+  wither: _wither,
+}
+
+export function wilt<F extends URIS3>(
+  F: Appli.Applicative3<F>,
+): <A, R, E, B, C>(
+  f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
+) => (
+  wa: IOGenerator<A>,
+) => Kind3<F, R, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+export function wilt<F extends URIS3, E>(
+  F: Appli.Applicative3C<F, E>,
+): <A, R, B, C>(
+  f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
+) => (
+  wa: IOGenerator<A>,
+) => Kind3<F, R, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+export function wilt<F extends URIS2>(
+  F: Appli.Applicative2<F>,
+): <A, E, B, C>(
+  f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
+) => (
+  wa: IOGenerator<A>,
+) => Kind2<F, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+export function wilt<F extends URIS2, E>(
+  F: Appli.Applicative2C<F, E>,
+): <A, B, C>(
+  f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
+) => (
+  wa: IOGenerator<A>,
+) => Kind2<F, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+export function wilt<F extends URIS>(
+  F: Appli.Applicative1<F>,
+): <A, B, C>(
+  f: (a: A) => Kind<F, Ei.Either<B, C>>,
+) => (
+  wa: IOGenerator<A>,
+) => Kind<F, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+export function wilt<F>(F: Appli.Applicative<F>) {
+  return <A, B, C>(f: (a: A) => HKT<F, Ei.Either<B, C>>) =>
+    (wa: IOGenerator<A>) =>
+      Witherable.wilt(F)(wa, f)
+}
+export function wither<F extends URIS3>(
+  F: Appli.Applicative3<F>,
+): <A, R, E, B>(
+  f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
+) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+export function wither<F extends URIS3, E>(
+  F: Appli.Applicative3C<F, E>,
+): <A, R, B>(
+  f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
+) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+export function wither<F extends URIS2>(
+  F: Appli.Applicative2<F>,
+): <A, E, B>(
+  f: (a: A) => Kind2<F, E, Op.Option<B>>,
+) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+export function wither<F extends URIS2, E>(
+  F: Appli.Applicative2C<F, E>,
+): <A, B>(
+  f: (a: A) => Kind2<F, E, Op.Option<B>>,
+) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+export function wither<F extends URIS>(
+  F: Appli.Applicative1<F>,
+): <A, B>(
+  f: (a: A) => Kind<F, Op.Option<B>>,
+) => (ta: IOGenerator<A>) => Kind<F, IOGenerator<B>>
+export function wither<F>(F: Appli.Applicative<F>) {
+  return <A, B>(f: (a: A) => HKT<F, Op.Option<B>>) =>
+    (ta: IOGenerator<A>) =>
+      Witherable.wither(F)(ta, f)
+}
 
 export const range = (start: number): IOGenerator<number> =>
   function* () {
@@ -525,10 +801,12 @@ export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): IOGenerator<A> =>
   unfold(
     as,
     RA.matchLeft(
-      () => O.none,
-      (head, tail) => O.some([head, tail]),
+      () => Op.none,
+      (head, tail) => Op.some([head, tail]),
     ),
   )
+
+export const fromReadonlyRecord = RR.toUnfoldable(Unfoldable)
 
 export const random: IOGenerator<number> = fromIO(R.random)
 
@@ -593,8 +871,8 @@ export const flatten = <A>(mma: IOGenerator<IOGenerator<A>>): IOGenerator<A> =>
   }
 
 export const take =
-  <A>(n: number) =>
-  (ma: IOGenerator<A>): IOGenerator<A> =>
+  (n: number) =>
+  <A>(ma: IOGenerator<A>): IOGenerator<A> =>
     function* () {
       for (const [a, i] of pipe(ma, zip(range(0)))()) {
         if (i >= n) {
@@ -606,8 +884,8 @@ export const take =
     }
 
 export const drop =
-  <A>(n: number) =>
-  (ma: IOGenerator<A>): IOGenerator<A> =>
+  (n: number) =>
+  <A>(ma: IOGenerator<A>): IOGenerator<A> =>
     function* () {
       for (const [a, i] of pipe(ma, zip(range(0)))()) {
         if (i < n) {
@@ -619,8 +897,8 @@ export const drop =
     }
 
 export const zip =
-  <A, B>(mb: IOGenerator<B>) =>
-  (ma: IOGenerator<A>): IOGenerator<Readonly<[A, B]>> =>
+  <B>(mb: IOGenerator<B>) =>
+  <A>(ma: IOGenerator<A>): IOGenerator<Readonly<[A, B]>> =>
     function* () {
       const bs = mb()
       for (const a of ma()) {
@@ -649,37 +927,36 @@ export const isEmpty = match(constTrue, constFalse)
 
 export const isNonEmpty = not(isEmpty)
 
+export const size = flow(toReadonlyArray, RA.size)
+
 export const lookup =
-  <A>(i: number) =>
-  (ma: IOGenerator<A>): O.Option<A> =>
+  (i: number) =>
+  <A>(ma: IOGenerator<A>): Op.Option<A> =>
     i < 0
-      ? O.none
+      ? Op.none
       : pipe(
           ma,
           drop(i),
-          match(
-            () => O.none,
-            (a) => O.some(a),
-          ),
+          match(() => Op.none, Op.some),
         )
 
-export const head = <A>(ma: IOGenerator<A>): O.Option<A> => pipe(ma, lookup(0))
+export const head = lookup(0)
 
 export function find<A, B extends A>(
   refinement: Refinement<A, B>,
-): (ma: IOGenerator<A>) => O.Option<B>
+): (ma: IOGenerator<A>) => Op.Option<B>
 export function find<A>(
   predicate: Predicate<A>,
-): (ma: IOGenerator<A>) => O.Option<A>
+): (ma: IOGenerator<A>) => Op.Option<A>
 export function find<A>(predicate: Predicate<A>) {
   return (ma: IOGenerator<A>) => {
     for (const a of ma()) {
       if (predicate(a)) {
-        return O.some(a)
+        return Op.some(a)
       }
     }
 
-    return O.none
+    return Op.none
   }
 }
 
