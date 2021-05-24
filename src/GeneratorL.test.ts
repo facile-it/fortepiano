@@ -48,9 +48,9 @@ import {
   toReadonlyArray,
   uniq,
   zip,
-} from './IOGenerator'
+} from './GeneratorL'
 
-describe('IOGenerator', () => {
+describe('GeneratorL', () => {
   describe('range', () => {
     it('should return a list of numbers', () => {
       expect(pipe(range(0), take(5), toReadonlyArray)).toStrictEqual([

@@ -19,7 +19,7 @@ import * as Se from 'fp-ts/Semigroup'
 import * as t from 'io-ts'
 import { PartialDeep } from '.'
 import { curry, recurse, run } from './function'
-import * as $IOG from './IOGenerator'
+import * as $GL from './GeneratorL'
 import * as $St from './struct'
 import * as $t from './Type'
 
@@ -283,7 +283,7 @@ export const readonlyArray = <A>(
 ): Mock<ReadonlyArray<A>> =>
   pipe(
     R.randomInt(Math.max(0, min), Math.max(0, min, max)),
-    IO.map((n) => pipe($IOG.fromIO(M()), $IOG.take(n), $IOG.toReadonlyArray)),
+    IO.map((n) => pipe($GL.fromIO(M()), $GL.take(n), $GL.toReadonlyArray)),
     fromIO,
   )
 

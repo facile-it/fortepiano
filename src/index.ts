@@ -1,7 +1,7 @@
 import * as $aggregate from './Aggregate'
 import * as $binary from './Binary'
 import * as $eq from './Eq'
-import * as $ioGenerator from './IOGenerator'
+import * as $generatorL from './GeneratorL'
 import * as $magma from './Magma'
 import * as $matrix from './Matrix'
 import * as $mock from './Mock'
@@ -37,7 +37,7 @@ export {
   $aggregate,
   $binary,
   $eq,
-  $ioGenerator,
+  $generatorL,
   $magma,
   $matrix,
   $mock,

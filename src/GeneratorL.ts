@@ -1,4 +1,4 @@
-import * as _Alt from 'fp-ts/Alt'
+import * as $generatorL from 'fp-ts/Alt'
 import * as Alte from 'fp-ts/Alternative'
 import * as Appli from 'fp-ts/Applicative'
 import * as _Apply from 'fp-ts/Apply'
@@ -56,19 +56,19 @@ import * as W from 'fp-ts/Witherable'
 import { Int } from 'io-ts'
 import { curry } from './function'
 
-export const URI = 'IOGenerator'
+export const URI = 'GeneratorL'
 
 export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
-    [URI]: IOGenerator<A>
+    [URI]: GeneratorL<A>
   }
 }
 
-export type IOGenerator<A> = IO.IO<Generator<A>>
+export type GeneratorL<A> = Lazy<Generator<A>>
 
-export const getMonoid = <A>(): Mono.Monoid<IOGenerator<A>> => ({
+export const getMonoid = <A>(): Mono.Monoid<GeneratorL<A>> => ({
   empty: fromReadonlyArray([]),
   concat: (x, y) =>
     function* () {
@@ -77,7 +77,7 @@ export const getMonoid = <A>(): Mono.Monoid<IOGenerator<A>> => ({
     },
 })
 
-export const getEq = <A>(E: Eq.Eq<A>): Eq.Eq<IOGenerator<A>> =>
+export const getEq = <A>(E: Eq.Eq<A>): Eq.Eq<GeneratorL<A>> =>
   Eq.fromEquals((x, y) => {
     const bs = y()
     for (const a of x()) {
@@ -90,7 +90,7 @@ export const getEq = <A>(E: Eq.Eq<A>): Eq.Eq<IOGenerator<A>> =>
     return Boolean(bs.next().done)
   })
 
-export const getOrd = <A>(O: Or.Ord<A>): Or.Ord<IOGenerator<A>> =>
+export const getOrd = <A>(O: Or.Ord<A>): Or.Ord<GeneratorL<A>> =>
   Or.fromCompare((first, second) => {
     const bs = second()
     for (const a of first()) {
@@ -192,9 +192,9 @@ export const Unfoldable: U.Unfoldable1<URI> = {
 
 export const unfold = Unfoldable.unfold
 
-export const Alt: _Alt.Alt1<URI> = {
+export const Alt: $generatorL.Alt1<URI> = {
   ...Functor,
-  alt: <A>(fa: IOGenerator<A>, that: Lazy<IOGenerator<A>>) =>
+  alt: <A>(fa: GeneratorL<A>, that: Lazy<GeneratorL<A>>) =>
     getMonoid<A>().concat(fa, that()),
 }
 
@@ -218,7 +218,7 @@ export const Extend: Ex.Extend1<URI> = {
 }
 
 export const extend = curry(flip(Extend.extend))
-export const duplicate = <A>(fa: IOGenerator<A>) => pipe(fa, extend(identity))
+export const duplicate = <A>(fa: GeneratorL<A>) => pipe(fa, extend(identity))
 
 export const Compactable: Co.Compactable1<URI> = {
   URI,
@@ -235,11 +235,11 @@ export const compact = Compactable.compact
 export const separate = Compactable.separate
 
 function _filter<A, B extends A>(
-  fa: IOGenerator<A>,
+  fa: GeneratorL<A>,
   refinement: Refinement<A, B>,
-): IOGenerator<B>
-function _filter<A>(fa: IOGenerator<A>, predicate: Predicate<A>): IOGenerator<A>
-function _filter<A>(fa: IOGenerator<A>, predicate: Predicate<A>) {
+): GeneratorL<B>
+function _filter<A>(fa: GeneratorL<A>, predicate: Predicate<A>): GeneratorL<A>
+function _filter<A>(fa: GeneratorL<A>, predicate: Predicate<A>) {
   return function* () {
     for (const a of fa()) {
       if (!predicate(a)) {
@@ -252,14 +252,14 @@ function _filter<A>(fa: IOGenerator<A>, predicate: Predicate<A>) {
 }
 
 function _partition<A, B extends A>(
-  fa: IOGenerator<A>,
+  fa: GeneratorL<A>,
   refinement: Refinement<A, B>,
-): S.Separated<IOGenerator<A>, IOGenerator<B>>
+): S.Separated<GeneratorL<A>, GeneratorL<B>>
 function _partition<A>(
-  fa: IOGenerator<A>,
+  fa: GeneratorL<A>,
   predicate: Predicate<A>,
-): S.Separated<IOGenerator<A>, IOGenerator<A>>
-function _partition<A>(fa: IOGenerator<A>, predicate: Predicate<A>) {
+): S.Separated<GeneratorL<A>, GeneratorL<A>>
+function _partition<A>(fa: GeneratorL<A>, predicate: Predicate<A>) {
   return S.separated(
     Filterable.filter(fa, not(predicate)),
     Filterable.filter(fa, predicate),
@@ -277,35 +277,35 @@ export const Filterable: Fi.Filterable1<URI> = {
 
 export function filter<A, B extends A>(
   refinement: Refinement<A, B>,
-): (fa: IOGenerator<A>) => IOGenerator<B>
+): (fa: GeneratorL<A>) => GeneratorL<B>
 export function filter<A>(
   predicate: Predicate<A>,
-): (fa: IOGenerator<A>) => IOGenerator<A>
+): (fa: GeneratorL<A>) => GeneratorL<A>
 export function filter<A>(predicate: Predicate<A>) {
-  return (fa: IOGenerator<A>) => Filterable.filter(fa, predicate)
+  return (fa: GeneratorL<A>) => Filterable.filter(fa, predicate)
 }
 export const filterMap = curry(flip(Filterable.filterMap))
 export function partition<A, B extends A>(
   refinement: Refinement<A, B>,
-): (fa: IOGenerator<A>) => S.Separated<IOGenerator<A>, IOGenerator<B>>
+): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<B>>
 export function partition<A>(
   predicate: Predicate<A>,
-): (fa: IOGenerator<A>) => S.Separated<IOGenerator<A>, IOGenerator<A>>
+): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<A>>
 export function partition<A>(predicate: Predicate<A>) {
-  return (fa: IOGenerator<A>) => Filterable.partition(fa, predicate)
+  return (fa: GeneratorL<A>) => Filterable.partition(fa, predicate)
 }
 export const partitionMap = curry(flip(Filterable.partitionMap))
 
 function _filterWithIndex<A, B extends A>(
-  fa: IOGenerator<A>,
+  fa: GeneratorL<A>,
   refinementWithIndex: (i: number, a: A) => a is B,
-): IOGenerator<B>
+): GeneratorL<B>
 function _filterWithIndex<A>(
-  fa: IOGenerator<A>,
+  fa: GeneratorL<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
-): IOGenerator<A>
+): GeneratorL<A>
 function _filterWithIndex<A>(
-  fa: IOGenerator<A>,
+  fa: GeneratorL<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
   return Compactable.compact(
@@ -316,15 +316,15 @@ function _filterWithIndex<A>(
 }
 
 function _partitionWithIndex<A, B extends A>(
-  fa: IOGenerator<A>,
+  fa: GeneratorL<A>,
   refinementWithIndex: (i: number, a: A) => a is B,
-): S.Separated<IOGenerator<A>, IOGenerator<B>>
+): S.Separated<GeneratorL<A>, GeneratorL<B>>
 function _partitionWithIndex<A>(
-  fa: IOGenerator<A>,
+  fa: GeneratorL<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
-): S.Separated<IOGenerator<A>, IOGenerator<A>>
+): S.Separated<GeneratorL<A>, GeneratorL<A>>
 function _partitionWithIndex<A>(
-  fa: IOGenerator<A>,
+  fa: GeneratorL<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
   return Compactable.separate(
@@ -347,14 +347,14 @@ export const FilterableWithIndex: FiWI.FilterableWithIndex1<URI, number> = {
 
 export function filterWithIndex<A, B extends A>(
   refinementWithIndex: (i: number, a: A) => a is B,
-): (fa: IOGenerator<A>) => IOGenerator<B>
+): (fa: GeneratorL<A>) => GeneratorL<B>
 export function filterWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
-): (fa: IOGenerator<A>) => IOGenerator<A>
+): (fa: GeneratorL<A>) => GeneratorL<A>
 export function filterWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
-  return (fa: IOGenerator<A>) =>
+  return (fa: GeneratorL<A>) =>
     FilterableWithIndex.filterWithIndex(fa, predicateWithIndex)
 }
 export const filterMapWithIndex = curry(
@@ -362,14 +362,14 @@ export const filterMapWithIndex = curry(
 )
 export function partitionWithIndex<A, B extends A>(
   refinementWithIndex: (i: number, a: A) => a is B,
-): (fa: IOGenerator<A>) => S.Separated<IOGenerator<A>, IOGenerator<B>>
+): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<B>>
 export function partitionWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
-): (fa: IOGenerator<A>) => S.Separated<IOGenerator<A>, IOGenerator<A>>
+): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<A>>
 export function partitionWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
-  return (fa: IOGenerator<A>) =>
+  return (fa: GeneratorL<A>) =>
     FilterableWithIndex.partitionWithIndex(fa, predicateWithIndex)
 }
 export const partitionMapWithIndex = curry(
@@ -388,16 +388,16 @@ export const Foldable: Fo.Foldable1<URI> = {
 
 export const reduce =
   <A, B>(b: B, f: (b: B, a: A) => B) =>
-  (fa: IOGenerator<A>) =>
+  (fa: GeneratorL<A>) =>
     Foldable.reduce(fa, b, f)
 export const foldMap =
   <M>(M: Mono.Monoid<M>) =>
   <A>(f: (a: A) => M) =>
-  (fa: IOGenerator<A>) =>
+  (fa: GeneratorL<A>) =>
     Foldable.foldMap(M)(fa, f)
 export const reduceRight =
   <A, B>(b: B, f: (a: A, b: B) => B) =>
-  (fa: IOGenerator<A>) =>
+  (fa: GeneratorL<A>) =>
     Foldable.reduceRight(fa, b, f)
 
 export const FoldableWithIndex: FoWI.FoldableWithIndex1<URI, number> = {
@@ -421,85 +421,80 @@ export const FoldableWithIndex: FoWI.FoldableWithIndex1<URI, number> = {
 
 export const reduceWithIndex =
   <A, B>(b: B, f: (i: number, b: B, a: A) => B) =>
-  (fa: IOGenerator<A>) =>
+  (fa: GeneratorL<A>) =>
     FoldableWithIndex.reduceWithIndex(fa, b, f)
 export const foldMapWithIndex =
   <M>(M: Mono.Monoid<M>) =>
   <A>(f: (i: number, a: A) => M) =>
-  (fa: IOGenerator<A>) =>
+  (fa: GeneratorL<A>) =>
     FoldableWithIndex.foldMapWithIndex(M)(fa, f)
 export const reduceRightWithIndex =
   <A, B>(b: B, f: (i: number, a: A, b: B) => B) =>
-  (fa: IOGenerator<A>) =>
+  (fa: GeneratorL<A>) =>
     FoldableWithIndex.reduceRightWithIndex(fa, b, f)
 
 function _traverse<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <A, S, R, E, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind4<F, S, R, E, B>,
-) => Kind4<F, S, R, E, IOGenerator<B>>
+) => Kind4<F, S, R, E, GeneratorL<B>>
 function _traverse<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind3<F, R, E, B>,
-) => Kind3<F, R, E, IOGenerator<B>>
+) => Kind3<F, R, E, GeneratorL<B>>
 function _traverse<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind3<F, R, E, B>,
-) => Kind3<F, R, E, IOGenerator<B>>
+) => Kind3<F, R, E, GeneratorL<B>>
 function _traverse<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind2<F, E, B>,
-) => Kind2<F, E, IOGenerator<B>>
+) => Kind2<F, E, GeneratorL<B>>
 function _traverse<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind2<F, E, B>,
-) => Kind2<F, E, IOGenerator<B>>
+) => Kind2<F, E, GeneratorL<B>>
 function _traverse<F extends URIS>(
   F: Appli.Applicative1<F>,
-): <A, B>(
-  ta: IOGenerator<A>,
-  f: (a: A) => Kind<F, B>,
-) => Kind<F, IOGenerator<B>>
+): <A, B>(ta: GeneratorL<A>, f: (a: A) => Kind<F, B>) => Kind<F, GeneratorL<B>>
 function _traverse<F>(F: Appli.Applicative<F>) {
-  return <A, B>(ta: IOGenerator<A>, f: (a: A) => HKT<F, B>) =>
+  return <A, B>(ta: GeneratorL<A>, f: (a: A) => HKT<F, B>) =>
     TraversableWithIndex.traverseWithIndex(F)(ta, (_: number, a: A) => f(a))
 }
 
 export function sequence<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <S, R, E, A>(
-  ta: IOGenerator<Kind4<F, S, R, E, A>>,
-) => Kind4<F, S, R, E, IOGenerator<A>>
+  ta: GeneratorL<Kind4<F, S, R, E, A>>,
+) => Kind4<F, S, R, E, GeneratorL<A>>
 export function sequence<F extends URIS3>(
   F: Appli.Applicative3<F>,
-): <R, E, A>(
-  ta: IOGenerator<Kind3<F, R, E, A>>,
-) => Kind3<F, R, E, IOGenerator<A>>
+): <R, E, A>(ta: GeneratorL<Kind3<F, R, E, A>>) => Kind3<F, R, E, GeneratorL<A>>
 export function sequence<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
-): <R, A>(ta: IOGenerator<Kind3<F, R, E, A>>) => Kind3<F, R, E, IOGenerator<A>>
+): <R, A>(ta: GeneratorL<Kind3<F, R, E, A>>) => Kind3<F, R, E, GeneratorL<A>>
 export function sequence<F extends URIS2>(
   F: Appli.Applicative2<F>,
-): <E, A>(ta: IOGenerator<Kind2<F, E, A>>) => Kind2<F, E, IOGenerator<A>>
+): <E, A>(ta: GeneratorL<Kind2<F, E, A>>) => Kind2<F, E, GeneratorL<A>>
 export function sequence<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
-): <A>(ta: IOGenerator<Kind2<F, E, A>>) => Kind2<F, E, IOGenerator<A>>
+): <A>(ta: GeneratorL<Kind2<F, E, A>>) => Kind2<F, E, GeneratorL<A>>
 export function sequence<F extends URIS>(
   F: Appli.Applicative1<F>,
-): <A>(ta: IOGenerator<Kind<F, A>>) => Kind<F, IOGenerator<A>>
+): <A>(ta: GeneratorL<Kind<F, A>>) => Kind<F, GeneratorL<A>>
 export function sequence<F>(
   F: Appli.Applicative<F>,
-): <A>(ta: IOGenerator<HKT<F, A>>) => HKT<F, IOGenerator<A>> {
-  return <A>(ta: IOGenerator<HKT<F, A>>) =>
+): <A>(ta: GeneratorL<HKT<F, A>>) => HKT<F, GeneratorL<A>> {
+  return <A>(ta: GeneratorL<HKT<F, A>>) =>
     Foldable.reduce(ta, F.of(zero<A>()), (fas, fa) =>
       F.ap(
         F.map(fas, (fa) => (a: A) => Alt.alt(fa, () => of(a))),
@@ -519,76 +514,76 @@ export function traverse<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <A, S, R, E, B>(
   f: (a: A) => Kind4<F, S, R, E, B>,
-) => (ta: IOGenerator<A>) => Kind4<F, S, R, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind4<F, S, R, E, GeneratorL<B>>
 export function traverse<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
   f: (a: A) => Kind3<F, R, E, B>,
-) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
 export function traverse<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
   f: (a: A) => Kind3<F, R, E, B>,
-) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
 export function traverse<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
   f: (a: A) => Kind2<F, E, B>,
-) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
 export function traverse<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
   f: (a: A) => Kind2<F, E, B>,
-) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
 export function traverse<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B>(
   f: (a: A) => Kind<F, B>,
-) => (ta: IOGenerator<A>) => Kind<F, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind<F, GeneratorL<B>>
 export function traverse<F>(F: Appli.Applicative<F>) {
   return <A, B>(f: (a: A) => HKT<F, B>) =>
-    (ta: IOGenerator<A>) =>
+    (ta: GeneratorL<A>) =>
       Traversable.traverse(F)(ta, f)
 }
 
 function _traverseWithIndex<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <A, S, R, E, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (i: number, a: A) => Kind4<F, S, R, E, B>,
-) => Kind4<F, S, R, E, IOGenerator<B>>
+) => Kind4<F, S, R, E, GeneratorL<B>>
 function _traverseWithIndex<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (i: number, a: A) => Kind3<F, R, E, B>,
-) => Kind3<F, R, E, IOGenerator<B>>
+) => Kind3<F, R, E, GeneratorL<B>>
 function _traverseWithIndex<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (i: number, a: A) => Kind3<F, R, E, B>,
-) => Kind3<F, R, E, IOGenerator<B>>
+) => Kind3<F, R, E, GeneratorL<B>>
 function _traverseWithIndex<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (i: number, a: A) => Kind2<F, E, B>,
-) => Kind2<F, E, IOGenerator<B>>
+) => Kind2<F, E, GeneratorL<B>>
 function _traverseWithIndex<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (i: number, a: A) => Kind2<F, E, B>,
-) => Kind2<F, E, IOGenerator<B>>
+) => Kind2<F, E, GeneratorL<B>>
 function _traverseWithIndex<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (i: number, a: A) => Kind<F, B>,
-) => Kind<F, IOGenerator<B>>
+) => Kind<F, GeneratorL<B>>
 function _traverseWithIndex<F>(F: Appli.Applicative<F>) {
-  return <A, B>(ta: IOGenerator<A>, f: (i: number, a: A) => HKT<F, B>) =>
+  return <A, B>(ta: GeneratorL<A>, f: (i: number, a: A) => HKT<F, B>) =>
     FoldableWithIndex.reduceWithIndex(ta, F.of(zero<B>()), (i, fbs, a) =>
       F.ap(
         F.map(fbs, (bs) => (b: B) => Alt.alt(bs, () => of(b))),
@@ -608,105 +603,105 @@ export function traverseWithIndex<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <A, S, R, E, B>(
   f: (i: number, a: A) => Kind4<F, S, R, E, B>,
-) => (ta: IOGenerator<A>) => Kind4<F, S, R, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind4<F, S, R, E, GeneratorL<B>>
 export function traverseWithIndex<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
   f: (i: number, a: A) => Kind3<F, R, E, B>,
-) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
 export function traverseWithIndex<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
   f: (i: number, a: A) => Kind3<F, R, E, B>,
-) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
 export function traverseWithIndex<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
   f: (i: number, a: A) => Kind2<F, E, B>,
-) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
 export function traverseWithIndex<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
   f: (i: number, a: A) => Kind2<F, E, B>,
-) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
 export function traverseWithIndex<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B>(
   f: (i: number, a: A) => Kind<F, B>,
-) => (ta: IOGenerator<A>) => Kind<F, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind<F, GeneratorL<B>>
 export function traverseWithIndex<F>(F: Appli.Applicative<F>) {
   return <A, B>(f: (i: number, a: A) => HKT<F, B>) =>
-    (ta: IOGenerator<A>) =>
+    (ta: GeneratorL<A>) =>
       TraversableWithIndex.traverseWithIndex(F)(ta, f)
 }
 
 function _wilt<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B, C>(
-  wa: IOGenerator<A>,
+  wa: GeneratorL<A>,
   f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
-) => Kind3<F, R, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+) => Kind3<F, R, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 function _wilt<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B, C>(
-  wa: IOGenerator<A>,
+  wa: GeneratorL<A>,
   f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
-) => Kind3<F, R, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+) => Kind3<F, R, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 function _wilt<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B, C>(
-  wa: IOGenerator<A>,
+  wa: GeneratorL<A>,
   f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
-) => Kind2<F, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+) => Kind2<F, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 function _wilt<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B, C>(
-  wa: IOGenerator<A>,
+  wa: GeneratorL<A>,
   f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
-) => Kind2<F, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+) => Kind2<F, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 function _wilt<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B, C>(
-  wa: IOGenerator<A>,
+  wa: GeneratorL<A>,
   f: (a: A) => Kind<F, Ei.Either<B, C>>,
-) => Kind<F, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+) => Kind<F, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 function _wilt<F>(F: Appli.Applicative<F>) {
-  return <A, B, C>(wa: IOGenerator<A>, f: (a: A) => HKT<F, Ei.Either<B, C>>) =>
+  return <A, B, C>(wa: GeneratorL<A>, f: (a: A) => HKT<F, Ei.Either<B, C>>) =>
     F.map(Traversable.traverse(F)(wa, f), separate)
 }
 
 function _wither<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
-) => Kind3<F, R, E, IOGenerator<B>>
+) => Kind3<F, R, E, GeneratorL<B>>
 function _wither<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
-) => Kind3<F, R, E, IOGenerator<B>>
+) => Kind3<F, R, E, GeneratorL<B>>
 function _wither<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind2<F, E, Op.Option<B>>,
-) => Kind2<F, E, IOGenerator<B>>
+) => Kind2<F, E, GeneratorL<B>>
 function _wither<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind2<F, E, Op.Option<B>>,
-) => Kind2<F, E, IOGenerator<B>>
+) => Kind2<F, E, GeneratorL<B>>
 function _wither<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B>(
-  ta: IOGenerator<A>,
+  ta: GeneratorL<A>,
   f: (a: A) => Kind<F, Op.Option<B>>,
-) => Kind<F, IOGenerator<B>>
+) => Kind<F, GeneratorL<B>>
 function _wither<F>(F: Appli.Applicative<F>) {
-  return <A, B>(ta: IOGenerator<A>, f: (a: A) => HKT<F, Op.Option<B>>) =>
+  return <A, B>(ta: GeneratorL<A>, f: (a: A) => HKT<F, Op.Option<B>>) =>
     F.map(Traversable.traverse(F)(ta, f), compact)
 }
 
@@ -722,82 +717,80 @@ export function wilt<F extends URIS3>(
 ): <A, R, E, B, C>(
   f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
 ) => (
-  wa: IOGenerator<A>,
-) => Kind3<F, R, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+  wa: GeneratorL<A>,
+) => Kind3<F, R, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 export function wilt<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B, C>(
   f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
 ) => (
-  wa: IOGenerator<A>,
-) => Kind3<F, R, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+  wa: GeneratorL<A>,
+) => Kind3<F, R, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 export function wilt<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B, C>(
   f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
 ) => (
-  wa: IOGenerator<A>,
-) => Kind2<F, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+  wa: GeneratorL<A>,
+) => Kind2<F, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 export function wilt<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B, C>(
   f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
 ) => (
-  wa: IOGenerator<A>,
-) => Kind2<F, E, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+  wa: GeneratorL<A>,
+) => Kind2<F, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 export function wilt<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B, C>(
   f: (a: A) => Kind<F, Ei.Either<B, C>>,
-) => (
-  wa: IOGenerator<A>,
-) => Kind<F, S.Separated<IOGenerator<B>, IOGenerator<C>>>
+) => (wa: GeneratorL<A>) => Kind<F, S.Separated<GeneratorL<B>, GeneratorL<C>>>
 export function wilt<F>(F: Appli.Applicative<F>) {
   return <A, B, C>(f: (a: A) => HKT<F, Ei.Either<B, C>>) =>
-    (wa: IOGenerator<A>) =>
+    (wa: GeneratorL<A>) =>
       Witherable.wilt(F)(wa, f)
 }
 export function wither<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
   f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
-) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
 export function wither<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
   f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
-) => (ta: IOGenerator<A>) => Kind3<F, R, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
 export function wither<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
   f: (a: A) => Kind2<F, E, Op.Option<B>>,
-) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
 export function wither<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
   f: (a: A) => Kind2<F, E, Op.Option<B>>,
-) => (ta: IOGenerator<A>) => Kind2<F, E, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
 export function wither<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B>(
   f: (a: A) => Kind<F, Op.Option<B>>,
-) => (ta: IOGenerator<A>) => Kind<F, IOGenerator<B>>
+) => (ta: GeneratorL<A>) => Kind<F, GeneratorL<B>>
 export function wither<F>(F: Appli.Applicative<F>) {
   return <A, B>(f: (a: A) => HKT<F, Op.Option<B>>) =>
-    (ta: IOGenerator<A>) =>
+    (ta: GeneratorL<A>) =>
       Witherable.wither(F)(ta, f)
 }
 
-export const range = (start: number): IOGenerator<number> =>
+export const range = (start: number): GeneratorL<number> =>
   function* () {
     for (let i = start; true; i++) {
       yield i
     }
   }
 
-export const replicate = <A>(a: A): IOGenerator<A> => fromIO(() => a)
+export const replicate = <A>(a: A): GeneratorL<A> => fromIO(() => a)
 
-export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): IOGenerator<A> =>
+export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): GeneratorL<A> =>
   unfold(
     as,
     RA.matchLeft(
@@ -808,9 +801,9 @@ export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): IOGenerator<A> =>
 
 export const fromReadonlyRecord = RR.toUnfoldable(Unfoldable)
 
-export const random: IOGenerator<number> = fromIO(R.random)
+export const random: GeneratorL<number> = fromIO(R.random)
 
-export const randomInt = (low: number, high: number): IOGenerator<Int> =>
+export const randomInt = (low: number, high: number): GeneratorL<Int> =>
   fromIO(
     R.randomInt(
       Math.floor(low),
@@ -818,18 +811,18 @@ export const randomInt = (low: number, high: number): IOGenerator<Int> =>
     ) as IO.IO<Int>,
   )
 
-export const randomRange = (min: number, max: number): IOGenerator<number> =>
+export const randomRange = (min: number, max: number): GeneratorL<number> =>
   fromIO(R.randomRange(min, Math.max(min, max)))
 
-export const randomBool: IOGenerator<boolean> = fromIO(R.randomBool)
+export const randomBool: GeneratorL<boolean> = fromIO(R.randomBool)
 
 export const randomElem = <A>(
   as: RNEA.ReadonlyNonEmptyArray<A>,
-): IOGenerator<A> => fromIO(R.randomElem(as))
+): GeneratorL<A> => fromIO(R.randomElem(as))
 
 export const sieve =
   <A>(f: (init: ReadonlyArray<A>, a: A) => boolean) =>
-  (ma: IOGenerator<A>): IOGenerator<A> =>
+  (ma: GeneratorL<A>): GeneratorL<A> =>
     function* () {
       const init: Array<A> = []
       for (const a of ma()) {
@@ -842,7 +835,7 @@ export const sieve =
       }
     }
 
-export const prime: IOGenerator<number> = pipe(
+export const prime: GeneratorL<number> = pipe(
   range(2),
   sieve((init, a) =>
     pipe(
@@ -852,18 +845,18 @@ export const prime: IOGenerator<number> = pipe(
   ),
 )
 
-export const exp: IOGenerator<number> = pipe(
+export const exp: GeneratorL<number> = pipe(
   range(0),
   map((n) => Math.exp(n)),
 )
 
-export const fibonacci: IOGenerator<number> = function* () {
+export const fibonacci: GeneratorL<number> = function* () {
   for (let as = [1, 0] as [number, number]; true; as = [as[1], as[0] + as[1]]) {
     yield as[1]
   }
 }
 
-export const flatten = <A>(mma: IOGenerator<IOGenerator<A>>): IOGenerator<A> =>
+export const flatten = <A>(mma: GeneratorL<GeneratorL<A>>): GeneratorL<A> =>
   function* () {
     for (const ma of mma()) {
       yield* ma()
@@ -872,7 +865,7 @@ export const flatten = <A>(mma: IOGenerator<IOGenerator<A>>): IOGenerator<A> =>
 
 export const take =
   (n: number) =>
-  <A>(ma: IOGenerator<A>): IOGenerator<A> =>
+  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
     function* () {
       for (const [a, i] of pipe(ma, zip(range(0)))()) {
         if (i >= n) {
@@ -885,7 +878,7 @@ export const take =
 
 export const drop =
   (n: number) =>
-  <A>(ma: IOGenerator<A>): IOGenerator<A> =>
+  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
     function* () {
       for (const [a, i] of pipe(ma, zip(range(0)))()) {
         if (i < n) {
@@ -897,8 +890,8 @@ export const drop =
     }
 
 export const zip =
-  <B>(mb: IOGenerator<B>) =>
-  <A>(ma: IOGenerator<A>): IOGenerator<Readonly<[A, B]>> =>
+  <B>(mb: GeneratorL<B>) =>
+  <A>(ma: GeneratorL<A>): GeneratorL<Readonly<[A, B]>> =>
     function* () {
       const bs = mb()
       for (const a of ma()) {
@@ -915,8 +908,8 @@ export const uniq = <A>(E: Eq.Eq<A>) =>
   sieve<A>((init, a) => !pipe(init, RA.elem(E)(a)))
 
 export const match =
-  <A, B>(onEmpty: Lazy<B>, onNonEmpty: (head: A, tail: IOGenerator<A>) => B) =>
-  (ma: IOGenerator<A>): B =>
+  <A, B>(onEmpty: Lazy<B>, onNonEmpty: (head: A, tail: GeneratorL<A>) => B) =>
+  (ma: GeneratorL<A>): B =>
     pipe(ma().next(), (a) =>
       a.done ? onEmpty() : onNonEmpty(a.value, pipe(ma, drop(1))),
     )
@@ -931,7 +924,7 @@ export const size = flow(toReadonlyArray, RA.size)
 
 export const lookup =
   (i: number) =>
-  <A>(ma: IOGenerator<A>): Op.Option<A> =>
+  <A>(ma: GeneratorL<A>): Op.Option<A> =>
     i < 0
       ? Op.none
       : pipe(
@@ -944,12 +937,12 @@ export const head = lookup(0)
 
 export function find<A, B extends A>(
   refinement: Refinement<A, B>,
-): (ma: IOGenerator<A>) => Op.Option<B>
+): (ma: GeneratorL<A>) => Op.Option<B>
 export function find<A>(
   predicate: Predicate<A>,
-): (ma: IOGenerator<A>) => Op.Option<A>
+): (ma: GeneratorL<A>) => Op.Option<A>
 export function find<A>(predicate: Predicate<A>) {
-  return (ma: IOGenerator<A>) => {
+  return (ma: GeneratorL<A>) => {
     for (const a of ma()) {
       if (predicate(a)) {
         return Op.some(a)
