@@ -1,6 +1,6 @@
 import * as Ei from 'fp-ts/Either'
 import * as Eq from 'fp-ts/Eq'
-import { pipe } from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 import * as N from 'fp-ts/number'
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
@@ -9,11 +9,14 @@ import * as St from 'fp-ts/string'
 import {
   Alt,
   Alternative,
+  append,
   Applicative,
   Apply,
   Chain,
+  chunksOf,
   Compactable,
-  drop,
+  deleteAt,
+  dropLeft,
   elem,
   exp,
   fibonacci,
@@ -21,47 +24,89 @@ import {
   filterMap,
   filterMapWithIndex,
   filterWithIndex,
-  find,
+  findFirst,
   flatten,
   FromIO,
   fromReadonlyArray,
+  fromReadonlyRecord,
   Functor,
   FunctorWithIndex,
+  getEq,
   getMonoid,
+  getOrd,
   head,
+  init,
+  insertAt,
+  intersperse,
   isEmpty,
   isNonEmpty,
+  lefts,
   lookup,
+  makeBy,
   map,
-  match,
+  matchLeft,
+  matchRight,
   Monad,
   of,
   partition,
   partitionMap,
   partitionMapWithIndex,
   partitionWithIndex,
+  prepend,
   prime,
   range,
   replicate,
+  reverse,
+  rights,
+  rotate,
+  scanRight,
   sieve,
-  take,
+  size,
+  spanLeft,
+  splitAt,
+  tail,
+  takeLeft,
   toReadonlyArray,
   uniq,
+  unzip,
+  updateAt,
+  wilt,
   zip,
 } from './GeneratorL'
 
 describe('GeneratorL', () => {
+  describe('makeBy', () => {
+    it('should create a generator using a function', () => {
+      expect(
+        pipe(
+          makeBy((i) => Math.sin((i * Math.PI) / 4)),
+          takeLeft(8),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([
+        Math.sin((0 * Math.PI) / 4),
+        Math.sin(Math.PI / 4),
+        Math.sin((2 * Math.PI) / 4),
+        Math.sin((3 * Math.PI) / 4),
+        Math.sin((4 * Math.PI) / 4),
+        Math.sin((5 * Math.PI) / 4),
+        Math.sin((6 * Math.PI) / 4),
+        Math.sin((7 * Math.PI) / 4),
+      ])
+    })
+  })
+
   describe('range', () => {
     it('should return a list of numbers', () => {
-      expect(pipe(range(0), take(5), toReadonlyArray)).toStrictEqual([
+      expect(pipe(range(0), takeLeft(5), toReadonlyArray)).toStrictEqual([
         0, 1, 2, 3, 4,
       ])
-      expect(pipe(range(1138), take(5), toReadonlyArray)).toStrictEqual([
+      expect(pipe(range(1138), takeLeft(5), toReadonlyArray)).toStrictEqual([
         1138, 1139, 1140, 1141, 1142,
       ])
     })
     it('should allow starting from a negative number', () => {
-      expect(pipe(range(-1337), take(5), toReadonlyArray)).toStrictEqual([
+      expect(pipe(range(-1337), takeLeft(5), toReadonlyArray)).toStrictEqual([
         -1337, -1336, -1335, -1334, -1333,
       ])
     })
@@ -69,7 +114,7 @@ describe('GeneratorL', () => {
 
   describe('replicate', () => {
     it('should replicate the specified element', () => {
-      expect(pipe(replicate(42), take(5), toReadonlyArray)).toStrictEqual([
+      expect(pipe(replicate(42), takeLeft(5), toReadonlyArray)).toStrictEqual([
         42, 42, 42, 42, 42,
       ])
     })
@@ -83,9 +128,24 @@ describe('GeneratorL', () => {
     })
   })
 
+  describe('fromReadonlyRecord', () => {
+    it('should transform a record into a generator', () => {
+      expect(
+        pipe(
+          fromReadonlyRecord({ foo: 42, bar: 1138, max: 1337 }),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([
+        ['bar', 1138],
+        ['foo', 42],
+        ['max', 1337],
+      ])
+    })
+  })
+
   describe('prime', () => {
     it('should return a list of prime numbers', () => {
-      expect(pipe(prime, take(5), toReadonlyArray)).toStrictEqual([
+      expect(pipe(prime, takeLeft(5), toReadonlyArray)).toStrictEqual([
         2, 3, 5, 7, 11,
       ])
     })
@@ -93,7 +153,7 @@ describe('GeneratorL', () => {
 
   describe('exp', () => {
     it('should return the exponential function', () => {
-      expect(pipe(exp, take(5), toReadonlyArray)).toStrictEqual([
+      expect(pipe(exp, takeLeft(5), toReadonlyArray)).toStrictEqual([
         Math.exp(0),
         Math.exp(1),
         Math.exp(2),
@@ -105,7 +165,7 @@ describe('GeneratorL', () => {
 
   describe('fibonacci', () => {
     it('should return the Fibonacci sequence', () => {
-      expect(pipe(fibonacci, take(10), toReadonlyArray)).toStrictEqual([
+      expect(pipe(fibonacci, takeLeft(10), toReadonlyArray)).toStrictEqual([
         0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
       ])
     })
@@ -125,29 +185,50 @@ describe('GeneratorL', () => {
     })
   })
 
-  describe('take', () => {
+  describe('prepend', () => {
+    it('should add an element at the top of the list', () => {
+      expect(
+        pipe(prime, prepend(42), takeLeft(5), toReadonlyArray),
+      ).toStrictEqual([42, 2, 3, 5, 7])
+    })
+  })
+
+  describe('append', () => {
+    it('should add an element at the bottom of the list', () => {
+      expect(
+        pipe(prime, takeLeft(5), append(42), toReadonlyArray),
+      ).toStrictEqual([2, 3, 5, 7, 11, 42])
+    })
+  })
+
+  describe('takeLeft', () => {
     it('should select only specified elements', () => {
-      const x = pipe(range(0), take(5), toReadonlyArray)
+      const x = pipe(range(0), takeLeft(5), toReadonlyArray)
 
       expect(x).toHaveLength(5)
       expect(x).toStrictEqual([0, 1, 2, 3, 4])
     })
     it('should handle negative numbers', () => {
-      const x = pipe(range(0), take(-Infinity), toReadonlyArray)
+      const x = pipe(range(0), takeLeft(-Infinity), toReadonlyArray)
 
       expect(x).toHaveLength(0)
     })
   })
 
-  describe('drop', () => {
+  describe('dropLeft', () => {
     it('should select only specified elements', () => {
-      const x = pipe(range(0), drop(5), take(5), toReadonlyArray)
+      const x = pipe(range(0), dropLeft(5), takeLeft(5), toReadonlyArray)
 
       expect(x).toHaveLength(5)
       expect(x).toStrictEqual([5, 6, 7, 8, 9])
     })
     it('should handle negative numbers', () => {
-      const x = pipe(range(0), drop(-Infinity), take(5), toReadonlyArray)
+      const x = pipe(
+        range(0),
+        dropLeft(-Infinity),
+        takeLeft(5),
+        toReadonlyArray,
+      )
 
       expect(x).toHaveLength(5)
       expect(x).toStrictEqual([0, 1, 2, 3, 4])
@@ -157,7 +238,7 @@ describe('GeneratorL', () => {
   describe('zip', () => {
     it('should zip two lists together', () => {
       expect(
-        pipe(range(0), zip(prime), take(5), toReadonlyArray),
+        pipe(range(0), zip(prime), takeLeft(5), toReadonlyArray),
       ).toStrictEqual([
         [0, 2],
         [1, 3],
@@ -168,7 +249,7 @@ describe('GeneratorL', () => {
     })
     it('should cut to the shortest list', () => {
       expect(
-        pipe(pipe(range(0), take(5)), zip(prime), toReadonlyArray),
+        pipe(pipe(range(0), takeLeft(5)), zip(prime), toReadonlyArray),
       ).toStrictEqual([
         [0, 2],
         [1, 3],
@@ -177,7 +258,7 @@ describe('GeneratorL', () => {
         [4, 11],
       ])
       expect(
-        pipe(range(0), zip(pipe(prime, take(5))), toReadonlyArray),
+        pipe(range(0), zip(pipe(prime, takeLeft(5))), toReadonlyArray),
       ).toStrictEqual([
         [0, 2],
         [1, 3],
@@ -240,6 +321,35 @@ describe('GeneratorL', () => {
     })
   })
 
+  describe('scanRight', () => {
+    it('should return all steps of a reduction', () => {
+      expect(
+        pipe(
+          range(0),
+          takeLeft(5),
+          scanRight(0, (b, a) => a + b),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([10, 6, 3, 1, 0, 0])
+    })
+  })
+
+  describe('spanLeft', () => {
+    it('should split the list when given condition is not met', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeft(5),
+          spanLeft((n) => 0 !== n % 5),
+          ({ init, rest }) => ({
+            init: toReadonlyArray(init),
+            rest: toReadonlyArray(rest),
+          }),
+        ),
+      ).toStrictEqual({ init: [2, 3], rest: [5, 7, 11] })
+    })
+  })
+
   describe('uniq', () => {
     it('should remove repeated elements', () => {
       expect(
@@ -273,12 +383,116 @@ describe('GeneratorL', () => {
     })
   })
 
-  describe('match', () => {
+  describe('reverse', () => {
+    it('should return the inverted list', () => {
+      expect(pipe(prime, takeLeft(5), reverse, toReadonlyArray)).toStrictEqual([
+        11, 7, 5, 3, 2,
+      ])
+    })
+  })
+
+  describe('rights', () => {
+    it('should extract Right values', () => {
+      expect(
+        pipe(
+          fromReadonlyArray([
+            Ei.right(0),
+            Ei.left(1),
+            Ei.right(2),
+            Ei.left(3),
+            Ei.right(4),
+          ]),
+          rights,
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([0, 2, 4])
+    })
+  })
+
+  describe('lefts', () => {
+    it('should extract Left values', () => {
+      expect(
+        pipe(
+          fromReadonlyArray([
+            Ei.right(0),
+            Ei.left(1),
+            Ei.right(2),
+            Ei.left(3),
+            Ei.right(4),
+          ]),
+          lefts,
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([1, 3])
+    })
+  })
+
+  describe('intersperse', () => {
+    it('should insert given element between each pair of list elements', () => {
+      expect(
+        pipe(prime, intersperse(42), takeLeft(5), toReadonlyArray),
+      ).toStrictEqual([2, 42, 3, 42, 5])
+    })
+    it('should handle empty lists', () => {
+      expect(pipe(prime, takeLeft(0), toReadonlyArray)).toStrictEqual([])
+    })
+  })
+
+  describe('rotate', () => {
+    it('should rotate the list by given steps', () => {
+      expect(
+        pipe(prime, takeLeft(5), rotate(2), toReadonlyArray),
+      ).toStrictEqual([7, 11, 2, 3, 5])
+    })
+    it('should handle negative numbers', () => {
+      expect(
+        pipe(prime, takeLeft(5), rotate(-2), toReadonlyArray),
+      ).toStrictEqual([5, 7, 11, 2, 3])
+    })
+  })
+
+  describe('chunksOf', () => {
+    it('should split the list into chunks of a given size', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeft(10),
+          chunksOf(3),
+          map(toReadonlyArray),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([[2, 3, 5], [7, 11, 13], [17, 19, 23], [29]])
+    })
+    it('should force the chunk size to be at least 1', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeft(5),
+          chunksOf(-Infinity),
+          map(toReadonlyArray),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([[2], [3], [5], [7], [11]])
+    })
+    it('should handle empty lists', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeft(0),
+          chunksOf(3),
+          map(toReadonlyArray),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([])
+    })
+  })
+
+  describe('matchLeft', () => {
     it('should handle empty lists', () => {
       expect(
         pipe(
           getMonoid().empty,
-          match(
+          matchLeft(
             () => 'nil',
             (a) => `cons(${a})`,
           ),
@@ -289,7 +503,7 @@ describe('GeneratorL', () => {
       expect(
         pipe(
           range(0),
-          match(
+          matchLeft(
             () => 'nil',
             (a) => `cons(${a})`,
           ),
@@ -300,13 +514,13 @@ describe('GeneratorL', () => {
       expect(
         pipe(
           range(0),
-          take(1),
-          match(
+          takeLeft(1),
+          matchLeft(
             () => 'nil',
             (head, tail) =>
               `cons(${head}), ${pipe(
                 tail,
-                match(
+                matchLeft(
                   () => 'nil',
                   (a) => `cons(${a})`,
                 ),
@@ -319,12 +533,12 @@ describe('GeneratorL', () => {
       expect(
         pipe(
           range(0),
-          match(
+          matchLeft(
             () => 'nil',
             (head, tail) =>
               `cons(${head}), ${pipe(
                 tail,
-                match(
+                matchLeft(
                   () => 'nil',
                   (a) => `cons(${a})`,
                 ),
@@ -332,6 +546,45 @@ describe('GeneratorL', () => {
           ),
         ),
       ).toBe('cons(0), cons(1)')
+    })
+  })
+
+  describe('matchRight', () => {
+    it('should handle empty lists', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeft(0),
+          matchRight(
+            () => [],
+            (init, last) => [toReadonlyArray(init), last],
+          ),
+        ),
+      ).toHaveLength(0)
+    })
+    it('should handle non-empty lists', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeft(5),
+          matchRight(
+            () => [],
+            (init, last) => [toReadonlyArray(init), last],
+          ),
+        ),
+      ).toStrictEqual([[2, 3, 5, 7], 11])
+    })
+    it('should handle lists of one element', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeft(1),
+          matchRight(
+            () => [],
+            (init, last) => [toReadonlyArray(init), last],
+          ),
+        ),
+      ).toStrictEqual([[], 2])
     })
   })
 
@@ -348,6 +601,67 @@ describe('GeneratorL', () => {
           toReadonlyArray,
         ),
       ).toStrictEqual([42, 1138, 1337])
+    })
+  })
+
+  describe('tail', () => {
+    it('should return all elements but first one', () => {
+      expect(
+        pipe(prime, takeLeft(5), tail, O.map(toReadonlyArray)),
+      ).toStrictEqual(O.some([3, 5, 7, 11]))
+    })
+    it('should fail with empty lists', () => {
+      expect(
+        pipe(prime, takeLeft(0), tail, O.map(toReadonlyArray)),
+      ).toStrictEqual(O.none)
+    })
+  })
+
+  describe('init', () => {
+    it('should return all elements but last one', () => {
+      expect(
+        pipe(prime, takeLeft(5), init, O.map(toReadonlyArray)),
+      ).toStrictEqual(O.some([2, 3, 5, 7]))
+    })
+    it('should fail with empty lists', () => {
+      expect(
+        pipe(prime, takeLeft(0), init, O.map(toReadonlyArray)),
+      ).toStrictEqual(O.none)
+    })
+  })
+
+  describe('splitAt', () => {
+    it('should split a list at a given position', () => {
+      const x = pipe(prime, takeLeft(10), splitAt(5))
+
+      expect(pipe(x[0], toReadonlyArray)).toStrictEqual([2, 3, 5, 7, 11])
+      expect(pipe(x[1], toReadonlyArray)).toStrictEqual([13, 17, 19, 23, 29])
+    })
+    it('should handle negative indices', () => {
+      const x = pipe(prime, takeLeft(5), splitAt(-Infinity))
+
+      expect(pipe(x[0], toReadonlyArray)).toStrictEqual([])
+      expect(pipe(x[1], toReadonlyArray)).toStrictEqual([2, 3, 5, 7, 11])
+    })
+    it('should handle out of scale indices', () => {
+      const x = pipe(prime, takeLeft(5), splitAt(Infinity))
+
+      expect(pipe(x[0], toReadonlyArray)).toStrictEqual([2, 3, 5, 7, 11])
+      expect(pipe(x[1], toReadonlyArray)).toStrictEqual([])
+    })
+  })
+
+  describe('unzip', () => {
+    it('should restore two zipped lists', () => {
+      expect(
+        pipe(prime, zip(range(0)), takeLeft(5), unzip, ([a, b]) => [
+          toReadonlyArray(a),
+          toReadonlyArray(b),
+        ]),
+      ).toStrictEqual([
+        [2, 3, 5, 7, 11],
+        [0, 1, 2, 3, 4],
+      ])
     })
   })
 
@@ -369,12 +683,21 @@ describe('GeneratorL', () => {
     })
   })
 
+  describe('size', () => {
+    it('should return list size', () => {
+      expect(pipe(prime, takeLeft(5), size)).toBe(5)
+    })
+    it('should handle empty lists', () => {
+      expect(pipe(prime, takeLeft(0), size)).toBe(0)
+    })
+  })
+
   describe('lookup', () => {
     it('should return None when the index is out of bound', () => {
-      expect(pipe(range(0), take(5), lookup(5))).toStrictEqual(O.none)
+      expect(pipe(range(0), takeLeft(5), lookup(5))).toStrictEqual(O.none)
     })
     it('should return Some when the index is in bound', () => {
-      expect(pipe(range(0), take(5), lookup(4))).toStrictEqual(O.some(4))
+      expect(pipe(range(0), takeLeft(5), lookup(4))).toStrictEqual(O.some(4))
     })
     it('should handle negative numbers', () => {
       expect(pipe(range(0), lookup(-Infinity))).toStrictEqual(O.none)
@@ -390,13 +713,13 @@ describe('GeneratorL', () => {
     })
   })
 
-  describe('find', () => {
+  describe('findFirst', () => {
     it('should return None when no element is found', () => {
       expect(
         pipe(
           range(0),
-          take(5),
-          find((n) => n >= 5),
+          takeLeft(5),
+          findFirst((n) => n >= 5),
         ),
       ).toStrictEqual(O.none)
     })
@@ -404,7 +727,7 @@ describe('GeneratorL', () => {
       expect(
         pipe(
           range(0),
-          find((n) => n >= 4),
+          findFirst((n) => n >= 4),
         ),
       ).toStrictEqual(O.some(4))
     })
@@ -412,10 +735,59 @@ describe('GeneratorL', () => {
 
   describe('elem', () => {
     it('should return None when the element is not found', () => {
-      expect(pipe(range(0), take(5), elem(N.Eq)(5))).toStrictEqual(O.none)
+      expect(pipe(range(0), takeLeft(5), elem(N.Eq)(5))).toStrictEqual(O.none)
     })
     it('should return Some when the element is found', () => {
       expect(pipe(range(0), elem(N.Eq)(4))).toStrictEqual(O.some(4))
+    })
+  })
+
+  describe('insertAt', () => {
+    it('should insert an element at a given position', () => {
+      expect(
+        pipe(prime, insertAt(2, 42), O.map(flow(takeLeft(5), toReadonlyArray))),
+      ).toStrictEqual(O.some([2, 3, 42, 5, 7]))
+    })
+    it('should handle out of bound indices', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeft(5),
+          insertAt(Infinity, 42),
+          O.map(toReadonlyArray),
+        ),
+      ).toStrictEqual(O.none)
+    })
+  })
+
+  describe('updateAt', () => {
+    it('should update an element at a given position', () => {
+      expect(
+        pipe(prime, updateAt(2, 42), O.map(flow(takeLeft(5), toReadonlyArray))),
+      ).toStrictEqual(O.some([2, 3, 42, 7, 11]))
+    })
+    it('should handle out of bound indices', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeft(5),
+          updateAt(Infinity, 42),
+          O.map(toReadonlyArray),
+        ),
+      ).toStrictEqual(O.none)
+    })
+  })
+
+  describe('deleteAt', () => {
+    it('should delete an element at a given position', () => {
+      expect(
+        pipe(prime, deleteAt(2), O.map(flow(takeLeft(5), toReadonlyArray))),
+      ).toStrictEqual(O.some([2, 3, 7, 11, 13]))
+    })
+    it('should handle out of bound indices', () => {
+      expect(
+        pipe(prime, takeLeft(5), deleteAt(Infinity), O.map(toReadonlyArray)),
+      ).toStrictEqual(O.none)
     })
   })
 
@@ -446,6 +818,65 @@ describe('GeneratorL', () => {
       expect(pipe(concat(a, concat(b, c)), toReadonlyArray)).toStrictEqual([
         0, 1, 2, 3, 4, 5, 6, 7, 8,
       ])
+    })
+  })
+
+  describe('Eq', () => {
+    const { equals } = getEq<number>(N.Eq)
+    const fa = fromReadonlyArray([0, 1, 2])
+    const fb = pipe(range(0), takeLeft(3))
+    const fc = function* () {
+      yield 0
+      yield 1
+      yield 2
+    }
+    const fd = fromReadonlyArray([3, 4, 5])
+
+    it('reflexivity', () => {
+      expect(equals(fa, fa)).toBe(true)
+    })
+    it('symmetry', () => {
+      expect(equals(fa, fb)).toBe(equals(fb, fa))
+      expect(equals(fa, fd)).toBe(equals(fd, fa))
+    })
+    it('transitivity', () => {
+      expect(equals(fa, fb)).toBe(true)
+      expect(equals(fb, fc)).toBe(true)
+      expect(equals(fa, fc)).toBe(true)
+
+      expect(equals(fa, fd)).toBe(false)
+      expect(equals(fb, fd)).toBe(false)
+      expect(equals(fc, fd)).toBe(false)
+    })
+  })
+
+  describe('Ord', () => {
+    const { equals, compare } = getOrd<number>(N.Ord)
+    const fa = fromReadonlyArray([0, 1, 2])
+    const fb = pipe(range(3), takeLeft(3))
+    const fc = function* () {
+      yield 6
+      yield 7
+      yield 8
+    }
+    const fd = fromReadonlyArray([0, 1, 2])
+
+    it('reflexivity', () => {
+      expect(compare(fa, fa)).toBeLessThanOrEqual(0)
+    })
+    it('antisymmetry', () => {
+      expect(compare(fa, fd)).toBeLessThanOrEqual(0)
+      expect(compare(fd, fa)).toBeLessThanOrEqual(0)
+      expect(equals(fa, fd)).toBe(true)
+    })
+    it('transitivity', () => {
+      expect(compare(fa, fb)).toBeLessThanOrEqual(0)
+      expect(compare(fb, fc)).toBeLessThanOrEqual(0)
+      expect(compare(fa, fc)).toBeLessThanOrEqual(0)
+
+      expect(compare(fa, fd)).toBeLessThanOrEqual(0)
+      expect(compare(fb, fd)).toBeGreaterThan(0)
+      expect(compare(fc, fd)).toBeGreaterThan(0)
     })
   })
 
@@ -615,7 +1046,7 @@ describe('GeneratorL', () => {
         const now = Date.now()
         const as = pipe(
           FromIO.fromIO(() => Date.now()),
-          take(100),
+          takeLeft(100),
           toReadonlyArray,
         )
 
@@ -764,7 +1195,7 @@ describe('GeneratorL', () => {
         expect(
           pipe(
             range(0),
-            take(10),
+            takeLeft(10),
             filter((n) => 0 !== n % 2),
             toReadonlyArray,
           ),
@@ -777,7 +1208,7 @@ describe('GeneratorL', () => {
         expect(
           pipe(
             range(0),
-            take(10),
+            takeLeft(10),
             filterMap((n) => (0 !== n % 2 ? O.some(2 * n) : O.none)),
             toReadonlyArray,
           ),
@@ -790,7 +1221,7 @@ describe('GeneratorL', () => {
         expect(
           pipe(
             range(0),
-            take(10),
+            takeLeft(10),
             partition((n) => 0 !== n % 2),
             (as) =>
               Se.separated(toReadonlyArray(as.left), toReadonlyArray(as.right)),
@@ -804,7 +1235,7 @@ describe('GeneratorL', () => {
         expect(
           pipe(
             range(0),
-            take(10),
+            takeLeft(10),
             partitionMap((n) =>
               0 !== n % 2 ? Ei.right(2 * n) : Ei.left(-2 * n),
             ),
@@ -824,7 +1255,7 @@ describe('GeneratorL', () => {
         expect(
           pipe(
             range(0),
-            take(10),
+            takeLeft(10),
             filterWithIndex((i, n) => i < 5 && 0 !== n % 2),
             toReadonlyArray,
           ),
@@ -837,7 +1268,7 @@ describe('GeneratorL', () => {
         expect(
           pipe(
             range(0),
-            take(10),
+            takeLeft(10),
             filterMapWithIndex((i, n) =>
               i < 5 && 0 !== n % 2 ? O.some(2 * n) : O.none,
             ),
@@ -852,7 +1283,7 @@ describe('GeneratorL', () => {
         expect(
           pipe(
             range(0),
-            take(10),
+            takeLeft(10),
             partitionWithIndex((i, n) => i < 5 && 0 !== n % 2),
             (as) =>
               Se.separated(toReadonlyArray(as.left), toReadonlyArray(as.right)),
@@ -866,7 +1297,7 @@ describe('GeneratorL', () => {
         expect(
           pipe(
             range(0),
-            take(10),
+            takeLeft(10),
             partitionMapWithIndex((i, n) =>
               i < 5 && 0 !== n % 2 ? Ei.right(2 * n) : Ei.left(-2 * n),
             ),
@@ -876,6 +1307,35 @@ describe('GeneratorL', () => {
         ).toStrictEqual(
           Se.separated([-0, -4, -8, -10, -12, -14, -16, -18], [2, 6]),
         )
+      })
+    })
+  })
+
+  describe('Witherable', () => {
+    describe('wilt', () => {
+      it('should split a list applying an effect', () => {
+        expect(
+          pipe(
+            range(0),
+            takeLeft(10),
+            wilt(O.Applicative)((n) =>
+              n >= 10 ? O.none : O.some(0 === n % 3 ? Ei.right(n) : Ei.left(n)),
+            ),
+            O.map(Se.bimap(toReadonlyArray, toReadonlyArray)),
+          ),
+        ).toStrictEqual(O.some(Se.separated([1, 2, 4, 5, 7, 8], [0, 3, 6, 9])))
+        expect(
+          pipe(
+            range(0),
+            takeLeft(10),
+            wilt(O.Applicative)((n) =>
+              0 === n % 2
+                ? O.none
+                : O.some(0 === n % 3 ? Ei.right(n) : Ei.left(n)),
+            ),
+            O.map(Se.bimap(toReadonlyArray, toReadonlyArray)),
+          ),
+        ).toStrictEqual(O.none)
       })
     })
   })

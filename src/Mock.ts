@@ -283,7 +283,7 @@ export const readonlyArray = <A>(
 ): Mock<ReadonlyArray<A>> =>
   pipe(
     R.randomInt(Math.max(0, min), Math.max(0, min, max)),
-    IO.map((n) => pipe($GL.fromIO(M()), $GL.take(n), $GL.toReadonlyArray)),
+    IO.map((n) => pipe($GL.fromIO(M()), $GL.takeLeft(n), $GL.toReadonlyArray)),
     fromIO,
   )
 

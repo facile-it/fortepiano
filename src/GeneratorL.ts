@@ -162,6 +162,15 @@ export const chain = curry(flip(Chain.chain))
 export const chainFirst = Ch.chainFirst(Chain)
 export const bind = Ch.bind(Chain)
 
+export const chainWithIndex =
+  <A, B>(f: (i: number, a: A) => GeneratorL<B>) =>
+  (fa: GeneratorL<A>): GeneratorL<B> =>
+    pipe(
+      fa,
+      zip(range(0)),
+      chain(([a, i]) => f(i, a)),
+    )
+
 export const Monad: Mona.Monad1<URI> = { ...Applicative, ...Chain }
 
 export const FromIO: FIO.FromIO1<URI> = {
@@ -213,7 +222,7 @@ export const Extend: Ex.Extend1<URI> = {
   extend: (wa, f) =>
     pipe(
       wa,
-      mapWithIndex((i) => pipe(wa, drop(i), f)),
+      mapWithIndex((i) => pipe(wa, dropLeft(i), f)),
     ),
 }
 
@@ -497,7 +506,7 @@ export function sequence<F>(
   return <A>(ta: GeneratorL<HKT<F, A>>) =>
     Foldable.reduce(ta, F.of(zero<A>()), (fas, fa) =>
       F.ap(
-        F.map(fas, (fa) => (a: A) => Alt.alt(fa, () => of(a))),
+        F.map(fas, (fa) => (a: A) => pipe(fa, append(a))),
         fa,
       ),
     )
@@ -586,7 +595,7 @@ function _traverseWithIndex<F>(F: Appli.Applicative<F>) {
   return <A, B>(ta: GeneratorL<A>, f: (i: number, a: A) => HKT<F, B>) =>
     FoldableWithIndex.reduceWithIndex(ta, F.of(zero<B>()), (i, fbs, a) =>
       F.ap(
-        F.map(fbs, (bs) => (b: B) => Alt.alt(bs, () => of(b))),
+        F.map(fbs, (bs) => (b: B) => pipe(bs, append(b))),
         f(i, a),
       ),
     )
@@ -781,23 +790,22 @@ export function wither<F>(F: Appli.Applicative<F>) {
       Witherable.wither(F)(ta, f)
 }
 
-export const range = (start: number): GeneratorL<number> =>
+export const makeBy = <A>(f: (i: number) => A): GeneratorL<A> =>
   function* () {
-    for (let i = start; true; i++) {
-      yield i
+    for (let i = 0; true; i++) {
+      yield f(i)
     }
   }
 
-export const replicate = <A>(a: A): GeneratorL<A> => fromIO(() => a)
+export const range = (start: number): GeneratorL<number> =>
+  makeBy((i) => start + i)
+
+export const replicate = <A>(a: A): GeneratorL<A> => makeBy(() => a)
 
 export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): GeneratorL<A> =>
-  unfold(
-    as,
-    RA.matchLeft(
-      () => Op.none,
-      (head, tail) => Op.some([head, tail]),
-    ),
-  )
+  function* () {
+    yield* as
+  }
 
 export const fromReadonlyRecord = RR.toUnfoldable(Unfoldable)
 
@@ -820,39 +828,21 @@ export const randomElem = <A>(
   as: RNEA.ReadonlyNonEmptyArray<A>,
 ): GeneratorL<A> => fromIO(R.randomElem(as))
 
-export const sieve =
-  <A>(f: (init: ReadonlyArray<A>, a: A) => boolean) =>
-  (ma: GeneratorL<A>): GeneratorL<A> =>
-    function* () {
-      const init: Array<A> = []
-      for (const a of ma()) {
-        if (!f(init, a)) {
-          continue
-        }
-
-        init.push(a)
-        yield a
-      }
-    }
-
 export const prime: GeneratorL<number> = pipe(
   range(2),
-  sieve((init, a) =>
+  sieve((init, n) =>
     pipe(
       init,
-      RA.every((_a) => 0 !== a % _a),
+      RA.every((_n) => 0 !== n % _n),
     ),
   ),
 )
 
-export const exp: GeneratorL<number> = pipe(
-  range(0),
-  map((n) => Math.exp(n)),
-)
+export const exp: GeneratorL<number> = makeBy((n) => Math.exp(n))
 
 export const fibonacci: GeneratorL<number> = function* () {
-  for (let as = [1, 0] as [number, number]; true; as = [as[1], as[0] + as[1]]) {
-    yield as[1]
+  for (let ns = [1, 0] as [number, number]; true; ns = [ns[1], ns[0] + ns[1]]) {
+    yield ns[1]
   }
 }
 
@@ -863,7 +853,23 @@ export const flatten = <A>(mma: GeneratorL<GeneratorL<A>>): GeneratorL<A> =>
     }
   }
 
-export const take =
+export const prepend =
+  <A>(a: A) =>
+  (ma: GeneratorL<A>): GeneratorL<A> =>
+    function* () {
+      yield a
+      yield* ma()
+    }
+
+export const append =
+  <A>(a: A) =>
+  (ma: GeneratorL<A>): GeneratorL<A> =>
+    function* () {
+      yield* ma()
+      yield a
+    }
+
+export const takeLeft =
   (n: number) =>
   <A>(ma: GeneratorL<A>): GeneratorL<A> =>
     function* () {
@@ -876,7 +882,31 @@ export const take =
       }
     }
 
-export const drop =
+export function takeLeftWhile<A, B extends A>(
+  refinement: Refinement<A, B>,
+): (ma: GeneratorL<A>) => GeneratorL<B>
+export function takeLeftWhile<A>(
+  predicate: Predicate<A>,
+): (ma: GeneratorL<A>) => GeneratorL<A>
+export function takeLeftWhile<A>(predicate: Predicate<A>) {
+  return (ma: GeneratorL<A>) =>
+    function* () {
+      for (const a of ma()) {
+        if (!predicate(a)) {
+          break
+        }
+
+        yield a
+      }
+    }
+}
+
+export const takeRight =
+  (n: number) =>
+  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+    pipe(ma, toReadonlyArray, RA.takeRight(n), fromReadonlyArray)
+
+export const dropLeft =
   (n: number) =>
   <A>(ma: GeneratorL<A>): GeneratorL<A> =>
     function* () {
@@ -889,9 +919,88 @@ export const drop =
       }
     }
 
-export const zip =
-  <B>(mb: GeneratorL<B>) =>
-  <A>(ma: GeneratorL<A>): GeneratorL<Readonly<[A, B]>> =>
+export const dropRight =
+  (n: number) =>
+  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+    pipe(ma, toReadonlyArray, RA.dropRight(n), fromReadonlyArray)
+
+export function dropLeftWhile<A, B extends A>(
+  refinement: Refinement<A, B>,
+): (ma: GeneratorL<A>) => GeneratorL<B>
+export function dropLeftWhile<A>(
+  predicate: Predicate<A>,
+): (ma: GeneratorL<A>) => GeneratorL<A>
+export function dropLeftWhile<A>(predicate: Predicate<A>) {
+  return (ma: GeneratorL<A>) =>
+    function* () {
+      const as = ma()
+      for (const a of as) {
+        if (!predicate(a)) {
+          break
+        }
+      }
+
+      yield* as
+    }
+}
+
+export const scanLeft =
+  <A, B>(b: B, f: (b: B, a: A) => B) =>
+  (ma: GeneratorL<A>): GeneratorL<B> =>
+    function* () {
+      yield b
+      let _b = b
+      for (const a of ma()) {
+        _b = f(_b, a)
+        yield _b
+      }
+    }
+
+export const scanRight =
+  <A, B>(b: B, f: (a: A, b: B) => B) =>
+  (ma: GeneratorL<A>): GeneratorL<B> =>
+    pipe(
+      ma,
+      scanLeft(b, (b, a) => f(a, b)),
+      reverse,
+    )
+
+export function sieve<A>(f: (init: ReadonlyArray<A>, a: A) => boolean) {
+  return (ma: GeneratorL<A>): GeneratorL<A> =>
+    function* () {
+      const init: Array<A> = []
+      for (const a of ma()) {
+        if (!f(init, a)) {
+          continue
+        }
+
+        init.push(a)
+        yield a
+      }
+    }
+}
+
+export const uniq = <A>(E: Eq.Eq<A>) =>
+  sieve<A>((init, a) => !pipe(init, RA.elem(E)(a)))
+
+export const sort = <B>(O: Or.Ord<B>) => sortBy([O])
+
+export const sortBy =
+  <B>(Os: ReadonlyArray<Or.Ord<B>>) =>
+  <A extends B>(ma: GeneratorL<A>): GeneratorL<A> =>
+    pipe(ma, toReadonlyArray, RA.sortBy(Os), fromReadonlyArray)
+
+export const reverse = <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+  function* () {
+    const as = toReadonlyArray(ma)
+    for (let i = as.length - 1; i >= 0; i--) {
+      yield as[i]
+    }
+  }
+
+export const zipWith =
+  <A, B, C>(mb: GeneratorL<B>, f: (a: A, b: B) => C) =>
+  (ma: GeneratorL<A>): GeneratorL<C> =>
     function* () {
       const bs = mb()
       for (const a of ma()) {
@@ -900,27 +1009,99 @@ export const zip =
           break
         }
 
-        yield [a, b.value] as const
+        yield f(a, b.value)
       }
     }
 
-export const uniq = <A>(E: Eq.Eq<A>) =>
-  sieve<A>((init, a) => !pipe(init, RA.elem(E)(a)))
+export const zip =
+  <B>(mb: GeneratorL<B>) =>
+  <A>(ma: GeneratorL<A>): GeneratorL<Readonly<[A, B]>> =>
+    pipe(
+      ma,
+      zipWith(mb, (a, b) => [a, b] as const),
+    )
 
-export const match =
+export const rights = <E, A>(ma: GeneratorL<Ei.Either<E, A>>): GeneratorL<A> =>
+  pipe(ma, filterMap(Op.fromEither))
+
+export const lefts = <E, A>(ma: GeneratorL<Ei.Either<E, A>>): GeneratorL<E> =>
+  pipe(
+    ma,
+    filter(Ei.isLeft),
+    map((e) => e.left),
+  )
+
+export const prependAll =
+  <A>(middle: A) =>
+  (ma: GeneratorL<A>): GeneratorL<A> =>
+    pipe(
+      ma,
+      matchLeft(
+        () => ma,
+        () =>
+          function* () {
+            for (const a of ma()) {
+              yield middle
+              yield a
+            }
+          },
+      ),
+    )
+
+export const intersperse = <A>(middle: A) =>
+  flow(prependAll(middle), dropLeft(1))
+
+export const rotate =
+  (n: number) =>
+  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+    pipe(ma, toReadonlyArray, RA.rotate(n), fromReadonlyArray)
+
+export const chop =
+  <A, B>(f: (ma: GeneratorL<A>) => Readonly<[B, GeneratorL<A>]>) =>
+  (ma: GeneratorL<A>): GeneratorL<B> =>
+    function* () {
+      for (
+        let _isNonEmpty = isNonEmpty(ma), [b, _ma] = f(ma);
+        _isNonEmpty;
+        _isNonEmpty = isNonEmpty(_ma), [b, _ma] = f(_ma)
+      ) {
+        yield b
+      }
+    }
+
+export const chunksOf =
+  (n: number) =>
+  <A>(ma: GeneratorL<A>): GeneratorL<GeneratorL<A>> =>
+    pipe(ma, chop(splitAt(Math.max(1, n))))
+
+export const matchLeft =
   <A, B>(onEmpty: Lazy<B>, onNonEmpty: (head: A, tail: GeneratorL<A>) => B) =>
   (ma: GeneratorL<A>): B =>
     pipe(ma().next(), (a) =>
-      a.done ? onEmpty() : onNonEmpty(a.value, pipe(ma, drop(1))),
+      a.done ? onEmpty() : onNonEmpty(a.value, pipe(ma, dropLeft(1))),
     )
 
-export const toReadonlyArray = Fo.toReadonlyArray(Foldable)
+export const matchRight =
+  <A, B>(onEmpty: Lazy<B>, onNonEmpty: (init: GeneratorL<A>, last: A) => B) =>
+  (ma: GeneratorL<A>): B =>
+    pipe(
+      ma,
+      zip(range(0)),
+      last,
+      Op.match(onEmpty, ([a, i]) =>
+        onNonEmpty(
+          pipe(
+            ma,
+            filterWithIndex((_i) => i !== _i),
+          ),
+          a,
+        ),
+      ),
+    )
 
-export const isEmpty = match(constTrue, constFalse)
-
-export const isNonEmpty = not(isEmpty)
-
-export const size = flow(toReadonlyArray, RA.size)
+export const toReadonlyArray = <A>(ma: GeneratorL<A>): ReadonlyArray<A> => [
+  ...ma(),
+]
 
 export const lookup =
   (i: number) =>
@@ -929,19 +1110,103 @@ export const lookup =
       ? Op.none
       : pipe(
           ma,
-          drop(i),
-          match(() => Op.none, Op.some),
+          dropLeft(i),
+          matchLeft(() => Op.none, Op.some),
         )
 
 export const head = lookup(0)
 
-export function find<A, B extends A>(
+export const last = <A>(ma: GeneratorL<A>): Op.Option<A> => {
+  let last: Op.Option<A> = Op.none
+  for (const a of ma()) {
+    last = Op.some(a)
+  }
+
+  return last
+}
+
+export const tail = <A>(ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+  pipe(
+    ma,
+    matchLeft(
+      () => Op.none,
+      (_, tail) => Op.some(tail),
+    ),
+  )
+
+export const init = <A>(ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+  pipe(
+    ma,
+    matchRight(() => Op.none, Op.some),
+  )
+
+export interface Spanned<I, R> {
+  init: GeneratorL<I>
+  rest: GeneratorL<R>
+}
+
+export function spanLeft<A, B extends A>(
+  refinement: Refinement<A, B>,
+): (ma: GeneratorL<A>) => Spanned<B, A>
+export function spanLeft<A>(
+  predicate: Predicate<A>,
+): (ma: GeneratorL<A>) => Spanned<A, A>
+export function spanLeft<A>(predicate: Predicate<A>) {
+  return (ma: GeneratorL<A>) => {
+    const i = pipe(
+      ma,
+      findFirstIndex(not(predicate)),
+      Op.getOrElse(() => Infinity),
+    )
+    const [init, rest] = pipe(ma, splitAt(i))
+
+    return { init, rest }
+  }
+}
+
+export const splitAt =
+  (n: number) =>
+  <A>(ma: GeneratorL<A>): Readonly<[GeneratorL<A>, GeneratorL<A>]> =>
+    [pipe(ma, takeLeft(n)), pipe(ma, dropLeft(n))]
+
+export const unzip = <A, B>(
+  mab: GeneratorL<Readonly<[A, B]>>,
+): Readonly<[GeneratorL<A>, GeneratorL<B>]> => [
+  pipe(
+    mab,
+    map(([a]) => a),
+  ),
+  pipe(
+    mab,
+    map(([_, b]) => b),
+  ),
+]
+
+export const isEmpty = matchLeft(constTrue, constFalse)
+
+export const isNonEmpty = not(isEmpty)
+
+export const size = flow(
+  mapWithIndex(identity),
+  last,
+  Op.match(
+    () => 0,
+    (i) => 1 + i,
+  ),
+)
+
+export const isOutOfBound =
+  (n: number) =>
+  (ma: GeneratorL<unknown>): boolean =>
+    n >= 0 && n < size(ma)
+
+export function findFirst<A, B extends A>(
   refinement: Refinement<A, B>,
 ): (ma: GeneratorL<A>) => Op.Option<B>
-export function find<A>(
+export function findFirst<A>(
   predicate: Predicate<A>,
 ): (ma: GeneratorL<A>) => Op.Option<A>
-export function find<A>(predicate: Predicate<A>) {
+export function findFirst<A>(predicate: Predicate<A>) {
   return (ma: GeneratorL<A>) => {
     for (const a of ma()) {
       if (predicate(a)) {
@@ -953,7 +1218,99 @@ export function find<A>(predicate: Predicate<A>) {
   }
 }
 
+export const findFirstMap =
+  <A, B>(f: (a: A) => Op.Option<B>) =>
+  (ma: GeneratorL<A>): Op.Option<B> => {
+    for (const a of ma()) {
+      const b = f(a)
+      if (Op.isSome(b)) {
+        return b
+      }
+    }
+
+    return Op.none
+  }
+
+export const findFirstIndex =
+  <A>(predicate: Predicate<A>) =>
+  (ma: GeneratorL<A>): Op.Option<number> =>
+    pipe(
+      ma,
+      zip(range(0)),
+      findFirst(([a]) => predicate(a)),
+      Op.map(([_, i]) => i),
+    )
+
+export function findLast<A, B extends A>(
+  refinement: Refinement<A, B>,
+): (ma: GeneratorL<A>) => Op.Option<B>
+export function findLast<A>(
+  predicate: Predicate<A>,
+): (ma: GeneratorL<A>) => Op.Option<A>
+export function findLast<A>(predicate: Predicate<A>) {
+  return (ma: GeneratorL<A>) => pipe(ma, reverse, findFirst(predicate))
+}
+
+export const findLastMap =
+  <A, B>(f: (a: A) => Op.Option<B>) =>
+  (ma: GeneratorL<A>): Op.Option<B> =>
+    pipe(ma, reverse, findFirstMap(f))
+
+export const findLastIndex =
+  <A>(predicate: Predicate<A>) =>
+  (ma: GeneratorL<A>): Op.Option<number> =>
+    pipe(ma, reverse, findFirstIndex(predicate))
+
 export const elem =
   <A>(Eq: Eq.Eq<A>) =>
   (a: A) =>
-    find((_a: A) => Eq.equals(a, _a))
+    findFirst((_a: A) => Eq.equals(a, _a))
+
+export const insertAt =
+  <A>(i: number, a: A) =>
+  (ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+    pipe(
+      ma,
+      lookup(i),
+      Op.map(
+        () =>
+          function* () {
+            for (const [_a, _i] of pipe(ma, zip(range(0)))()) {
+              if (i === _i) {
+                yield a
+              }
+              yield _a
+            }
+          },
+      ),
+    )
+
+export const modifyAt =
+  <A>(i: number, f: (a: A) => A) =>
+  (ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+    pipe(
+      ma,
+      lookup(i),
+      Op.map(() =>
+        pipe(
+          ma,
+          mapWithIndex((_i, a) => (i === _i ? f(a) : a)),
+        ),
+      ),
+    )
+
+export const updateAt = <A>(i: number, a: A) => modifyAt(i, () => a)
+
+export const deleteAt =
+  <A>(i: number) =>
+  (ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+    pipe(
+      ma,
+      lookup(i),
+      Op.map(() =>
+        pipe(
+          ma,
+          filterWithIndex((_i) => i !== _i),
+        ),
+      ),
+    )
