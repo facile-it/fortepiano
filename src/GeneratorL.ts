@@ -199,7 +199,7 @@ export const Unfoldable: U.Unfoldable1<URI> = {
     },
 }
 
-export const unfold = Unfoldable.unfold
+export const unfold = curry(flip(Unfoldable.unfold))
 
 export const Alt: $generatorL.Alt1<URI> = {
   ...Functor,
@@ -503,13 +503,7 @@ export function sequence<F extends URIS>(
 export function sequence<F>(
   F: Appli.Applicative<F>,
 ): <A>(ta: GeneratorL<HKT<F, A>>) => HKT<F, GeneratorL<A>> {
-  return <A>(ta: GeneratorL<HKT<F, A>>) =>
-    Foldable.reduce(ta, F.of(zero<A>()), (fas, fa) =>
-      F.ap(
-        F.map(fas, (fa) => (a: A) => pipe(fa, append(a))),
-        fa,
-      ),
-    )
+  return <A>(ta: GeneratorL<HKT<F, A>>) => Traversable.traverse(F)(ta, identity)
 }
 
 export const Traversable: T.Traversable1<URI> = {
@@ -882,6 +876,11 @@ export const takeLeft =
       }
     }
 
+export const takeRight =
+  (n: number) =>
+  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+    pipe(ma, toReadonlyArray, RA.takeRight(n), fromReadonlyArray)
+
 export function takeLeftWhile<A, B extends A>(
   refinement: Refinement<A, B>,
 ): (ma: GeneratorL<A>) => GeneratorL<B>
@@ -900,11 +899,6 @@ export function takeLeftWhile<A>(predicate: Predicate<A>) {
       }
     }
 }
-
-export const takeRight =
-  (n: number) =>
-  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
-    pipe(ma, toReadonlyArray, RA.takeRight(n), fromReadonlyArray)
 
 export const dropLeft =
   (n: number) =>
@@ -934,12 +928,14 @@ export function dropLeftWhile<A>(predicate: Predicate<A>) {
   return (ma: GeneratorL<A>) =>
     function* () {
       const as = ma()
-      for (const a of as) {
-        if (!predicate(a)) {
-          break
-        }
+      let a = as.next()
+      while (!a.done && predicate(a.value)) {
+        a = as.next()
       }
 
+      if (!a.done) {
+        yield a.value
+      }
       yield* as
     }
 }
@@ -1259,7 +1255,11 @@ export const findLastMap =
 export const findLastIndex =
   <A>(predicate: Predicate<A>) =>
   (ma: GeneratorL<A>): Op.Option<number> =>
-    pipe(ma, reverse, findFirstIndex(predicate))
+    pipe(
+      ma,
+      zip(range(0)),
+      findLastMap(([a, i]) => (predicate(a) ? Op.some(i) : Op.none)),
+    )
 
 export const elem =
   <A>(Eq: Eq.Eq<A>) =>

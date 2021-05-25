@@ -17,6 +17,8 @@ import {
   Compactable,
   deleteAt,
   dropLeft,
+  dropLeftWhile,
+  duplicate,
   elem,
   exp,
   fibonacci,
@@ -24,8 +26,12 @@ import {
   filterMap,
   filterMapWithIndex,
   filterWithIndex,
-  findFirst,
+  findFirstIndex,
+  findLast,
+  findLastIndex,
+  findLastMap,
   flatten,
+  foldMapWithIndex,
   FromIO,
   fromReadonlyArray,
   fromReadonlyRecord,
@@ -60,17 +66,21 @@ import {
   rights,
   rotate,
   scanRight,
+  sequence,
   sieve,
   size,
   spanLeft,
   splitAt,
   tail,
   takeLeft,
+  takeLeftWhile,
   toReadonlyArray,
+  unfold,
   uniq,
   unzip,
   updateAt,
   wilt,
+  wither,
   zip,
 } from './GeneratorL'
 
@@ -215,8 +225,29 @@ describe('GeneratorL', () => {
     })
   })
 
+  describe('takeLeftWhile', () => {
+    it('should select elements according to a predicate', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeftWhile((n) => n <= 10),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([2, 3, 5, 7])
+    })
+    it('should handle always false predicates', () => {
+      expect(
+        pipe(
+          prime,
+          takeLeftWhile(() => false),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([])
+    })
+  })
+
   describe('dropLeft', () => {
-    it('should select only specified elements', () => {
+    it('should drop specified elements', () => {
       const x = pipe(range(0), dropLeft(5), takeLeft(5), toReadonlyArray)
 
       expect(x).toHaveLength(5)
@@ -232,6 +263,29 @@ describe('GeneratorL', () => {
 
       expect(x).toHaveLength(5)
       expect(x).toStrictEqual([0, 1, 2, 3, 4])
+    })
+  })
+
+  describe('dropLeftWhile', () => {
+    it('should drop elements according to a predicate', () => {
+      expect(
+        pipe(
+          prime,
+          dropLeftWhile((n) => n < 10),
+          takeLeft(5),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([11, 13, 17, 19, 23])
+    })
+    it('should handle always false predicates', () => {
+      expect(
+        pipe(
+          prime,
+          dropLeftWhile(() => false),
+          takeLeft(5),
+          toReadonlyArray,
+        ),
+      ).toStrictEqual([2, 3, 5, 7, 11])
     })
   })
 
@@ -713,13 +767,34 @@ describe('GeneratorL', () => {
     })
   })
 
-  describe('findFirst', () => {
+  describe('findFirstIndex', () => {
+    it('should find first matching element and return its index', () => {
+      expect(
+        pipe(
+          range(0),
+          takeLeft(5),
+          findFirstIndex((i) => 0 !== i % 2),
+        ),
+      ).toStrictEqual(O.some(1))
+    })
     it('should return None when no element is found', () => {
       expect(
         pipe(
           range(0),
           takeLeft(5),
-          findFirst((n) => n >= 5),
+          findFirstIndex((i) => i >= 5),
+        ),
+      ).toStrictEqual(O.none)
+    })
+  })
+
+  describe('findLast', () => {
+    it('should return None when no element is found', () => {
+      expect(
+        pipe(
+          range(0),
+          takeLeft(5),
+          findLast((n) => n >= 5),
         ),
       ).toStrictEqual(O.none)
     })
@@ -727,9 +802,58 @@ describe('GeneratorL', () => {
       expect(
         pipe(
           range(0),
-          findFirst((n) => n >= 4),
+          takeLeft(5),
+          findLast((n) => n >= 4),
         ),
       ).toStrictEqual(O.some(4))
+    })
+  })
+
+  describe('findLastMap', () => {
+    it('should find last matching element and transform it', () => {
+      expect(
+        pipe(
+          range(0),
+          takeLeft(5),
+          findLastMap((i) =>
+            0 === i % 2
+              ? O.none
+              : O.some(String.fromCharCode('a'.charCodeAt(0) + i)),
+          ),
+        ),
+      ).toStrictEqual(O.some('d'))
+    })
+    it('should return None when no element is found', () => {
+      expect(
+        pipe(
+          range(0),
+          takeLeft(5),
+          findLastMap((i) =>
+            i < 5 ? O.none : O.some(String.fromCharCode('a'.charCodeAt(0) + i)),
+          ),
+        ),
+      ).toStrictEqual(O.none)
+    })
+  })
+
+  describe('findLastIndex', () => {
+    it('should find last matching element and return its index', () => {
+      expect(
+        pipe(
+          range(0),
+          takeLeft(5),
+          findLastIndex((i) => 0 !== i % 2),
+        ),
+      ).toStrictEqual(O.some(3))
+    })
+    it('should return None when no element is found', () => {
+      expect(
+        pipe(
+          range(0),
+          takeLeft(5),
+          findLastIndex((i) => i >= 5),
+        ),
+      ).toStrictEqual(O.none)
     })
   })
 
@@ -1056,6 +1180,24 @@ describe('GeneratorL', () => {
     })
   })
 
+  describe('Unfoldable', () => {
+    describe('unfold', () => {
+      it('should return a list starting from a given value using a function', () => {
+        const factors = unfold((b: number) =>
+          pipe(
+            prime,
+            takeLeftWhile((n) => n <= b),
+            dropLeftWhile((n) => 0 !== b % n),
+            head,
+            O.map((n) => [n, b / n]),
+          ),
+        )
+
+        expect(pipe(42, factors, toReadonlyArray)).toStrictEqual([2, 3, 7])
+      })
+    })
+  })
+
   describe('Alt', () => {
     const fa = fromReadonlyArray([0, 1, 2])
     const ga = fromReadonlyArray([3, 4, 5])
@@ -1145,6 +1287,28 @@ describe('GeneratorL', () => {
       expect(
         pipe(Alternative.ap(Alternative.zero(), fa), toReadonlyArray),
       ).toStrictEqual(pipe(Alternative.zero(), toReadonlyArray))
+    })
+  })
+
+  describe('Extend', () => {
+    describe('duplicate', () => {
+      it('should duplicate the list on each element', () => {
+        expect(
+          pipe(
+            prime,
+            takeLeft(5),
+            duplicate,
+            map(toReadonlyArray),
+            toReadonlyArray,
+          ),
+        ).toStrictEqual([
+          [2, 3, 5, 7, 11],
+          [3, 5, 7, 11],
+          [5, 7, 11],
+          [7, 11],
+          [11],
+        ])
+      })
     })
   })
 
@@ -1311,6 +1475,46 @@ describe('GeneratorL', () => {
     })
   })
 
+  describe('FoldableWithIndex', () => {
+    describe('foldMapWithIndex', () => {
+      it('should map elements using their index and fold the resulting list', () => {
+        expect(
+          pipe(
+            prime,
+            takeLeft(5),
+            foldMapWithIndex(N.MonoidSum)((i, a) => i * a),
+          ),
+        ).toBe(78)
+      })
+    })
+  })
+
+  describe('Traversable', () => {
+    describe('sequence', () => {
+      it('should accumulate the results of the effects contained in a list', () => {
+        expect(
+          pipe(
+            prime,
+            map(O.some),
+            takeLeft(5),
+            sequence(O.Applicative),
+            O.map(toReadonlyArray),
+          ),
+        ).toStrictEqual(O.some([2, 3, 5, 7, 11]))
+        expect(
+          pipe(
+            prime,
+            map(O.some),
+            takeLeft(5),
+            append<O.Option<number>>(O.none),
+            sequence(O.Applicative),
+            O.map(toReadonlyArray),
+          ),
+        ).toStrictEqual(O.none)
+      })
+    })
+  })
+
   describe('Witherable', () => {
     describe('wilt', () => {
       it('should split a list applying an effect', () => {
@@ -1334,6 +1538,30 @@ describe('GeneratorL', () => {
                 : O.some(0 === n % 3 ? Ei.right(n) : Ei.left(n)),
             ),
             O.map(Se.bimap(toReadonlyArray, toReadonlyArray)),
+          ),
+        ).toStrictEqual(O.none)
+      })
+    })
+
+    describe('wither', () => {
+      it('should filter a list applying an effect', () => {
+        expect(
+          pipe(
+            range(0),
+            takeLeft(10),
+            wither(O.Applicative)((n) =>
+              O.some(0 === n % 2 ? O.none : O.some(n)),
+            ),
+            O.map(toReadonlyArray),
+          ),
+        ).toStrictEqual(O.some([1, 3, 5, 7, 9]))
+        expect(
+          pipe(
+            range(0),
+            takeLeft(10),
+            wither(O.Applicative)((n) =>
+              0 === n % 2 ? O.none : O.some(O.some(n)),
+            ),
           ),
         ).toStrictEqual(O.none)
       })
