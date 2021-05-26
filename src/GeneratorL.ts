@@ -791,8 +791,11 @@ export const makeBy = <A>(f: (i: number) => A): GeneratorL<A> =>
     }
   }
 
-export const range = (start: number): GeneratorL<number> =>
-  makeBy((i) => start + i)
+export const range = (start: number, end = Infinity): GeneratorL<number> =>
+  pipe(
+    makeBy((i) => start + i),
+    takeLeftWhile((n) => n <= Math.max(start, end)),
+  )
 
 export const replicate = <A>(a: A): GeneratorL<A> => makeBy(() => a)
 

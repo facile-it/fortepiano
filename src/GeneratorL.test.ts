@@ -120,6 +120,17 @@ describe('GeneratorL', () => {
         -1337, -1336, -1335, -1334, -1333,
       ])
     })
+    it('should allow setting a top boundary', () => {
+      expect(pipe(range(0, 9), toReadonlyArray)).toStrictEqual([
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+      ])
+      expect(pipe(range(42, 49), toReadonlyArray)).toStrictEqual([
+        42, 43, 44, 45, 46, 47, 48, 49,
+      ])
+    })
+    it('should support a top boundary smaller than the bottom one', () => {
+      expect(pipe(range(42, -Infinity), toReadonlyArray)).toStrictEqual([42])
+    })
   })
 
   describe('replicate', () => {
