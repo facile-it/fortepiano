@@ -3,14 +3,7 @@ import { pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as S from 'fp-ts/string'
-import {
-  allElems,
-  anyElem,
-  cartesian,
-  EqSize,
-  same,
-  words,
-} from './ReadonlyArray'
+import { allElems, anyElem, cartesian, same, words } from './ReadonlyArray'
 
 const arrays: ReadonlyArray<
   [
@@ -218,21 +211,6 @@ describe('ReadonlyArray', () => {
           },
         ]),
       ).toBe(true)
-    })
-  })
-
-  describe('EqSize', () => {
-    describe('equals', () => {
-      it('should compare two arrays only by their size', () => {
-        expect(EqSize.equals([], [])).toBe(true)
-        expect(EqSize.equals([0], [])).toBe(false)
-        expect(EqSize.equals([], [0])).toBe(false)
-        expect(EqSize.equals([0], [0, 1])).toBe(false)
-        expect(EqSize.equals([0, 1, 2], [0, 1, 2])).toBe(true)
-        expect(EqSize.equals([0, 1, 2], ['a', 'b', 'c'])).toBe(true)
-        // eslint-disable-next-line no-sparse-arrays
-        expect(EqSize.equals([0, 1, 2], [, , ,])).toBe(true)
-      })
     })
   })
 })
