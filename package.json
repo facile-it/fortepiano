@@ -2,7 +2,7 @@
   "name": "fortepiano",
   "version": "0.1.0",
   "main": "lib/index.js",
-  "types": "lib/index.s.ts",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest --coverage"
