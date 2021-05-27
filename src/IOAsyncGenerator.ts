@@ -66,7 +66,6 @@ export const Functor: Fu.Functor1<URI> = {
   URI,
   map: (fa, f) =>
     async function* () {
-      console.log('map')
       for await (const a of fa()) {
         yield f(a)
       }
@@ -95,7 +94,6 @@ export const ApplyPar: _Apply.Apply1<URI> = {
   ...Functor,
   ap: (fab, fa) =>
     async function* () {
-      console.log('ap')
       const _fab = fab()
       const _fa = fa()
       const abs = []
@@ -131,7 +129,6 @@ export const ApplySeq: _Apply.Apply1<URI> = {
   ...Functor,
   ap: (fab, fa) =>
     async function* () {
-      console.log('ap')
       const abs = []
       for await (const ab of fab()) {
         abs.push(ab)
@@ -167,7 +164,6 @@ export const ApplicativeSeq: Appli.Applicative1<URI> = {
 export const Chain: Ch.Chain1<URI> = {
   ...ApplySeq,
   chain: (fa, f) => {
-    console.log('chain')
     return flatten(Functor.map(fa, f))
   },
 }
@@ -368,7 +364,6 @@ export const partitionMapWithIndex = curry(
 export const range = flow($IOG.range, fromIOGenerator)
 export const replicate = flow($IOG.replicate, fromIOGenerator)
 export const fromReadonlyArray = <A>(x: ReadonlyArray<A>) => {
-  console.log('fromReadonlyArray')
   return flow($IOG.fromReadonlyArray, fromIOGenerator)(x)
 }
 
@@ -412,7 +407,6 @@ export const flatten = <A>(
   as: IOAsyncGenerator<IOAsyncGenerator<A>>,
 ): IOAsyncGenerator<A> =>
   async function* () {
-    console.log('flatten')
     for await (const a of as()) {
       yield* a()
     }
@@ -479,7 +473,6 @@ export const match =
 export const toTask =
   <A>(as: IOAsyncGenerator<A>): T.Task<ReadonlyArray<A>> =>
   async () => {
-    console.log('toTask')
     const _as: Array<A> = []
     for await (const a of as()) {
       _as.push(a)
