@@ -1,4 +1,5 @@
 import { identity } from 'fp-ts/function'
+import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
 import * as t from 'io-ts'
 import * as $S from './struct'
 
@@ -21,22 +22,16 @@ export const alias = <C extends t.Mixed>(
 ): t.Type<t.TypeOf<C>, t.OutputOf<C>, t.InputOf<C>> =>
   new t.Type(name, is, decode, encode)
 
-export const isStringArray = (
+const isStringArray = (
   as: ReadonlyArray<unknown>,
 ): as is ReadonlyArray<string> => t.string.is(as[0])
 
-export function literalUnion<A extends string>(
-  strings: [A, A, ...ReadonlyArray<A>],
-  name?: string,
-): t.KeyofC<{ readonly [K in A]: null }>
-export function literalUnion<A extends number>(
-  numbers: [A, A, ...ReadonlyArray<A>],
-  name?: string,
-): t.UnionC<
-  [t.LiteralC<A>, t.LiteralC<A>] & { readonly [K: number]: t.LiteralC<A> }
->
+export function literalUnion<
+  A extends number | string,
+  B extends { [K in A]: null },
+>(strings: [A, A, ...ReadonlyArray<A>], name?: string): t.KeyofC<B>
 export function literalUnion(
-  as: ReadonlyArray<number> | ReadonlyArray<string>,
+  as: ReadonlyNonEmptyArray<number> | ReadonlyNonEmptyArray<string>,
   name?: string,
 ) {
   return isStringArray(as)
