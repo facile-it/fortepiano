@@ -30,7 +30,7 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import * as S from 'fp-ts/Separated'
 import * as T from 'fp-ts/Task'
 import { curry } from './function'
-import * as $IOG from './IOGenerator'
+import * as $IOG from './GeneratorL'
 
 export const URI = 'IOAsyncGenerator'
 
@@ -54,7 +54,7 @@ export const getMonoid = <A>(): Mono.Monoid<IOAsyncGenerator<A>> => ({
 })
 
 export const fromIOGenerator = <A>(
-  as: $IOG.IOGenerator<A>,
+  as: $IOG.GeneratorL<A>,
 ): IOAsyncGenerator<A> =>
   async function* () {
     for (const a of as()) {
@@ -62,14 +62,6 @@ export const fromIOGenerator = <A>(
     }
   }
 
-/**
-   * return _reduce(ta, F.of(zero()), (fas, fa) =>
-    F.ap(
-      F.map(fas, (as) => (a: A) => pipe(as, append(a))),
-      fa
-    )
-  )
-   */
 export const Functor: Fu.Functor1<URI> = {
   URI,
   map: (fa, f) =>
@@ -104,21 +96,30 @@ export const ApplyPar: _Apply.Apply1<URI> = {
   ap: (fab, fa) =>
     async function* () {
       console.log('ap')
-      // for await (const ab of fab()) {
-      //   for await (const a of fa()) {
-      //     yield ab(a)
-      //   }
-      // }
+      const _fab = fab()
       const _fa = fa()
-      do {
-        const [ab, a] = await Promise.all([fab().next(), _fa.next()])
-        if (ab.done || a.done) {
+      const abs = []
+      const as = []
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const [ab, a] = await Promise.all([_fab.next(), _fa.next()])
+        if (ab.done && a.done) {
           break
         }
 
-        console.log(a.value)
-        yield ab.value(a.value)
-      } while (true)
+        if (!ab.done) {
+          abs.push(ab.value)
+        }
+        if (!a.done) {
+          as.push(a.value)
+        }
+      }
+
+      for (const ab of abs) {
+        for (const a of as) {
+          yield ab(a)
+        }
+      }
     },
 }
 
@@ -128,7 +129,24 @@ export const ApplyPar: _Apply.Apply1<URI> = {
 
 export const ApplySeq: _Apply.Apply1<URI> = {
   ...Functor,
-  ap: (fab, fa) => Chain.chain(fab, curry(Functor.map)(fa)),
+  ap: (fab, fa) =>
+    async function* () {
+      console.log('ap')
+      const abs = []
+      for await (const ab of fab()) {
+        abs.push(ab)
+      }
+      const as = []
+      for await (const a of fa()) {
+        as.push(a)
+      }
+
+      for (const ab of abs) {
+        for (const a of as) {
+          yield ab(a)
+        }
+      }
+    },
 }
 
 export const ap = curry(flip(ApplyPar.ap))
@@ -516,65 +534,3 @@ export const elem =
   <A>(Eq: Eq.Eq<A>) =>
   (a: A) =>
     find((_a: A) => Eq.equals(a, _a))
-
-pipe(
-  [
-    async function* () {
-      yield new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('A0')
-          resolve(true)
-        }, 1300)
-      })
-      yield new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('A1')
-          resolve(false)
-        }, 1100)
-      })
-    },
-    async function* () {
-      yield new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('B0')
-          resolve(42)
-        }, 900)
-      })
-    },
-    async function* () {
-      yield new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('C0')
-          resolve('foo')
-        }, 700)
-      })
-    },
-    async function* () {
-      yield new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('D0')
-          resolve([])
-        }, 500)
-      })
-    },
-    async function* () {
-      yield new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('E0')
-          resolve({})
-        }, 300)
-      })
-    },
-  ],
-  // Mono.concatAll(getMonoid()),
-  RA.sequence(ApplicativePar),
-  (x) => x,
-  chain(fromReadonlyArray),
-  // (x) => x,
-  // () => range(0),
-  // map((a) => 'a'),
-  drop(5),
-  // filter((a) => 'number' !== typeof a),
-  take(1),
-  toTask,
-)().then((x) => console.log(x))
