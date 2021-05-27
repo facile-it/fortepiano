@@ -9,6 +9,7 @@ import * as $optics from './Optics'
 import * as $option from './Option'
 import * as $readonlyArray from './ReadonlyArray'
 import * as $readonlyRecord from './ReadonlyRecord'
+import * as $readonlyTuple from './ReadonlyTuple'
 import * as $struct from './struct'
 import * as $type from './Type'
 import * as $validation from './Validation'
@@ -45,6 +46,7 @@ export {
   $option,
   $readonlyArray,
   $readonlyRecord,
+  $readonlyTuple,
   $struct,
   $type,
   $validation,
