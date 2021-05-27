@@ -12,6 +12,9 @@ export const struct = new t.Type(
   identity,
 )
 
+export const nullable = <C extends t.Mixed>(codec: C, name?: string) =>
+  t.union([codec, t.undefined], name)
+
 export const alias = <C extends t.Mixed>(
   name: string,
   { is, decode, encode }: C,
