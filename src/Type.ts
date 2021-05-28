@@ -3,6 +3,27 @@ import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
 import * as t from 'io-ts'
 import * as $S from './struct'
 
+const isLiteral =
+  (r: RegExp) =>
+  (u: unknown): u is string =>
+    t.string.is(u) && r.test(u)
+
+export function literal<V extends number | string>(
+  value: V,
+  name?: string,
+): t.LiteralC<V>
+export function literal(regExp: RegExp, name?: string): t.StringC
+export function literal(a: number | string | RegExp, name?: string) {
+  return a instanceof RegExp
+    ? new t.Type(
+        name || 'Literal',
+        isLiteral(a),
+        (u, c) => (isLiteral(a)(u) ? t.success(u) : t.failure(u, c)),
+        identity,
+      )
+    : t.literal(a, name)
+}
+
 const isStruct = (u: unknown): u is $S.struct =>
   'object' === typeof u && null !== u && !Array.isArray(u)
 

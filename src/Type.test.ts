@@ -1,8 +1,21 @@
 import * as t from 'io-ts'
 import * as $RA from './ReadonlyArray'
-import { alias, literalUnion } from './Type'
+import { alias, literal, literalUnion } from './Type'
 
 describe('Type', () => {
+  describe('literal', () => {
+    it('should work with literal values', () => {
+      expect(literal(42).is(1138)).toBe(false)
+      expect(literal(42).is(42)).toBe(true)
+      expect(literal('foo').is('bar')).toBe(false)
+      expect(literal('foo').is('foo')).toBe(true)
+    })
+    it('should work with regular expressions', () => {
+      expect(literal(/foo/).is('bar')).toBe(false)
+      expect(literal(/foo/).is('foobar')).toBe(true)
+    })
+  })
+
   describe('alias', () => {
     it('should return an equivalent codec with a different name', () => {
       $RA
