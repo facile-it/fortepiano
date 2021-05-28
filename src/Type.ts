@@ -1,5 +1,9 @@
-import { identity } from 'fp-ts/function'
+import * as E from 'fp-ts/Either'
+import { flow, identity, pipe } from 'fp-ts/function'
+import * as O from 'fp-ts/Option'
+import * as RA from 'fp-ts/ReadonlyArray'
 import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
+import * as RR from 'fp-ts/ReadonlyRecord'
 import * as t from 'io-ts'
 import * as $S from './struct'
 
@@ -62,3 +66,38 @@ export function literalUnion(
       )
     : t.union(as.map((number) => t.literal(number)) as any, name)
 }
+
+export const lax = <P extends t.Props>(props: P, name?: string) =>
+  pipe(
+    t.partial(props, name),
+    (partial) =>
+      new t.Type(
+        partial.name,
+        partial.is,
+        flow(
+          t.UnknownRecord.validate,
+          E.map(RR.toReadonlyArray),
+          E.map(
+            RA.reduce({}, (result, [key, value]) =>
+              pipe(
+                partial.props,
+                RR.lookup(key),
+                O.match(
+                  () => ({ ...result, [key]: value }),
+                  (codec) =>
+                    pipe(
+                      codec.decode(value),
+                      E.match(
+                        () => result,
+                        (value) => ({ ...result, [key]: value }),
+                      ),
+                    ),
+                ),
+              ),
+            ),
+          ),
+          E.chain(t.success),
+        ),
+        partial.encode,
+      ),
+  )
