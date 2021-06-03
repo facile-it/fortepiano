@@ -7,6 +7,10 @@ import * as $matrix from './Matrix'
 import * as $mock from './Mock'
 import * as $optics from './Optics'
 import * as $option from './Option'
+import * as $reader from './Reader'
+import * as $readerEither from './ReaderEither'
+import * as $readerTask from './ReaderTask'
+import * as $readerTaskEither from './ReaderTaskEither'
 import * as $readonlyArray from './ReadonlyArray'
 import * as $readonlyRecord from './ReadonlyRecord'
 import * as $readonlyTuple from './ReadonlyTuple'
@@ -45,6 +49,10 @@ export {
   $mock,
   $optics,
   $option,
+  $reader,
+  $readerEither,
+  $readerTask,
+  $readerTaskEither,
   $readonlyArray,
   $readonlyRecord,
   $readonlyTuple,
