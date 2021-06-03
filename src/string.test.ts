@@ -9,6 +9,7 @@ describe('string', () => {
       expect(uppercase('')).toBe('')
     })
   })
+
   describe('lowercase', () => {
     it('should convert given string to lowercase', () => {
       expect(lowercase('FOo BAr')).toBe('foo bar')
@@ -17,6 +18,7 @@ describe('string', () => {
       expect(lowercase('')).toBe('')
     })
   })
+
   describe('capitalize', () => {
     it('should capitalize given string', () => {
       expect(capitalize('foo bar')).toBe('Foo bar')
@@ -25,6 +27,7 @@ describe('string', () => {
       expect(capitalize('')).toBe('')
     })
   })
+
   describe('uncapitalize', () => {
     it('should uncapitalize given string', () => {
       expect(uncapitalize('FOo BAr')).toBe('fOo BAr')
