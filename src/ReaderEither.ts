@@ -1,8 +1,38 @@
+import * as E from 'fp-ts/Either'
+import { Lazy, pipe } from 'fp-ts/function'
+import * as Optio from 'fp-ts/Option'
 import * as RE from 'fp-ts/ReaderEither'
-import * as $O from './Optics'
+import * as $Optic from './Optics'
 import * as $S from './struct'
 
 export const pick =
   <R extends $S.struct>() =>
   <K extends keyof R>(k: K) =>
-    RE.asks<Pick<R, K>, never, Pick<R, K>[K]>($O.get(k))
+    RE.asks<Pick<R, K>, never, Pick<R, K>[K]>($Optic.get(k))
+
+export const picks =
+  <R extends $S.struct>() =>
+  <K extends keyof R, E, B>(
+    k: K,
+    f: (r: Pick<R, K>[K]) => RE.ReaderEither<Pick<R, K>, E, B>,
+  ) =>
+    picksW<R>()(k, f)
+
+export const picksW =
+  <R1 extends $S.struct>() =>
+  <K extends keyof R1, R2, E, B>(
+    k: K,
+    f: (r: Pick<R1, K>[K]) => RE.ReaderEither<R2, E, B>,
+  ) =>
+    pipe(pick<R1>()(k), RE.chainW(f))
+
+export const picksOptionK =
+  <R extends $S.struct>() =>
+  <E>(onNone: Lazy<E>) =>
+  <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => Optio.Option<B>) =>
+    picks<R>()(k, RE.fromOptionK(onNone)(f))
+
+export const picksEitherK =
+  <R extends $S.struct>() =>
+  <K extends keyof R, _E, B>(k: K, f: (r: Pick<R, K>[K]) => E.Either<_E, B>) =>
+    picks<R>()(k, RE.fromEitherK(f))
