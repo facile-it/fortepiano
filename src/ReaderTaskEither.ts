@@ -44,7 +44,7 @@ export const picksEitherK =
 export const picksIOK =
   <R extends $S.struct>() =>
   <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => IO.IO<B>) =>
-    picks<R>()(k, RTE.fromIOK(f))
+    pipe(pick<R>()(k), RTE.chainIOK(f))
 
 export const picksIOEitherK =
   <R extends $S.struct>() =>
@@ -57,7 +57,7 @@ export const picksIOEitherK =
 export const picksTaskK =
   <R extends $S.struct>() =>
   <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => T.Task<B>) =>
-    picks<R>()(k, RTE.fromTaskK(f))
+    pipe(pick<R>()(k), RTE.chainTaskK(f))
 
 export const picksTaskEitherK =
   <R extends $S.struct>() =>
