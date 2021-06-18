@@ -1,5 +1,6 @@
 import * as $aggregate from './Aggregate';
 import * as $binary from './Binary';
+import * as $date from './Date';
 import * as $eq from './Eq';
 import * as $generatorL from './GeneratorL';
 import * as $magma from './Magma';
@@ -33,4 +34,4 @@ export declare type IntersectionDeep<A, B> = A extends {
 } ? A & {
     readonly [K in keyof B]: IntersectionDeep<K extends keyof A ? A[K] : unknown, B[K]>;
 } : B;
-export { $aggregate, $binary, $eq, $generatorL, $magma, $matrix, $mock, $optics, $option, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $string, $struct, $type, $validation, };
+export { $aggregate, $binary, $date, $eq, $generatorL, $magma, $matrix, $mock, $optics, $option, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $string, $struct, $type, $validation, };
