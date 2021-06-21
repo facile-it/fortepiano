@@ -54,7 +54,7 @@ const isStringArray = (
 export function literalUnion<
   A extends number | string,
   B extends { readonly [K in A]: null },
->(strings: [A, A, ...ReadonlyArray<A>], name?: string): t.KeyofC<B>
+>(strings: Readonly<[A, A, ...ReadonlyArray<A>]>, name?: string): t.KeyofC<B>
 export function literalUnion(
   as: ReadonlyNonEmptyArray<number> | ReadonlyNonEmptyArray<string>,
   name?: string,
