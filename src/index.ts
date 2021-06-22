@@ -6,6 +6,7 @@ import * as $generatorL from './GeneratorL'
 import * as $magma from './Magma'
 import * as $matrix from './Matrix'
 import * as $mock from './Mock'
+import * as $number from './number'
 import * as $optics from './Optics'
 import * as $option from './Option'
 import * as $reader from './Reader'
@@ -49,6 +50,7 @@ export {
   $magma,
   $matrix,
   $mock,
+  $number,
   $optics,
   $option,
   $reader,
