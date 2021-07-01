@@ -3,6 +3,7 @@ import * as $binary from './Binary'
 import * as $date from './Date'
 import * as $eq from './Eq'
 import * as $generatorL from './GeneratorL'
+import * as $http from './Http'
 import * as $magma from './Magma'
 import * as $matrix from './Matrix'
 import * as $mock from './Mock'
@@ -47,6 +48,7 @@ export {
   $date,
   $eq,
   $generatorL,
+  $http,
   $magma,
   $matrix,
   $mock,
