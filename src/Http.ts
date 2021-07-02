@@ -1,10 +1,14 @@
+import { pipe } from 'fp-ts/function'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import * as $E from './Error'
 import { memoize as _memoize } from './function'
-import * as $S from './struct'
+import * as $L from './Log'
+import * as $RTE from './ReaderTaskEither'
+import * as $Stri from './string'
+import * as $Stru from './struct'
 
 const ERRORS = {
   BadRequest: 400,
@@ -16,7 +20,7 @@ const ERRORS = {
 export type HttpMethod = 'delete' | 'get' | 'patch' | 'post' | 'put'
 
 export interface HttpOptions {
-  readonly body?: $S.struct
+  readonly body?: $Stru.struct
   readonly headers?: RR.ReadonlyRecord<string, string>
   readonly json?: boolean
   readonly query?: RR.ReadonlyRecord<string, boolean | number | string>
@@ -60,6 +64,14 @@ export interface HttpClient3<R> {
   patch: HttpRequest3<R>
   post: HttpRequest3<R>
   put: HttpRequest3<R>
+}
+
+export interface HasHttp2 {
+  readonly http: HttpClient2
+}
+
+export interface HasHttp3<R> {
+  readonly http: HttpClient3<R>
 }
 
 export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
@@ -109,4 +121,22 @@ export const memoize = (client: HttpClient2): HttpClient2 => ({
 
     return () => promise
   }),
+})
+
+const _log =
+  (method: HttpMethod, request: HttpRequest2): HttpRequest3<$L.HasLog> =>
+  (url, options) =>
+    pipe(
+      $RTE.picksIOK<$L.HasLog>()('log', ({ log }) =>
+        log(`${$Stri.uppercase(method)} ${url}`),
+      ),
+      RTE.chainTaskEitherK(() => request(url, options)),
+    )
+
+export const log = (client: HttpClient2): HttpClient3<$L.HasLog> => ({
+  delete: _log('delete', client.get),
+  get: _log('get', client.get),
+  patch: _log('patch', client.get),
+  post: _log('post', client.get),
+  put: _log('put', client.get),
 })
