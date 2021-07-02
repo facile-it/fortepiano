@@ -2,6 +2,7 @@ import * as $aggregate from './Aggregate'
 import * as $binary from './Binary'
 import * as $date from './Date'
 import * as $eq from './Eq'
+import * as $error from './Error'
 import * as $generatorL from './GeneratorL'
 import * as $http from './Http'
 import * as $magma from './Magma'
@@ -47,6 +48,7 @@ export {
   $binary,
   $date,
   $eq,
+  $error,
   $generatorL,
   $http,
   $magma,
