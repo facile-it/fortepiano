@@ -52,19 +52,19 @@ export interface HttpRequest3<R, A extends keyof HttpOptions = never> {
 }
 
 export interface HttpClient2 {
-  delete: HttpRequest2<'body'>
-  get: HttpRequest2<'body'>
-  patch: HttpRequest2
-  post: HttpRequest2
-  put: HttpRequest2
+  readonly delete: HttpRequest2<'body'>
+  readonly get: HttpRequest2<'body'>
+  readonly patch: HttpRequest2
+  readonly post: HttpRequest2
+  readonly put: HttpRequest2
 }
 
 export interface HttpClient3<R> {
-  delete: HttpRequest3<R, 'body'>
-  get: HttpRequest3<R, 'body'>
-  patch: HttpRequest3<R>
-  post: HttpRequest3<R>
-  put: HttpRequest3<R>
+  readonly delete: HttpRequest3<R, 'body'>
+  readonly get: HttpRequest3<R, 'body'>
+  readonly patch: HttpRequest3<R>
+  readonly post: HttpRequest3<R>
+  readonly put: HttpRequest3<R>
 }
 
 export type HasHttp2<A extends string = 'http'> = RR.ReadonlyRecord<
