@@ -1,3 +1,4 @@
+import * as RR from 'fp-ts/ReadonlyRecord';
 import * as TE from 'fp-ts/TaskEither';
 import * as t from 'io-ts';
 import { memory } from './cache/Memory';
@@ -11,4 +12,5 @@ export interface Cache {
     readonly delete: (key: string) => TE.TaskEither<Error, void>;
     readonly clear: TE.TaskEither<Error, void>;
 }
+export declare type HasCache<K extends string = 'cache'> = RR.ReadonlyRecord<K, Cache>;
 export { memory, storage };

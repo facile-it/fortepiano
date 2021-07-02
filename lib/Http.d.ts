@@ -41,8 +41,8 @@ export interface HttpClient3<R> {
     readonly post: HttpRequest3<R>;
     readonly put: HttpRequest3<R>;
 }
-export declare type HasHttp2<A extends string = 'http'> = RR.ReadonlyRecord<A, HttpClient2>;
-export declare type HasHttp3<R, A extends string = 'http'> = RR.ReadonlyRecord<A, HttpClient3<R>>;
+export declare type HasHttp2<K extends string = 'http'> = RR.ReadonlyRecord<K, HttpClient2>;
+export declare type HasHttp3<R, K extends string = 'http'> = RR.ReadonlyRecord<K, HttpClient3<R>>;
 export declare const HttpResponseC: <C extends t.Mixed>(codec: C) => t.TypeC<{
     url: t.StringC;
     statusCode: t.NumberC;
@@ -71,7 +71,7 @@ export declare const HttpErrorC: <A extends "BadRequest" | "Unauthorized" | "For
 }>]>;
 export declare const json: (client: HttpClient2) => HttpClient2;
 export declare const memoize: (client: HttpClient2) => HttpClient2;
-export declare const log: <A extends string = "log">(logKey?: A | undefined) => (client: HttpClient2) => HttpClient3<Readonly<Record<A, {
+export declare const log: <K extends string = "log">(logKey?: K | undefined) => (client: HttpClient2) => HttpClient3<Readonly<Record<K, {
     readonly log: $L.Logger;
     readonly warn: $L.Logger;
     readonly error: $L.Logger;
