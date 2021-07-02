@@ -18,7 +18,7 @@ export const memory = (): $C.Cache => {
             Error(`Cannot decode cache item "${key}" into "${codec.name}"`),
           ),
         ),
-    set: (key, value) => async () => {
+    set: (key) => (value) => async () => {
       cache[key] = value
 
       return Ei.of(undefined)
