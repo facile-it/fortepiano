@@ -1,5 +1,6 @@
 import * as IO from 'fp-ts/IO'
 import * as RR from 'fp-ts/ReadonlyRecord'
+import { _void } from './log/Void'
 
 export type Logger = <A>(a: A) => IO.IO<void>
 
@@ -12,3 +13,5 @@ export type HasLog<A extends string = 'log'> = RR.ReadonlyRecord<
     readonly info: Logger
   }
 >
+
+export { _void }

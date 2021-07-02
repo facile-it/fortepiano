@@ -5,6 +5,7 @@ import * as $eq from './Eq'
 import * as $error from './Error'
 import * as $generatorL from './GeneratorL'
 import * as $http from './Http'
+import * as $L from './Log'
 import * as $magma from './Magma'
 import * as $matrix from './Matrix'
 import * as $mock from './Mock'
@@ -43,6 +44,9 @@ export type IntersectionDeep<A, B> = A extends { readonly [x: string]: unknown }
       }
   : B
 
+const { _void, ..._log } = $L
+const $log = { ..._log, void: _void }
+
 export {
   $aggregate,
   $binary,
@@ -51,6 +55,7 @@ export {
   $error,
   $generatorL,
   $http,
+  $log,
   $magma,
   $matrix,
   $mock,
