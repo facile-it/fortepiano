@@ -5,6 +5,7 @@ import * as $eq from './Eq';
 import * as $error from './Error';
 import * as $generatorL from './GeneratorL';
 import * as $http from './Http';
+import * as $L from './Log';
 import * as $magma from './Magma';
 import * as $matrix from './Matrix';
 import * as $mock from './Mock';
@@ -37,4 +38,7 @@ export declare type IntersectionDeep<A, B> = A extends {
 } ? A & {
     readonly [K in keyof B]: IntersectionDeep<K extends keyof A ? A[K] : unknown, B[K]>;
 } : B;
-export { $aggregate, $binary, $date, $eq, $error, $generatorL, $http, $magma, $matrix, $mock, $number, $optics, $option, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $string, $struct, $type, $validation, };
+declare const $log: {
+    void: $L.Logger;
+};
+export { $aggregate, $binary, $date, $eq, $error, $generatorL, $http, $log, $magma, $matrix, $mock, $number, $optics, $option, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $string, $struct, $type, $validation, };

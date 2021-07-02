@@ -41,12 +41,8 @@ export interface HttpClient3<R> {
     post: HttpRequest3<R>;
     put: HttpRequest3<R>;
 }
-export interface HasHttp2 {
-    readonly http: HttpClient2;
-}
-export interface HasHttp3<R> {
-    readonly http: HttpClient3<R>;
-}
+export declare type HasHttp2<A extends string = 'http'> = RR.ReadonlyRecord<A, HttpClient2>;
+export declare type HasHttp3<R, A extends string = 'http'> = RR.ReadonlyRecord<A, HttpClient3<R>>;
 export declare const HttpResponseC: <C extends t.Mixed>(codec: C) => t.TypeC<{
     url: t.StringC;
     statusCode: t.NumberC;
@@ -75,5 +71,10 @@ export declare const HttpErrorC: <A extends "BadRequest" | "Unauthorized" | "For
 }>]>;
 export declare const json: (client: HttpClient2) => HttpClient2;
 export declare const memoize: (client: HttpClient2) => HttpClient2;
-export declare const log: (client: HttpClient2) => HttpClient3<$L.HasLog>;
+export declare const log: <A extends string = "log">(logKey?: A | undefined) => (client: HttpClient2) => HttpClient3<Readonly<Record<A, {
+    readonly log: $L.Logger;
+    readonly warn: $L.Logger;
+    readonly error: $L.Logger;
+    readonly info: $L.Logger;
+}>>>;
 export { mock };
