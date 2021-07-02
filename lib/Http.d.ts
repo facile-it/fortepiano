@@ -2,6 +2,7 @@ import * as RTE from 'fp-ts/ReaderTaskEither';
 import * as RR from 'fp-ts/ReadonlyRecord';
 import * as TE from 'fp-ts/TaskEither';
 import * as t from 'io-ts';
+import { mock } from './http/Mock';
 import * as $L from './Log';
 import * as $Stru from './struct';
 export declare type HttpMethod = 'delete' | 'get' | 'patch' | 'post' | 'put';
@@ -75,3 +76,4 @@ export declare const HttpErrorC: <A extends "BadRequest" | "Unauthorized" | "For
 export declare const json: (client: HttpClient2) => HttpClient2;
 export declare const memoize: (client: HttpClient2) => HttpClient2;
 export declare const log: (client: HttpClient2) => HttpClient3<$L.HasLog>;
+export { mock };
