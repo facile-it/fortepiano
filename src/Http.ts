@@ -67,13 +67,14 @@ export interface HttpClient3<R> {
   put: HttpRequest3<R>
 }
 
-export interface HasHttp2 {
-  readonly http: HttpClient2
-}
-
-export interface HasHttp3<R> {
-  readonly http: HttpClient3<R>
-}
+export type HasHttp2<A extends string = 'http'> = RR.ReadonlyRecord<
+  A,
+  HttpClient2
+>
+export type HasHttp3<R, A extends string = 'http'> = RR.ReadonlyRecord<
+  A,
+  HttpClient3<R>
+>
 
 export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
   t.type(
@@ -125,21 +126,28 @@ export const memoize = (client: HttpClient2): HttpClient2 => ({
 })
 
 const _log =
-  (method: HttpMethod, request: HttpRequest2): HttpRequest3<$L.HasLog> =>
+  <A extends string>(
+    logKey: A,
+    method: HttpMethod,
+    request: HttpRequest2,
+  ): HttpRequest3<$L.HasLog<A>> =>
   (url, options) =>
     pipe(
-      $RTE.picksIOK<$L.HasLog>()('log', ({ log }) =>
+      $RTE.picksIOK<$L.HasLog<A>>()(logKey, ({ log }) =>
         log(`${$Stri.uppercase(method)} ${url}`),
       ),
       RTE.chainTaskEitherK(() => request(url, options)),
     )
 
-export const log = (client: HttpClient2): HttpClient3<$L.HasLog> => ({
-  delete: _log('delete', client.get),
-  get: _log('get', client.get),
-  patch: _log('patch', client.get),
-  post: _log('post', client.get),
-  put: _log('put', client.get),
-})
+export const log =
+  <A extends string = 'log'>(logKey?: A) =>
+  (client: HttpClient2): HttpClient3<$L.HasLog<A>> =>
+    pipe(logKey || ('log' as A), (logKey) => ({
+      delete: _log(logKey, 'delete', client.delete),
+      get: _log(logKey, 'get', client.get),
+      patch: _log(logKey, 'patch', client.patch),
+      post: _log(logKey, 'post', client.post),
+      put: _log(logKey, 'put', client.put),
+    }))
 
 export { mock }
