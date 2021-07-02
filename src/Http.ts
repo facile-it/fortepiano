@@ -72,7 +72,7 @@ export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
       ),
       body: codec,
     },
-    'HttpResponse',
+    `HttpResponse(${codec.name})`,
   )
 
 export const HttpErrorC = <A extends keyof typeof ERRORS>(type: A) =>
@@ -86,7 +86,7 @@ export const HttpErrorC = <A extends keyof typeof ERRORS>(type: A) =>
         ]),
       }),
     ],
-    'HttpError',
+    `Http${type}Error`,
   )
 
 const _json =
