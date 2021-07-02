@@ -1,5 +1,6 @@
 import * as $aggregate from './Aggregate'
 import * as $binary from './Binary'
+import * as $cache from './Cache'
 import * as $date from './Date'
 import * as $eq from './Eq'
 import * as $error from './Error'
@@ -50,6 +51,7 @@ const $log = { ..._log, void: _void }
 export {
   $aggregate,
   $binary,
+  $cache,
   $date,
   $eq,
   $error,
