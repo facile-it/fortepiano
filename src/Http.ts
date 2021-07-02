@@ -67,12 +67,12 @@ export interface HttpClient3<R> {
   readonly put: HttpRequest3<R>
 }
 
-export type HasHttp2<A extends string = 'http'> = RR.ReadonlyRecord<
-  A,
+export type HasHttp2<K extends string = 'http'> = RR.ReadonlyRecord<
+  K,
   HttpClient2
 >
-export type HasHttp3<R, A extends string = 'http'> = RR.ReadonlyRecord<
-  A,
+export type HasHttp3<R, K extends string = 'http'> = RR.ReadonlyRecord<
+  K,
   HttpClient3<R>
 >
 
@@ -126,23 +126,23 @@ export const memoize = (client: HttpClient2): HttpClient2 => ({
 })
 
 const _log =
-  <A extends string>(
-    logKey: A,
+  <K extends string>(
+    logKey: K,
     method: HttpMethod,
     request: HttpRequest2,
-  ): HttpRequest3<$L.HasLog<A>> =>
+  ): HttpRequest3<$L.HasLog<K>> =>
   (url, options) =>
     pipe(
-      $RTE.picksIOK<$L.HasLog<A>>()(logKey, ({ log }) =>
+      $RTE.picksIOK<$L.HasLog<K>>()(logKey, ({ log }) =>
         log(`${$Stri.uppercase(method)} ${url}`),
       ),
       RTE.chainTaskEitherK(() => request(url, options)),
     )
 
 export const log =
-  <A extends string = 'log'>(logKey?: A) =>
-  (client: HttpClient2): HttpClient3<$L.HasLog<A>> =>
-    pipe(logKey || ('log' as A), (logKey) => ({
+  <K extends string = 'log'>(logKey?: K) =>
+  (client: HttpClient2): HttpClient3<$L.HasLog<K>> =>
+    pipe(logKey || ('log' as K), (logKey) => ({
       delete: _log(logKey, 'delete', client.delete),
       get: _log(logKey, 'get', client.get),
       patch: _log(logKey, 'patch', client.patch),

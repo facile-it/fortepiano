@@ -4,8 +4,8 @@ import { _void } from './log/Void'
 
 export type Logger = <A>(a: A) => IO.IO<void>
 
-export type HasLog<A extends string = 'log'> = RR.ReadonlyRecord<
-  A,
+export type HasLog<K extends string = 'log'> = RR.ReadonlyRecord<
+  K,
   {
     readonly log: Logger
     readonly warn: Logger
