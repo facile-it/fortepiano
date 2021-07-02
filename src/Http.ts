@@ -5,6 +5,7 @@ import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import * as $E from './Error'
 import { memoize as _memoize } from './function'
+import { mock } from './http/Mock'
 import * as $L from './Log'
 import * as $RTE from './ReaderTaskEither'
 import * as $Stri from './string'
@@ -140,3 +141,5 @@ export const log = (client: HttpClient2): HttpClient3<$L.HasLog> => ({
   post: _log('post', client.get),
   put: _log('put', client.get),
 })
+
+export { mock }
