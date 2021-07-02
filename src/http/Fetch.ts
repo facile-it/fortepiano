@@ -1,14 +1,16 @@
-import * as E from 'fp-ts/Either'
+import * as Ei from 'fp-ts/Either'
 import { constUndefined, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
-import * as S from 'fp-ts/Semigroup'
+import * as Se from 'fp-ts/Semigroup'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { NonEmptyString } from 'io-ts-types'
+import * as $Er from '../Error'
 import * as $H from '../Http'
+import * as $St from '../string'
 
 const request = (
   method: $H.HttpMethod,
@@ -33,7 +35,7 @@ const request = (
         {
           // eslint-disable-next-line no-nested-ternary
           body: options.json
-            ? pipe(options.body, J.stringify, E.getOrElseW(constUndefined))
+            ? pipe(options.body, J.stringify, Ei.getOrElseW(constUndefined))
             : t.record(t.string, t.unknown).is(options.body)
             ? pipe(
                 options.body,
@@ -57,17 +59,33 @@ const request = (
           method,
         },
       ).then((response) =>
-        (options.json ? response.json() : response.text()).then((body) => ({
-          url: response.url,
-          statusCode: response.status,
-          headers: pipe(
-            [...response.headers.entries()],
-            RR.fromFoldable(S.last<string>(), RA.Foldable),
-          ),
-          body,
-        })),
+        (response.ok && options.json ? response.json() : response.text()).then(
+          (body) => {
+            const _response = {
+              url: response.url,
+              statusCode: response.status,
+              headers: pipe(
+                [...response.headers.entries()],
+                RR.fromFoldable(Se.last<string>(), RA.Foldable),
+              ),
+              body,
+            }
+
+            if (!response.ok) {
+              throw { ...new Error(response.statusText), response: _response }
+            }
+
+            return _response
+          },
+        ),
       ),
-    () => Error(),
+    (error) =>
+      // eslint-disable-next-line no-nested-ternary
+      $Er.ErrorC.is(error)
+        ? error
+        : t.string.is(error)
+        ? Error(error)
+        : Error(`Cannot make HTTP request "${$St.uppercase(method)} ${url}"`),
   )
 
 export const $fetch: $H.HttpClient2 = {
