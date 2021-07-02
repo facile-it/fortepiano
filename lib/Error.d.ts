@@ -5,3 +5,4 @@ export declare const ErrorC: t.IntersectionC<[t.TypeC<{
 }>, t.PartialC<{
     stack: t.StringC;
 }>]>;
+export declare const fromUnknown: (e: Error) => (u: unknown) => Error;
