@@ -30,12 +30,15 @@ export interface HttpResponse<A = unknown> {
 
 export type HttpError = Error | (Error & { readonly response: HttpResponse })
 
-export interface HttpRequest2 {
-  (url: string, options?: HttpOptions): TE.TaskEither<HttpError, HttpResponse>
+export interface HttpRequest2<A extends keyof HttpOptions = never> {
+  (url: string, options?: Omit<HttpOptions, A>): TE.TaskEither<
+    HttpError,
+    HttpResponse
+  >
 }
 
-export interface HttpRequest3<R> {
-  (url: string, options?: HttpOptions): RTE.ReaderTaskEither<
+export interface HttpRequest3<R, A extends keyof HttpOptions = never> {
+  (url: string, options?: Omit<HttpOptions, A>): RTE.ReaderTaskEither<
     R,
     HttpError,
     HttpResponse
@@ -43,16 +46,16 @@ export interface HttpRequest3<R> {
 }
 
 export interface HttpClient2 {
-  delete: HttpRequest2
-  get: HttpRequest2
+  delete: HttpRequest2<'body'>
+  get: HttpRequest2<'body'>
   patch: HttpRequest2
   post: HttpRequest2
   put: HttpRequest2
 }
 
 export interface HttpClient3<R> {
-  delete: HttpRequest3<R>
-  get: HttpRequest3<R>
+  delete: HttpRequest3<R, 'body'>
+  get: HttpRequest3<R, 'body'>
   patch: HttpRequest3<R>
   post: HttpRequest3<R>
   put: HttpRequest3<R>
