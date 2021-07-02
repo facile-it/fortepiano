@@ -79,13 +79,9 @@ const request = (
           },
         ),
       ),
-    (error) =>
-      // eslint-disable-next-line no-nested-ternary
-      $Er.ErrorC.is(error)
-        ? error
-        : t.string.is(error)
-        ? Error(error)
-        : Error(`Cannot make HTTP request "${$St.uppercase(method)} ${url}"`),
+    $Er.fromUnknown(
+      Error(`Cannot make HTTP request "${$St.uppercase(method)} ${url}"`),
+    ),
   )
 
 export const $fetch: $H.HttpClient2 = {
