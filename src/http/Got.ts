@@ -24,7 +24,9 @@ const request = (
         url: response.url,
         statusCode: response.statusCode,
         headers: pipe(response.headers, RR.filter(t.string.is)),
-        body: options.json ? (response.body as any).data : response.body,
+        body: options.json
+          ? ((response.body as any) || {}).data
+          : response.body,
       })),
     () => Error(),
   )
