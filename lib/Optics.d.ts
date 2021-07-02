@@ -71,5 +71,5 @@ export declare const optics: {
     get: <S extends object, P extends keyof S>(p: P) => Getter<S, S[P]>;
     getOption: <S_1 extends object, P_1 extends keyof S_1>(p: P_1) => Getter<S_1, O.Option<NonNullable<S_1[P_1]>>>;
     modify: <S_2 extends object, P_2 extends keyof S_2>(p: P_2, f: (a: S_2[P_2]) => S_2[P_2]) => (s: S_2) => S_2;
-    set: <S_4 extends object, P_3 extends keyof S_4>(p: P_3, a: S_4[P_3]) => (s: S_4) => S_4;
+    set: <S_3 extends object, P_3 extends keyof S_3>(p: P_3, a: S_3[P_3]) => (s: S_3) => S_3;
 };
