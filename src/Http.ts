@@ -49,11 +49,6 @@ export interface HttpClient {
   readonly put: HttpRequest
 }
 
-export type HasHttp<K extends string = 'http'> = RR.ReadonlyRecord<
-  K,
-  HttpClient
->
-
 export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
   t.type(
     {

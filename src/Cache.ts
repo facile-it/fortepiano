@@ -1,7 +1,6 @@
 import { constVoid, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
-import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { memory } from './cache/Memory'
@@ -22,8 +21,6 @@ export interface Cache {
   readonly delete: (key: string) => TE.TaskEither<Error, void>
   readonly clear: TE.TaskEither<Error, void>
 }
-
-export type HasCache<K extends string = 'cache'> = RR.ReadonlyRecord<K, Cache>
 
 export const chain = (...caches: RNEA.ReadonlyNonEmptyArray<Cache>): Cache => ({
   get: (key: string, codec = t.unknown) =>
