@@ -12,7 +12,10 @@ export interface Cache {
     >
     (key: string): TE.TaskEither<Error, unknown>
   }
-  readonly set: (key: string) => (value: unknown) => TE.TaskEither<Error, void>
+  readonly set: (
+    key: string,
+    ttl?: number,
+  ) => (value: unknown) => TE.TaskEither<Error, void>
   readonly delete: (key: string) => TE.TaskEither<Error, void>
   readonly clear: TE.TaskEither<Error, void>
 }

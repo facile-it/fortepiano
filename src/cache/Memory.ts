@@ -3,8 +3,9 @@ import { pipe } from 'fp-ts/function'
 import * as t from 'io-ts'
 import * as $C from '../Cache'
 
-export const memory = (): $C.Cache => {
+export const memory = (ttl = Infinity): $C.Cache => {
   let cache: Record<string, unknown> = {}
+  let timeouts: Record<string, NodeJS.Timeout> = {}
 
   return {
     get:
@@ -18,18 +19,30 @@ export const memory = (): $C.Cache => {
             Error(`Cannot decode cache item "${key}" into "${codec.name}"`),
           ),
         ),
-    set: (key) => (value) => async () => {
-      cache[key] = value
+    set:
+      (key, _ttl = ttl) =>
+      (value) =>
+      async () => {
+        clearTimeout(timeouts[key])
+        cache[key] = value
+        timeouts[key] = setTimeout(() => {
+          delete cache[key]
+          delete timeouts[key]
+        }, Math.max(0, _ttl))
 
-      return Ei.of(undefined)
-    },
+        return Ei.of(undefined)
+      },
     delete: (key) => async () => {
+      clearTimeout(timeouts[key])
       delete cache[key]
+      delete timeouts[key]
 
       return Ei.of(undefined)
     },
     clear: async () => {
+      Object.values(timeouts).forEach(clearTimeout)
       cache = {}
+      timeouts = {}
 
       return Ei.of(undefined)
     },
