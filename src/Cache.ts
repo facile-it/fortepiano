@@ -1,3 +1,4 @@
+import * as J from 'fp-ts/Json'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
@@ -15,7 +16,7 @@ export interface Cache {
   readonly set: (
     key: string,
     ttl?: number,
-  ) => (value: unknown) => TE.TaskEither<Error, void>
+  ) => (value: J.Json) => TE.TaskEither<Error, void>
   readonly delete: (key: string) => TE.TaskEither<Error, void>
   readonly clear: TE.TaskEither<Error, void>
 }
