@@ -1,5 +1,4 @@
 import { pipe } from 'fp-ts/function'
-import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
@@ -7,7 +6,6 @@ import * as $E from './Error'
 import { memoize as _memoize } from './function'
 import { mock } from './http/Mock'
 import * as $L from './Log'
-import * as $RTE from './ReaderTaskEither'
 import * as $Stri from './string'
 import * as $Stru from './struct'
 
@@ -36,44 +34,24 @@ export interface HttpResponse<A = unknown> {
 
 export type HttpError = Error | (Error & { readonly response: HttpResponse })
 
-export interface HttpRequest2<A extends keyof HttpOptions = never> {
+export interface HttpRequest<A extends keyof HttpOptions = never> {
   (url: string, options?: Omit<HttpOptions, A>): TE.TaskEither<
     HttpError,
     HttpResponse
   >
 }
 
-export interface HttpRequest3<R, A extends keyof HttpOptions = never> {
-  (url: string, options?: Omit<HttpOptions, A>): RTE.ReaderTaskEither<
-    R,
-    HttpError,
-    HttpResponse
-  >
+export interface HttpClient {
+  readonly delete: HttpRequest<'body'>
+  readonly get: HttpRequest<'body'>
+  readonly patch: HttpRequest
+  readonly post: HttpRequest
+  readonly put: HttpRequest
 }
 
-export interface HttpClient2 {
-  readonly delete: HttpRequest2<'body'>
-  readonly get: HttpRequest2<'body'>
-  readonly patch: HttpRequest2
-  readonly post: HttpRequest2
-  readonly put: HttpRequest2
-}
-
-export interface HttpClient3<R> {
-  readonly delete: HttpRequest3<R, 'body'>
-  readonly get: HttpRequest3<R, 'body'>
-  readonly patch: HttpRequest3<R>
-  readonly post: HttpRequest3<R>
-  readonly put: HttpRequest3<R>
-}
-
-export type HasHttp2<K extends string = 'http'> = RR.ReadonlyRecord<
+export type HasHttp<K extends string = 'http'> = RR.ReadonlyRecord<
   K,
-  HttpClient2
->
-export type HasHttp3<R, K extends string = 'http'> = RR.ReadonlyRecord<
-  K,
-  HttpClient3<R>
+  HttpClient
 >
 
 export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
@@ -104,11 +82,11 @@ export const HttpErrorC = <A extends keyof typeof ERRORS>(type: A) =>
   )
 
 const _json =
-  (request: HttpRequest2): HttpRequest2 =>
+  (request: HttpRequest): HttpRequest =>
   (url, options) =>
     request(url, { ...options, json: true })
 
-export const json = (client: HttpClient2): HttpClient2 => ({
+export const json = (client: HttpClient): HttpClient => ({
   delete: _json(client.get),
   get: _json(client.get),
   patch: _json(client.patch),
@@ -116,7 +94,7 @@ export const json = (client: HttpClient2): HttpClient2 => ({
   put: _json(client.post),
 })
 
-export const memoize = (client: HttpClient2): HttpClient2 => ({
+export const memoize = (client: HttpClient): HttpClient => ({
   ...client,
   get: _memoize((url, options) => {
     const promise = client.get(url, options)()
@@ -126,28 +104,20 @@ export const memoize = (client: HttpClient2): HttpClient2 => ({
 })
 
 const _log =
-  <K extends string>(
-    logKey: K,
-    method: HttpMethod,
-    request: HttpRequest2,
-  ): HttpRequest3<$L.HasLog<K>> =>
+  (method: HttpMethod, request: HttpRequest, logger: $L.Logger): HttpRequest =>
   (url, options) =>
     pipe(
-      $RTE.picksIOK<$L.HasLog<K>>()(logKey, ({ log }) =>
-        log(`${$Stri.uppercase(method)} ${url}`),
-      ),
-      RTE.chainTaskEitherK(() => request(url, options)),
+      logger(`${$Stri.uppercase(method)} ${url}`),
+      TE.fromIO,
+      TE.chain(() => request(url, options)),
     )
 
-export const log =
-  <K extends string = 'log'>(logKey?: K) =>
-  (client: HttpClient2): HttpClient3<$L.HasLog<K>> =>
-    pipe(logKey || ('log' as K), (logKey) => ({
-      delete: _log(logKey, 'delete', client.delete),
-      get: _log(logKey, 'get', client.get),
-      patch: _log(logKey, 'patch', client.patch),
-      post: _log(logKey, 'post', client.post),
-      put: _log(logKey, 'put', client.put),
-    }))
+export const log = (client: HttpClient, logger: $L.Logger): HttpClient => ({
+  delete: _log('delete', client.delete, logger),
+  get: _log('get', client.get, logger),
+  patch: _log('patch', client.patch, logger),
+  post: _log('post', client.post, logger),
+  put: _log('put', client.put, logger),
+})
 
 export { mock }
