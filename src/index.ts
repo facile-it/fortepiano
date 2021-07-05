@@ -1,6 +1,7 @@
 import * as $aggregate from './Aggregate'
 import * as $binary from './Binary'
 import * as $cache from './Cache'
+import * as $console from './Console'
 import * as $date from './Date'
 import * as $eq from './Eq'
 import * as $error from './Error'
@@ -52,6 +53,7 @@ export {
   $aggregate,
   $binary,
   $cache,
+  $console,
   $date,
   $eq,
   $error,
