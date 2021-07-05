@@ -11,12 +11,16 @@ const CacheItemC = t.type({
   value: t.unknown,
 })
 
-export const storage = (_storage: Storage, ttl = Infinity): $C.Cache => ({
+export const storage = (
+  _storage: Storage,
+  name?: string,
+  ttl = Infinity,
+): $C.Cache => ({
   get:
     (key: string, codec = t.unknown) =>
     async () =>
       pipe(
-        _storage.getItem(key),
+        _storage.getItem(`${undefined !== name ? `${name}_` : ''}${key}`),
         Ei.fromNullable(Error(`Cannot find cache item "${key}"`)),
         Ei.chain(J.parse),
         Ei.chainW(CacheItemC.decode),
@@ -45,9 +49,17 @@ export const storage = (_storage: Storage, ttl = Infinity): $C.Cache => ({
         J.stringify,
         Ei.bimap(
           $Er.fromUnknown(Error(`Cannot encode cache item "${key}"`)),
-          (item) => _storage.setItem(key, item),
+          (item) =>
+            _storage.setItem(
+              `${undefined !== name ? `${name}_` : ''}${key}`,
+              item,
+            ),
         ),
       ),
-  delete: (key) => async () => pipe(_storage.removeItem(key), Ei.of),
+  delete: (key) => async () =>
+    pipe(
+      _storage.removeItem(`${undefined !== name ? `${name}_` : ''}${key}`),
+      Ei.of,
+    ),
   clear: async () => pipe(_storage.clear(), Ei.of),
 })
