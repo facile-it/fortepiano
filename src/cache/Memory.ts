@@ -28,7 +28,7 @@ export const memory = (ttl = Infinity): $C.Cache => {
         timeouts[key] = setTimeout(() => {
           delete cache[key]
           delete timeouts[key]
-        }, Math.max(0, _ttl))
+        }, Math.min(Math.pow(2, 31) - 1, Math.max(0, _ttl)))
 
         return Ei.of(undefined)
       },

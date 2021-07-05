@@ -103,14 +103,14 @@ export const cache =
           () => client.get(url, options),
           (key) =>
             pipe(
-              cache.get(key, HttpResponseC(t.unknown)),
+              cache.get(`http_${key}`, HttpResponseC(t.unknown)),
               TE.alt(() =>
                 pipe(
                   client.get(url, options),
                   TE.chainFirstW((response) =>
                     pipe(
                       response as HttpResponse & J.Json,
-                      cache.set(key),
+                      cache.set(`http_${key}`),
                       TE.altW(() => TE.of(undefined)),
                     ),
                   ),

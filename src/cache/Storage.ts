@@ -35,7 +35,13 @@ export const storage = (_storage: Storage, ttl = Infinity): $C.Cache => ({
     (value) =>
     async () =>
       pipe(
-        { exp: Date.now() + Math.max(0, _ttl) + 1, value },
+        {
+          exp:
+            Date.now() +
+            Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, _ttl)) +
+            1,
+          value,
+        },
         J.stringify,
         Ei.bimap(
           $Er.fromUnknown(Error(`Cannot encode cache item "${key}"`)),
