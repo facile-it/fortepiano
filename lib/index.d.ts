@@ -7,12 +7,11 @@ import * as $eq from './Eq';
 import * as $error from './Error';
 import * as $generatorL from './GeneratorL';
 import * as $http from './Http';
-import * as $L from './Log';
+import * as $log from './Log';
 import * as $magma from './Magma';
 import * as $matrix from './Matrix';
 import * as $mock from './Mock';
 import * as $number from './number';
-import * as $optics from './Optics';
 import * as $option from './Option';
 import * as $reader from './Reader';
 import * as $readerEither from './ReaderEither';
@@ -40,7 +39,4 @@ export declare type IntersectionDeep<A, B> = A extends {
 } ? A & {
     readonly [K in keyof B]: IntersectionDeep<K extends keyof A ? A[K] : unknown, B[K]>;
 } : B;
-declare const $log: {
-    void: $L.Logger;
-};
-export { $aggregate, $binary, $cache, $console, $date, $eq, $error, $generatorL, $http, $log, $magma, $matrix, $mock, $number, $optics, $option, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $string, $struct, $type, $validation, };
+export { $aggregate, $binary, $cache, $console, $date, $eq, $error, $generatorL, $http, $log, $magma, $matrix, $mock, $number, $option, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $string, $struct, $type, $validation, };
