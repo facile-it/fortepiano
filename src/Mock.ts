@@ -2,7 +2,14 @@ import * as Appli from 'fp-ts/Applicative'
 import * as _Apply from 'fp-ts/Apply'
 import * as C from 'fp-ts/Chain'
 import * as FIO from 'fp-ts/FromIO'
-import { flip, not, pipe } from 'fp-ts/function'
+import {
+  constNull,
+  constUndefined,
+  constVoid,
+  flip,
+  not,
+  pipe,
+} from 'fp-ts/function'
 import * as F from 'fp-ts/Functor'
 import * as IO from 'fp-ts/IO'
 import * as M from 'fp-ts/Monad'
@@ -117,10 +124,9 @@ export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
 
 export const MonadIO: MIO.MonadIO1<URI> = { ...Monad, ...FromIO }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const _void: Mock<void> = () => () => {}
-const _undefined: Mock<undefined> = () => () => undefined
-const _null: Mock<null> = () => () => null
+const _void: Mock<void> = () => constVoid
+const _undefined: Mock<undefined> = () => constUndefined
+const _null: Mock<null> = () => constNull
 
 export const boolean: Mock<boolean> = fromIO(R.randomBool)
 
