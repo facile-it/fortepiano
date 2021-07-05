@@ -37,14 +37,14 @@ export declare const HttpResponseC: <C extends t.Mixed>(codec: C) => t.TypeC<{
     headers: t.ReadonlyC<t.RecordC<t.StringC, t.UnionC<[t.StringC, t.ReadonlyArrayC<t.StringC>]>>>;
     body: C;
 }>;
-export declare const HttpErrorC: <A extends "BadRequest" | "Unauthorized" | "Forbidden" | "NotFound">(type: A) => t.IntersectionC<[t.Type<Error, Error, unknown>, t.TypeC<{
+export declare const HttpErrorC: <A extends "BadRequest" | "Unauthorized" | "Forbidden" | "NotFound">(type?: A | undefined) => t.IntersectionC<[t.Type<Error, Error, unknown>, t.TypeC<{
     response: t.IntersectionC<[t.TypeC<{
         url: t.StringC;
         statusCode: t.NumberC;
         headers: t.ReadonlyC<t.RecordC<t.StringC, t.UnionC<[t.StringC, t.ReadonlyArrayC<t.StringC>]>>>;
         body: t.UnknownC;
     }>, t.TypeC<{
-        statusCode: t.LiteralC<{
+        statusCode: t.NumberC | t.LiteralC<{
             readonly BadRequest: 400;
             readonly Unauthorized: 401;
             readonly Forbidden: 403;
