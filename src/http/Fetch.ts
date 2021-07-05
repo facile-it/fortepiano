@@ -84,7 +84,7 @@ const request = (
     ),
   )
 
-export const $fetch: $H.HttpClient2 = {
+export const $fetch: $H.HttpClient = {
   delete: (url, options) => request('delete', url, options),
   get: (url, options) => request('get', url, options),
   patch: (url, options) => request('patch', url, options),

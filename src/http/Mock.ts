@@ -24,7 +24,7 @@ const error = (url: string): $M.Mock<$H.HttpError> =>
     response: $M.nullable(response(url, true)),
   })
 
-const request: $H.HttpRequest2 = (url) =>
+const request: $H.HttpRequest = (url) =>
   pipe(
     $M.union(error(url), response(url)),
     TE.fromIOK(run),
@@ -35,7 +35,7 @@ const request: $H.HttpRequest2 = (url) =>
     ),
   )
 
-export const mock: $H.HttpClient2 = {
+export const mock: $H.HttpClient = {
   delete: request,
   get: request,
   patch: request,
