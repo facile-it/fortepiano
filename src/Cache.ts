@@ -1,10 +1,11 @@
-import { constVoid, pipe } from 'fp-ts/function'
+import { constVoid, flow, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { memory } from './cache/Memory'
 import { storage } from './cache/Storage'
+import * as $L from './Log'
 
 export interface Cache {
   readonly get: {
@@ -48,5 +49,29 @@ export const chain = (...caches: RNEA.ReadonlyNonEmptyArray<Cache>): Cache => ({
     TE.map(constVoid),
   ),
 })
+
+export const log =
+  (logger: $L.Logger) =>
+  (cache: Cache): Cache => ({
+    get: (key: string, codec = t.unknown) =>
+      pipe(
+        cache.get(key, codec),
+        TE.chainFirstIOK(() => logger(`Item "${key}" retrieved from cache`)),
+      ),
+    set: (key: string, ttl) =>
+      flow(
+        cache.set(key, ttl),
+        TE.chainFirstIOK(() => logger(`Item "${key}" saved to cache`)),
+      ),
+    delete: (key: string) =>
+      pipe(
+        cache.delete(key),
+        TE.chainFirstIOK(() => logger(`Item "${key}" deleted from cache`)),
+      ),
+    clear: pipe(
+      cache.clear,
+      TE.chainFirstIOK(() => logger('Cache cleared')),
+    ),
+  })
 
 export { memory, storage }
