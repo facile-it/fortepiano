@@ -64,18 +64,18 @@ export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
     `HttpResponse(${codec.name})`,
   )
 
-export const HttpErrorC = <A extends keyof typeof ERRORS>(type: A) =>
+export const HttpErrorC = <A extends keyof typeof ERRORS>(type?: A) =>
   t.intersection(
     [
       $Er.ErrorC,
       t.type({
         response: t.intersection([
           HttpResponseC(t.unknown),
-          t.type({ statusCode: t.literal(ERRORS[type]) }),
+          t.type({ statusCode: type ? t.literal(ERRORS[type]) : t.number }),
         ]),
       }),
     ],
-    `Http${type}Error`,
+    `Http${type || ''}Error`,
   )
 
 const _json =
