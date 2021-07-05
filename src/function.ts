@@ -26,25 +26,17 @@ export function uncurry(f: (...args: any) => any) {
 }
 
 export const memoize = <A extends (...args: any) => any>(f: A): A => {
-  const cache: Record<string, unknown> = {}
+  const cache: Record<string, ReturnType<A>> = {}
 
-  return ((...args: any) => {
+  return ((...args: any): ReturnType<A> => {
     try {
       const hash = JSON.stringify(args)
       if (!(hash in cache)) {
-        const result = f(...args)
-        cache[hash] =
-          result instanceof Promise
-            ? result.catch((e) => {
-                delete cache[hash]
-
-                throw e
-              })
-            : result
+        cache[hash] = f(...args)
       }
 
       return cache[hash]
-    } catch (e) {
+    } catch (error) {
       return f(...args)
     }
   }) as any
