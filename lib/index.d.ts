@@ -1,6 +1,7 @@
 import * as $aggregate from './Aggregate';
 import * as $binary from './Binary';
 import * as $cache from './Cache';
+import * as $console from './Console';
 import * as $date from './Date';
 import * as $eq from './Eq';
 import * as $error from './Error';
@@ -42,4 +43,4 @@ export declare type IntersectionDeep<A, B> = A extends {
 declare const $log: {
     void: $L.Logger;
 };
-export { $aggregate, $binary, $cache, $date, $eq, $error, $generatorL, $http, $log, $magma, $matrix, $mock, $number, $optics, $option, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $string, $struct, $type, $validation, };
+export { $aggregate, $binary, $cache, $console, $date, $eq, $error, $generatorL, $http, $log, $magma, $matrix, $mock, $number, $optics, $option, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $string, $struct, $type, $validation, };
