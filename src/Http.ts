@@ -1,9 +1,11 @@
+import * as Ei from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
+import * as J from 'fp-ts/Json'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
-import * as $E from './Error'
-import { memoize as _memoize } from './function'
+import * as $C from './Cache'
+import * as $Er from './Error'
 import { mock } from './http/Mock'
 import * as $L from './Log'
 import * as $Stri from './string'
@@ -65,7 +67,7 @@ export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
 export const HttpErrorC = <A extends keyof typeof ERRORS>(type: A) =>
   t.intersection(
     [
-      $E.ErrorC,
+      $Er.ErrorC,
       t.type({
         response: t.intersection([
           HttpResponseC(t.unknown),
@@ -89,14 +91,35 @@ export const json = (client: HttpClient): HttpClient => ({
   put: _json(client.post),
 })
 
-export const memoize = (client: HttpClient): HttpClient => ({
-  ...client,
-  get: _memoize((url, options) => {
-    const promise = client.get(url, options)()
-
-    return () => promise
-  }),
-})
+export const cache =
+  (cache: $C.Cache) =>
+  (client: HttpClient): HttpClient => ({
+    ...client,
+    get: (url, options) =>
+      pipe(
+        [url, options] as const,
+        J.stringify,
+        Ei.match(
+          () => client.get(url, options),
+          (key) =>
+            pipe(
+              cache.get(key, HttpResponseC(t.unknown)),
+              TE.alt(() =>
+                pipe(
+                  client.get(url, options),
+                  TE.chainFirstW((response) =>
+                    pipe(
+                      response as HttpResponse & J.Json,
+                      cache.set(key),
+                      TE.altW(() => TE.of(undefined)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ),
+      ),
+  })
 
 const _log =
   (method: HttpMethod, request: HttpRequest, logger: $L.Logger): HttpRequest =>
@@ -107,12 +130,14 @@ const _log =
       TE.chain(() => request(url, options)),
     )
 
-export const log = (client: HttpClient, logger: $L.Logger): HttpClient => ({
-  delete: _log('delete', client.delete, logger),
-  get: _log('get', client.get, logger),
-  patch: _log('patch', client.patch, logger),
-  post: _log('post', client.post, logger),
-  put: _log('put', client.put, logger),
-})
+export const log =
+  (logger: $L.Logger) =>
+  (client: HttpClient): HttpClient => ({
+    delete: _log('delete', client.delete, logger),
+    get: _log('get', client.get, logger),
+    patch: _log('patch', client.patch, logger),
+    post: _log('post', client.post, logger),
+    put: _log('put', client.put, logger),
+  })
 
 export { mock }
