@@ -2,13 +2,12 @@ import { pipe } from 'fp-ts/function'
 import * as IO from 'fp-ts/IO'
 import * as RT from 'fp-ts/ReaderTask'
 import * as T from 'fp-ts/Task'
-import * as $O from './Optics'
 import * as $S from './struct'
 
 export const pick =
   <R extends $S.struct>() =>
   <K extends keyof R>(k: K) =>
-    RT.asks<Pick<R, K>, Pick<R, K>[K]>($O.get(k))
+    RT.asks<Pick<R, K>, Pick<R, K>[K]>($S.lookup(k))
 
 export const picks =
   <R extends $S.struct>() =>

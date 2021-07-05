@@ -4,7 +4,7 @@ import * as J from 'fp-ts/Json'
 import * as t from 'io-ts'
 import * as $C from '../Cache'
 import * as $Er from '../Error'
-import * as $O from '../Optics'
+import * as $S from '../struct'
 
 const CacheItemC = t.type({
   exp: t.number,
@@ -29,7 +29,7 @@ export const storage = (
           ({ exp }) => Date.now() < exp,
           () => Error(`Cache item "${key}" is expired`),
         ),
-        Ei.map($O.get('value')),
+        Ei.map($S.lookup('value')),
         Ei.filterOrElse(codec.is, () =>
           Error(`Cannot decode cache item "${key}" into "${codec.name}"`),
         ),

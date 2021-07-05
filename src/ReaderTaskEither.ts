@@ -2,17 +2,16 @@ import * as E from 'fp-ts/Either'
 import { Lazy, pipe } from 'fp-ts/function'
 import * as IO from 'fp-ts/IO'
 import * as IOE from 'fp-ts/IOEither'
-import * as Optio from 'fp-ts/Option'
+import * as O from 'fp-ts/Option'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as T from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
-import * as $Optic from './Optics'
 import * as $S from './struct'
 
 export const pick =
   <R extends $S.struct>() =>
   <K extends keyof R>(k: K) =>
-    RTE.asks<Pick<R, K>, never, Pick<R, K>[K]>($Optic.get(k))
+    RTE.asks<Pick<R, K>, never, Pick<R, K>[K]>($S.lookup(k))
 
 export const picks =
   <R extends $S.struct>() =>
@@ -33,7 +32,7 @@ export const picksW =
 export const picksOptionK =
   <R extends $S.struct>() =>
   <E>(onNone: Lazy<E>) =>
-  <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => Optio.Option<B>) =>
+  <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => O.Option<B>) =>
     picks<R>()(k, RTE.fromOptionK(onNone)(f))
 
 export const picksEitherK =

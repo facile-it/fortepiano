@@ -16,6 +16,18 @@ export const toReadonlyArray = <A extends struct>(
   a: A,
 ): ReadonlyArray<Readonly<[keyof A, A[keyof A]]>> => RR.toReadonlyArray(a)
 
+export const lookup =
+  <S extends struct, K extends keyof S>(k: K) =>
+  (s: S): S[K] =>
+    s[k]
+
+export const modifyAt =
+  <S extends struct, K extends keyof S>(k: K, f: (a: S[K]) => S[K]) =>
+  (s: S): S => ({ ...s, [k]: f(s[k]) })
+
+export const updateAt = <S extends struct, K extends keyof S>(k: K, a: S[K]) =>
+  modifyAt(k, () => a)
+
 export const filterDeep =
   <A extends struct>(f: Predicate<unknown /*ValuesDeep<A>*/>) =>
   (a: A): PartialDeep<A> =>
