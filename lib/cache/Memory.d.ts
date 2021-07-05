@@ -1,2 +1,2 @@
 import * as $C from '../Cache';
-export declare const memory: () => $C.Cache;
+export declare const memory: (ttl?: number) => $C.Cache;
