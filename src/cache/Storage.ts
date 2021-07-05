@@ -36,10 +36,10 @@ export const storage = (_storage: Storage, ttl = Infinity): $C.Cache => ({
     async () =>
       pipe(
         {
-          exp:
-            Date.now() +
-            Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, _ttl)) +
-            1,
+          exp: Math.min(
+            Number.MAX_SAFE_INTEGER,
+            Date.now() + Math.max(0, _ttl) + 1,
+          ),
           value,
         },
         J.stringify,
