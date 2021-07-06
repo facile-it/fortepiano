@@ -40,7 +40,9 @@ const request = (
           }
 
           throw {
-            ...error,
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
             response: {
               url: error.response.url,
               statusCode: error.response.statusCode,
