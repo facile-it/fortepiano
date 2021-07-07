@@ -1,3 +1,4 @@
+import * as D from 'fp-ts/Date'
 import * as Ei from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
@@ -8,6 +9,7 @@ import * as $C from './Cache'
 import * as $Er from './Error'
 import { mock } from './http/Mock'
 import * as $L from './Log'
+import * as $MIO from './MonadIO'
 import * as $Stri from './string'
 import * as $Stru from './struct'
 
@@ -128,16 +130,20 @@ const _log =
     log: { start: $L.Logger; end: $L.Logger },
   ): HttpRequest =>
   (url, options) =>
-    pipe(
-      log.start(`${$Stri.uppercase(method)} ${url}`),
-      TE.fromIO,
-      TE.chain(() => request(url, options)),
-      TE.chainFirstIOK(() => log.end(`${$Stri.uppercase(method)} ${url}`)),
-      TE.orElseW((error) =>
-        pipe(
-          log.end(`${$Stri.uppercase(method)} ${url}`),
-          TE.fromIO,
-          TE.chain(() => TE.left(error)),
+    $MIO.salt(TE.MonadIO)(D.now, (salt) =>
+      pipe(
+        log.start(`[${salt}] \r${$Stri.uppercase(method)} ${url}`),
+        TE.fromIO,
+        TE.chain(() => request(url, options)),
+        TE.chainFirstIOK(() =>
+          log.end(`[${salt}] \r${$Stri.uppercase(method)} ${url}`),
+        ),
+        TE.orElseW((error) =>
+          pipe(
+            log.end(`[${salt}] \r${$Stri.uppercase(method)} ${url}`),
+            TE.fromIO,
+            TE.chain(() => TE.left(error)),
+          ),
         ),
       ),
     )

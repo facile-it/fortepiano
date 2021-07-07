@@ -1,3 +1,4 @@
+import * as D from 'fp-ts/Date'
 import { constVoid, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
@@ -6,6 +7,7 @@ import * as t from 'io-ts'
 import { memory } from './cache/Memory'
 import { storage } from './cache/Storage'
 import * as $L from './Log'
+import * as $MIO from './MonadIO'
 
 export interface Cache {
   readonly get: {
@@ -54,31 +56,45 @@ export const log =
   (end: $L.Logger, start = $L.void) =>
   (cache: Cache): Cache => ({
     get: (key: string, codec = t.unknown) =>
-      pipe(
-        start(`Item "${key}" retrieved from cache`),
-        TE.fromIO,
-        TE.chain(() => cache.get(key, codec)),
-        TE.chainFirstIOK(() => end(`Item "${key}" retrieved from cache`)),
+      $MIO.salt(TE.MonadIO)(D.now, (salt) =>
+        pipe(
+          start(`[${salt}] \rItem "${key}" retrieved from cache`),
+          TE.fromIO,
+          TE.chain(() => cache.get(key, codec)),
+          TE.chainFirstIOK(() =>
+            end(`[${salt}] \rItem "${key}" retrieved from cache`),
+          ),
+        ),
       ),
     set: (key, ttl) => (value) =>
-      pipe(
-        start(`Item "${key}" saved to cache`),
-        TE.fromIO,
-        TE.chain(() => cache.set(key, ttl)(value)),
-        TE.chainFirstIOK(() => end(`Item "${key}" saved to cache`)),
+      $MIO.salt(TE.MonadIO)(D.now, (salt) =>
+        pipe(
+          start(`[${salt}] \rItem "${key}" saved to cache`),
+          TE.fromIO,
+          TE.chain(() => cache.set(key, ttl)(value)),
+          TE.chainFirstIOK(() =>
+            end(`[${salt}] \rItem "${key}" saved to cache`),
+          ),
+        ),
       ),
     delete: (key) =>
-      pipe(
-        start(`Item "${key}" deleted from cache`),
-        TE.fromIO,
-        TE.chain(() => cache.delete(key)),
-        TE.chainFirstIOK(() => end(`Item "${key}" deleted from cache`)),
+      $MIO.salt(TE.MonadIO)(D.now, (salt) =>
+        pipe(
+          start(`[${salt}] \rItem "${key}" deleted from cache`),
+          TE.fromIO,
+          TE.chain(() => cache.delete(key)),
+          TE.chainFirstIOK(() =>
+            end(`[${salt}] \rItem "${key}" deleted from cache`),
+          ),
+        ),
       ),
-    clear: pipe(
-      start('Cache cleared'),
-      TE.fromIO,
-      TE.chain(() => cache.clear),
-      TE.chainFirstIOK(() => end('Cache cleared')),
+    clear: $MIO.salt(TE.MonadIO)(D.now, (salt) =>
+      pipe(
+        start(`[${salt}] \rCache cleared`),
+        TE.fromIO,
+        TE.chain(() => cache.clear),
+        TE.chainFirstIOK(() => end(`[${salt}] \rCache cleared`)),
+      ),
     ),
   })
 
