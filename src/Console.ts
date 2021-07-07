@@ -10,9 +10,9 @@ const _noArgs =
 
 const _singleArg =
   (method: 'count' | 'countReset' | 'time' | 'timeEnd' | 'timeLog') =>
-  (s: string): IO.IO<void> =>
+  (a?: unknown): IO.IO<void> =>
   () =>
-    console[method](s)
+    console[method](a as any)
 
 const _multipleArgs =
   (
