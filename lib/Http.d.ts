@@ -54,5 +54,5 @@ export declare const HttpErrorC: <A extends "BadRequest" | "Unauthorized" | "For
 }>]>;
 export declare const json: (client: HttpClient) => HttpClient;
 export declare const cache: (cache: $C.Cache) => (client: HttpClient) => HttpClient;
-export declare const log: (logger: $L.Logger) => (client: HttpClient) => HttpClient;
+export declare const log: (start: $L.Logger, end?: $L.Logger) => (client: HttpClient) => HttpClient;
 export { mock };

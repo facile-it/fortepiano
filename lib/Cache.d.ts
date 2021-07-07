@@ -15,5 +15,5 @@ export interface Cache {
     readonly clear: TE.TaskEither<Error, void>;
 }
 export declare const chain: (...caches: RNEA.ReadonlyNonEmptyArray<Cache>) => Cache;
-export declare const log: (logger: $L.Logger) => (cache: Cache) => Cache;
+export declare const log: (end: $L.Logger, start?: $L.Logger) => (cache: Cache) => Cache;
 export { memory, storage };
