@@ -1,7 +1,7 @@
-import * as D from 'fp-ts/Date'
 import * as Ei from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
+import * as R from 'fp-ts/Random'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
@@ -9,7 +9,7 @@ import * as $C from './Cache'
 import * as $Er from './Error'
 import { mock } from './http/Mock'
 import * as $L from './Log'
-import * as $MIO from './MonadIO'
+import * as $R from './Random'
 import * as $Stri from './string'
 import * as $Stru from './struct'
 
@@ -130,7 +130,7 @@ const _log =
     log: { start: $L.Logger; end: $L.Logger },
   ): HttpRequest =>
   (url, options) =>
-    $MIO.salt(TE.MonadIO)(D.now, (salt) =>
+    $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) =>
       pipe(
         log.start(`[${salt}] \r${$Stri.uppercase(method)} ${url}`),
         TE.fromIO,

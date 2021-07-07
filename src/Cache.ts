@@ -1,13 +1,13 @@
-import * as D from 'fp-ts/Date'
 import { constVoid, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
+import * as R from 'fp-ts/Random'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { memory } from './cache/Memory'
 import { storage } from './cache/Storage'
 import * as $L from './Log'
-import * as $MIO from './MonadIO'
+import * as $R from './Random'
 
 export interface Cache {
   readonly get: {
@@ -56,7 +56,7 @@ export const log =
   (end: $L.Logger, start = $L.void) =>
   (cache: Cache): Cache => ({
     get: (key: string, codec = t.unknown) =>
-      $MIO.salt(TE.MonadIO)(D.now, (salt) =>
+      $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) =>
         pipe(
           start(`[${salt}] \rItem "${key}" retrieved from cache`),
           TE.fromIO,
@@ -67,7 +67,7 @@ export const log =
         ),
       ),
     set: (key, ttl) => (value) =>
-      $MIO.salt(TE.MonadIO)(D.now, (salt) =>
+      $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) =>
         pipe(
           start(`[${salt}] \rItem "${key}" saved to cache`),
           TE.fromIO,
@@ -78,7 +78,7 @@ export const log =
         ),
       ),
     delete: (key) =>
-      $MIO.salt(TE.MonadIO)(D.now, (salt) =>
+      $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) =>
         pipe(
           start(`[${salt}] \rItem "${key}" deleted from cache`),
           TE.fromIO,
@@ -88,13 +88,15 @@ export const log =
           ),
         ),
       ),
-    clear: $MIO.salt(TE.MonadIO)(D.now, (salt) =>
-      pipe(
-        start(`[${salt}] \rCache cleared`),
-        TE.fromIO,
-        TE.chain(() => cache.clear),
-        TE.chainFirstIOK(() => end(`[${salt}] \rCache cleared`)),
-      ),
+    clear: $R.salt(TE.MonadIO)(
+      R.randomInt(0, Number.MAX_SAFE_INTEGER),
+      (salt) =>
+        pipe(
+          start(`[${salt}] \rCache cleared`),
+          TE.fromIO,
+          TE.chain(() => cache.clear),
+          TE.chainFirstIOK(() => end(`[${salt}] \rCache cleared`)),
+        ),
     ),
   })
 

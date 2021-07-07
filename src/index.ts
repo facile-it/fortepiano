@@ -11,9 +11,9 @@ import * as $log from './Log'
 import * as $magma from './Magma'
 import * as $matrix from './Matrix'
 import * as $mock from './Mock'
-import * as $monadIO from './MonadIO'
 import * as $number from './number'
 import * as $option from './Option'
+import * as $random from './Random'
 import * as $reader from './Reader'
 import * as $readerEither from './ReaderEither'
 import * as $readerTask from './ReaderTask'
@@ -60,9 +60,9 @@ export {
   $magma,
   $matrix,
   $mock,
-  $monadIO,
   $number,
   $option,
+  $random,
   $reader,
   $readerEither,
   $readerTask,
