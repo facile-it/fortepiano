@@ -1,5 +1,5 @@
 import * as Ei from 'fp-ts/Either'
-import { flow, pipe } from 'fp-ts/function'
+import { pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
@@ -133,10 +133,11 @@ const _log =
       TE.fromIO,
       TE.chain(() => request(url, options)),
       TE.chainFirstIOK(() => log.end(`${$Stri.uppercase(method)} ${url}`)),
-      TE.orElseW(
-        flow(
-          TE.left,
-          TE.chainFirstIOK(() => log.end(`${$Stri.uppercase(method)} ${url}`)),
+      TE.orElseW((error) =>
+        pipe(
+          log.end(`${$Stri.uppercase(method)} ${url}`),
+          TE.fromIO,
+          TE.chain(() => TE.left(error)),
         ),
       ),
     )
