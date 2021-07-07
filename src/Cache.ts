@@ -1,4 +1,4 @@
-import { constVoid, flow, pipe } from 'fp-ts/function'
+import { constVoid, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as TE from 'fp-ts/TaskEither'
@@ -51,26 +51,34 @@ export const chain = (...caches: RNEA.ReadonlyNonEmptyArray<Cache>): Cache => ({
 })
 
 export const log =
-  (logger: $L.Logger) =>
+  (end: $L.Logger, start = $L.void) =>
   (cache: Cache): Cache => ({
     get: (key: string, codec = t.unknown) =>
       pipe(
-        cache.get(key, codec),
-        TE.chainFirstIOK(() => logger(`Item "${key}" retrieved from cache`)),
+        start(`Item "${key}" retrieved from cache`),
+        TE.fromIO,
+        TE.chain(() => cache.get(key, codec)),
+        TE.chainFirstIOK(() => end(`Item "${key}" retrieved from cache`)),
       ),
-    set: (key: string, ttl) =>
-      flow(
-        cache.set(key, ttl),
-        TE.chainFirstIOK(() => logger(`Item "${key}" saved to cache`)),
-      ),
-    delete: (key: string) =>
+    set: (key, ttl) => (value) =>
       pipe(
-        cache.delete(key),
-        TE.chainFirstIOK(() => logger(`Item "${key}" deleted from cache`)),
+        start(`Item "${key}" saved to cache`),
+        TE.fromIO,
+        TE.chain(() => cache.set(key, ttl)(value)),
+        TE.chainFirstIOK(() => end(`Item "${key}" saved to cache`)),
+      ),
+    delete: (key) =>
+      pipe(
+        start(`Item "${key}" deleted from cache`),
+        TE.fromIO,
+        TE.chain(() => cache.delete(key)),
+        TE.chainFirstIOK(() => end(`Item "${key}" deleted from cache`)),
       ),
     clear: pipe(
-      cache.clear,
-      TE.chainFirstIOK(() => logger('Cache cleared')),
+      start('Cache cleared'),
+      TE.fromIO,
+      TE.chain(() => cache.clear),
+      TE.chainFirstIOK(() => end('Cache cleared')),
     ),
   })
 

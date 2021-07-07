@@ -1,5 +1,5 @@
 import * as Ei from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
@@ -122,22 +122,33 @@ export const cache =
   })
 
 const _log =
-  (method: HttpMethod, request: HttpRequest, logger: $L.Logger): HttpRequest =>
+  (
+    method: HttpMethod,
+    request: HttpRequest,
+    log: { start: $L.Logger; end: $L.Logger },
+  ): HttpRequest =>
   (url, options) =>
     pipe(
-      logger(`${$Stri.uppercase(method)} ${url}`),
+      log.start(`${$Stri.uppercase(method)} ${url}`),
       TE.fromIO,
       TE.chain(() => request(url, options)),
+      TE.chainFirstIOK(() => log.end(`${$Stri.uppercase(method)} ${url}`)),
+      TE.orElseW(
+        flow(
+          TE.left,
+          TE.chainFirstIOK(() => log.end(`${$Stri.uppercase(method)} ${url}`)),
+        ),
+      ),
     )
 
 export const log =
-  (logger: $L.Logger) =>
+  (start: $L.Logger, end = $L.void) =>
   (client: HttpClient): HttpClient => ({
-    delete: _log('delete', client.delete, logger),
-    get: _log('get', client.get, logger),
-    patch: _log('patch', client.patch, logger),
-    post: _log('post', client.post, logger),
-    put: _log('put', client.put, logger),
+    delete: _log('delete', client.delete, { start, end }),
+    get: _log('get', client.get, { start, end }),
+    patch: _log('patch', client.patch, { start, end }),
+    post: _log('post', client.post, { start, end }),
+    put: _log('put', client.put, { start, end }),
   })
 
 export { mock }
