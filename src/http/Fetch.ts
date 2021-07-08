@@ -72,7 +72,14 @@ const request = (
             }
 
             if (!response.ok) {
-              throw { ...new Error(response.statusText), response: _response }
+              const error = new Error(response.statusText)
+
+              throw {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                response: _response,
+              }
             }
 
             return _response
