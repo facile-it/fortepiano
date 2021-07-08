@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
+    "axios": "^0.21.1",
     "eslint": "^7.26.0",
     "eslint-config-facile": "^0.4.1",
     "got": "^11.8.2",
@@ -39,6 +40,7 @@
     "typescript": "^4.3.5"
   },
   "peerDependencies": {
+    "axios": "^0.21.0",
     "got": "^11.0.0"
   }
 }
