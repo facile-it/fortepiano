@@ -1,6 +1,7 @@
 import * as Ei from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { constant, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
+import * as O from 'fp-ts/Option'
 import * as R from 'fp-ts/Random'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
@@ -122,6 +123,36 @@ export const cache =
         ),
       ),
   })
+
+export const pool = (client: HttpClient): HttpClient => {
+  const pool = new Map<
+    Readonly<[string, HttpOptions | undefined]>,
+    Promise<Ei.Either<HttpError, HttpResponse>>
+  >()
+
+  return {
+    ...client,
+    get: (url, options) => {
+      const key = [url, options] as const
+
+      return pipe(
+        pool.get(key),
+        O.fromNullable,
+        O.match(
+          () => () => {
+            const promise = client
+              .get(url, options)()
+              .finally(() => pool.delete(key))
+            pool.set(key, promise)
+
+            return promise
+          },
+          constant,
+        ),
+      )
+    },
+  }
+}
 
 const _log =
   (
