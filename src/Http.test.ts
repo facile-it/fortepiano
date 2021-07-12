@@ -1,10 +1,10 @@
 import * as E from 'fp-ts/Either'
-import { memory } from './Cache'
+import * as $C from './Cache'
 import { cache, mock } from './Http'
 
 describe('Http', () => {
   describe('cache', () => {
-    const _cache = memory()
+    const _cache = $C.memory()
     const http = cache(_cache)(mock)
 
     describe('get', () => {
