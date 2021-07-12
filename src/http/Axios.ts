@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios'
+import { AxiosResponse, AxiosStatic } from 'axios'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as RR from 'fp-ts/ReadonlyRecord'
@@ -23,13 +23,14 @@ const response =
   })
 
 const request = (
+  _axios: AxiosStatic,
   method: $H.HttpMethod,
   url: string,
   options: $H.HttpOptions = {},
 ) =>
   TE.tryCatch(
     () =>
-      axios
+      _axios
         .request({
           data: options.body,
           headers: {
@@ -43,7 +44,7 @@ const request = (
         })
         .then(response(url))
         .catch((error) => {
-          if (!axios.isAxiosError(error) || undefined === error.response) {
+          if (!_axios.isAxiosError(error) || undefined === error.response) {
             throw error
           }
 
@@ -59,10 +60,10 @@ const request = (
     ),
   )
 
-export const $axios: $H.HttpClient = {
-  delete: (url, options) => request('delete', url, options),
-  get: (url, options) => request('get', url, options),
-  patch: (url, options) => request('patch', url, options),
-  post: (url, options) => request('post', url, options),
-  put: (url, options) => request('put', url, options),
-}
+export const axios = (_axios: AxiosStatic): $H.HttpClient => ({
+  delete: (url, options) => request(_axios, 'delete', url, options),
+  get: (url, options) => request(_axios, 'get', url, options),
+  patch: (url, options) => request(_axios, 'patch', url, options),
+  post: (url, options) => request(_axios, 'post', url, options),
+  put: (url, options) => request(_axios, 'put', url, options),
+})

@@ -13,13 +13,14 @@ import * as $H from '../Http'
 import * as $St from '../string'
 
 const request = (
+  _fetch: typeof fetch,
   method: $H.HttpMethod,
   url: string,
   options: $H.HttpOptions = {},
 ) =>
   TE.tryCatch(
     () =>
-      fetch(
+      _fetch(
         pipe(
           options.query,
           O.fromNullable,
@@ -91,10 +92,12 @@ const request = (
     ),
   )
 
-export const $fetch: $H.HttpClient = {
-  delete: (url, options) => request('delete', url, options),
-  get: (url, options) => request('get', url, options),
-  patch: (url, options) => request('patch', url, options),
-  post: (url, options) => request('post', url, options),
-  put: (url, options) => request('put', url, options),
-}
+const _fetch = (_fetch: typeof fetch): $H.HttpClient => ({
+  delete: (url, options) => request(_fetch, 'delete', url, options),
+  get: (url, options) => request(_fetch, 'get', url, options),
+  patch: (url, options) => request(_fetch, 'patch', url, options),
+  post: (url, options) => request(_fetch, 'post', url, options),
+  put: (url, options) => request(_fetch, 'put', url, options),
+})
+
+export { _fetch as fetch }
