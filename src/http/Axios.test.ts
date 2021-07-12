@@ -11,26 +11,26 @@ describe('Http', () => {
       it('should wrap a response', async () => {
         mocked(_axios, true).request.mockResolvedValue({
           config: { url: 'bar' },
-          data: 42,
+          status: 200,
           headers: {
             foo: 'bar',
             thx: 1138,
             mad: ['max'],
           },
-          status: 200,
+          data: 42,
         })
 
         await expect(
           axios(mocked(_axios, true)).get('foo')(),
         ).resolves.toStrictEqual(
           E.right({
-            body: 42,
+            url: 'bar',
+            status: 200,
             headers: {
               foo: 'bar',
               mad: ['max'],
             },
-            status: 200,
-            url: 'bar',
+            body: 42,
           }),
         )
       })
@@ -48,13 +48,13 @@ describe('Http', () => {
           message: 'bar',
           response: {
             config: {},
-            data: 42,
+            status: 500,
             headers: {
               foo: 'bar',
               thx: 1138,
               mad: ['max'],
             },
-            status: 500,
+            data: 42,
           },
         })
         mocked(_axios, true).isAxiosError.mockReturnValue(true)
@@ -67,13 +67,13 @@ describe('Http', () => {
             message: 'bar',
             stack: undefined,
             response: {
-              body: 42,
+              url: 'foo',
+              status: 500,
               headers: {
                 foo: 'bar',
                 mad: ['max'],
               },
-              status: 500,
-              url: 'foo',
+              body: 42,
             },
           }),
         )
