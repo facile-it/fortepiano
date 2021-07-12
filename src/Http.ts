@@ -6,6 +6,7 @@ import * as R from 'fp-ts/Random'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
+import { Json } from 'io-ts-types'
 import * as $C from './Cache'
 import * as $Er from './Error'
 import { mock } from './http/Mock'
@@ -110,10 +111,10 @@ export const cache =
               TE.alt(() =>
                 pipe(
                   client.get(url, options),
-                  TE.chainFirstW((response) =>
+                  TE.chainFirst((response) =>
                     pipe(
-                      response as HttpResponse & J.Json,
-                      cache.set(key),
+                      response as HttpResponse<J.Json>,
+                      cache.set(key, HttpResponseC(Json)),
                       TE.altW(() => TE.of(undefined)),
                     ),
                   ),

@@ -2,6 +2,7 @@ import * as E from 'fp-ts/Either'
 import { constUndefined, pipe } from 'fp-ts/function'
 import * as T from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
+import * as t from 'io-ts'
 import { chain, memory } from './Cache'
 
 describe('Cache', () => {
@@ -12,25 +13,33 @@ describe('Cache', () => {
 
     describe('get', () => {
       it('should fail when no cache is warm', async () => {
-        await expect(pipe(c.get('foo'), T.map(E.isLeft))()).resolves.toBe(true)
+        await expect(
+          pipe(c.get('foo', t.number), T.map(E.isLeft))(),
+        ).resolves.toBe(true)
       })
       it('should succeed when first level cache is warm', async () => {
         await expect(
-          pipe(c0.set('foo')('bar'), TE.apSecond(c.get('foo')))(),
+          pipe(
+            c0.set('foo', t.string)('bar'),
+            TE.apSecond(c.get('foo', t.string)),
+          )(),
         ).resolves.toStrictEqual(E.right('bar'))
       })
       it('should succeed when second level cache is warm', async () => {
         await expect(
-          pipe(c1.set('foo')('bar'), TE.apSecond(c.get('foo')))(),
+          pipe(
+            c1.set('foo', t.string)('bar'),
+            TE.apSecond(c.get('foo', t.string)),
+          )(),
         ).resolves.toStrictEqual(E.right('bar'))
       })
       it('should resist to a cache level failure', async () => {
         await expect(
           pipe(
-            c.set('foo')('bar'),
+            c.set('foo', t.string)('bar'),
             TE.apFirst(c0.clear),
-            TE.apS('c', c.get('foo')),
-            TE.apS('c1', c1.get('foo')),
+            TE.apS('c', c.get('foo', t.string)),
+            TE.apS('c1', c1.get('foo', t.string)),
           )(),
         ).resolves.toStrictEqual(E.right({ c: 'bar', c1: 'bar' }))
       })
@@ -40,10 +49,10 @@ describe('Cache', () => {
       it('should warm up all cache levels', async () => {
         await expect(
           pipe(
-            c.set('foo')('bar'),
-            TE.apS('c', c.get('foo')),
-            TE.apS('c0', c0.get('foo')),
-            TE.apS('c1', c1.get('foo')),
+            c.set('foo', t.string)('bar'),
+            TE.apS('c', c.get('foo', t.string)),
+            TE.apS('c0', c0.get('foo', t.string)),
+            TE.apS('c1', c1.get('foo', t.string)),
           )(),
         ).resolves.toStrictEqual(E.right({ c: 'bar', c0: 'bar', c1: 'bar' }))
       })
@@ -53,12 +62,12 @@ describe('Cache', () => {
       it('should delete an item from all cache levels', async () => {
         await expect(
           pipe(
-            c.set('foo')('bar'),
+            c.set('foo', t.string)('bar'),
             T.apFirst(c.delete('foo')),
             T.map(constUndefined),
-            T.apS('c', pipe(c.get('foo'), T.map(E.isLeft))),
-            T.apS('c0', pipe(c0.get('foo'), T.map(E.isLeft))),
-            T.apS('c1', pipe(c1.get('foo'), T.map(E.isLeft))),
+            T.apS('c', pipe(c.get('foo', t.string), T.map(E.isLeft))),
+            T.apS('c0', pipe(c0.get('foo', t.string), T.map(E.isLeft))),
+            T.apS('c1', pipe(c1.get('foo', t.string), T.map(E.isLeft))),
           )(),
         ).resolves.toStrictEqual({ c: true, c0: true, c1: true })
       })
@@ -68,12 +77,12 @@ describe('Cache', () => {
       it('should clear all cache levels', async () => {
         await expect(
           pipe(
-            c.set('foo')('bar'),
+            c.set('foo', t.string)('bar'),
             T.apFirst(c.clear),
             T.map(constUndefined),
-            T.apS('c', pipe(c.get('foo'), T.map(E.isLeft))),
-            T.apS('c0', pipe(c0.get('foo'), T.map(E.isLeft))),
-            T.apS('c1', pipe(c1.get('foo'), T.map(E.isLeft))),
+            T.apS('c', pipe(c.get('foo', t.string), T.map(E.isLeft))),
+            T.apS('c0', pipe(c0.get('foo', t.string), T.map(E.isLeft))),
+            T.apS('c1', pipe(c1.get('foo', t.string), T.map(E.isLeft))),
           )(),
         ).resolves.toStrictEqual({ c: true, c0: true, c1: true })
       })

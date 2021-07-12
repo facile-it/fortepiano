@@ -1,6 +1,5 @@
 import * as Ei from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
-import * as t from 'io-ts'
 import * as $C from '../Cache'
 
 export const memory = (ttl = Infinity): $C.Cache => {
@@ -8,19 +7,17 @@ export const memory = (ttl = Infinity): $C.Cache => {
   let timeouts: Record<string, NodeJS.Timeout> = {}
 
   return {
-    get:
-      (key: string, codec = t.unknown) =>
-      async () =>
-        pipe(
-          key in cache
-            ? Ei.right(cache[key])
-            : Ei.left(Error(`Cannot find cache item "${key}"`)),
-          Ei.filterOrElse(codec.is, () =>
-            Error(`Cannot decode cache item "${key}" into "${codec.name}"`),
-          ),
+    get: (key, codec) => async () =>
+      pipe(
+        key in cache
+          ? Ei.right(cache[key])
+          : Ei.left(Error(`Cannot find cache item "${key}"`)),
+        Ei.filterOrElse(codec.is, () =>
+          Error(`Cannot decode cache item "${key}" into "${codec.name}"`),
         ),
+      ),
     set:
-      (key, _ttl = ttl) =>
+      (key, _, _ttl = ttl) =>
       (value) =>
       async () => {
         clearTimeout(timeouts[key])
