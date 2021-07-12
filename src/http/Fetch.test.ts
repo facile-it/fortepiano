@@ -73,13 +73,13 @@ describe('Http', () => {
             message: 'foo',
             stack: undefined,
             response: {
-              body: 'foo',
+              url: 'bar',
+              status: 500,
               headers: {
                 foo: 'bar',
                 mad: 'max',
               },
-              status: 500,
-              url: 'bar',
+              body: 'foo',
             },
           }),
         )
