@@ -45,7 +45,7 @@ export const $redis = (config: ClientOpts, ttl = Infinity): $C.Cache => {
                   key,
                   JsonFromString.pipe(codec).encode(value),
                   'EX',
-                  _ttl,
+                  _ttl / 1000,
                   (error) => (null !== error ? reject(error) : resolve()),
                 ),
               ),
