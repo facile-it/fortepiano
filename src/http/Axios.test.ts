@@ -29,7 +29,7 @@ describe('Http', () => {
               foo: 'bar',
               mad: ['max'],
             },
-            statusCode: 200,
+            status: 200,
             url: 'bar',
           }),
         )
@@ -72,7 +72,7 @@ describe('Http', () => {
                 foo: 'bar',
                 mad: ['max'],
               },
-              statusCode: 500,
+              status: 500,
               url: 'foo',
             },
           }),

@@ -36,7 +36,7 @@ export interface HttpOptions {
 
 export interface HttpResponse<A = unknown> {
   readonly url: string
-  readonly statusCode: number
+  readonly status: number
   readonly headers: RR.ReadonlyRecord<string, string | ReadonlyArray<string>>
   readonly body: A
 }
@@ -62,7 +62,7 @@ export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
   t.type(
     {
       url: t.string,
-      statusCode: t.number,
+      status: t.number,
       headers: t.readonly(
         t.record(t.string, t.union([t.string, t.readonlyArray(t.string)])),
       ),

@@ -12,7 +12,7 @@ const response =
   (url: string) =>
   (response: AxiosResponse): $H.HttpResponse => ({
     url: response.config.url || url,
-    statusCode: response.status,
+    status: response.status,
     headers: pipe(
       response.headers,
       t.readonly(t.record(t.string, t.unknown)).decode,

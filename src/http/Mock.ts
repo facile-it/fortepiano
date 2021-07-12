@@ -8,7 +8,7 @@ import * as $M from '../Mock'
 const response = (url: string, error = false): $M.Mock<$H.HttpResponse> =>
   $M.struct({
     url: $M.literal(url),
-    statusCode: error ? $M.integer(300, 599) : $M.integer(200, 299),
+    status: error ? $M.integer(300, 599) : $M.integer(200, 299),
     headers: $M.readonlyRecord(
       $M.string,
       $M.union($M.string, $M.readonlyArray($M.string)),

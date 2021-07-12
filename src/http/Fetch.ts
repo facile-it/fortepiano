@@ -64,7 +64,7 @@ const request = (
           (body) => {
             const _response = {
               url: response.url,
-              statusCode: response.status,
+              status: response.status,
               headers: pipe(
                 [...response.headers.entries()],
                 RR.fromFoldable(Se.last<string>(), RA.Foldable),

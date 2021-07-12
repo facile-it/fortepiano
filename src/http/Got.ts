@@ -26,7 +26,7 @@ const request = (
       })
         .then((response) => ({
           url: response.url,
-          statusCode: response.statusCode,
+          status: response.statusCode,
           headers: pipe(
             response.headers,
             RR.filter(t.union([t.string, t.readonlyArray(t.string)]).is),
@@ -46,7 +46,7 @@ const request = (
             stack: error.stack,
             response: {
               url: error.response.url,
-              statusCode: error.response.statusCode,
+              status: error.response.statusCode,
               headers: pipe(
                 error.response.headers,
                 RR.filter(t.union([t.string, t.readonlyArray(t.string)]).is),
