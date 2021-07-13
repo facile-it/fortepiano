@@ -1,8 +1,10 @@
+import { Endomorphism } from 'fp-ts/function';
 import * as J from 'fp-ts/Json';
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray';
 import * as TE from 'fp-ts/TaskEither';
 import * as t from 'io-ts';
 import { memory } from './cache/Memory';
+import { redis } from './cache/Redis';
 import { storage } from './cache/Storage';
 import * as $L from './Log';
 export interface Cache {
@@ -12,5 +14,6 @@ export interface Cache {
     readonly clear: TE.TaskEither<Error, void>;
 }
 export declare const chain: (...caches: RNEA.ReadonlyNonEmptyArray<Cache>) => Cache;
-export declare const log: (end: $L.Logger, start?: $L.Logger) => (cache: Cache) => Cache;
-export { memory, storage };
+export declare function log(logStart: $L.Logger, logEnd: $L.Logger): Endomorphism<Cache>;
+export declare function log(log: $L.Logger): Endomorphism<Cache>;
+export { memory, redis, storage };

@@ -1,2 +1,3 @@
 import * as $H from '../Http';
-export declare const $fetch: $H.HttpClient;
+declare const _fetch: (_fetch: typeof fetch) => $H.HttpClient;
+export { _fetch as fetch };

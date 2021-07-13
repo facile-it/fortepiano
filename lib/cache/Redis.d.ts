@@ -1,3 +1,3 @@
-import { ClientOpts } from 'redis';
+import { RedisClient } from 'redis';
 import * as $C from '../Cache';
-export declare const $redis: (config: ClientOpts, ttl?: number) => $C.Cache;
+export declare const redis: (_redis: RedisClient, ttl?: number) => $C.Cache;
