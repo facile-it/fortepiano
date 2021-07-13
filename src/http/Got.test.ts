@@ -1,7 +1,7 @@
 import * as E from 'fp-ts/Either'
-import _got from 'got'
+import got from 'got'
 import { mocked } from 'ts-jest/utils'
-import { got } from './Got'
+import { $got } from './Got'
 
 jest.mock('got')
 
@@ -9,7 +9,7 @@ describe('Http', () => {
   describe('got', () => {
     describe('get', () => {
       it('should wrap a response', async () => {
-        mocked(_got, true).mockResolvedValue({
+        mocked(got, true).mockResolvedValue({
           url: 'bar',
           statusCode: 200,
           headers: {
@@ -21,7 +21,7 @@ describe('Http', () => {
         })
 
         await expect(
-          got(mocked(_got, true)).get('foo')(),
+          $got(mocked(got, true)).get('foo')(),
         ).resolves.toStrictEqual(
           E.right({
             url: 'bar',
@@ -36,10 +36,10 @@ describe('Http', () => {
       })
       it('should wrap an error', async () => {
         const error = Error('foo')
-        mocked(_got, true).mockRejectedValue(error)
+        mocked(got, true).mockRejectedValue(error)
 
         await expect(
-          got(mocked(_got, true)).get('foo')(),
+          $got(mocked(got, true)).get('foo')(),
         ).resolves.toStrictEqual(E.left(error))
       })
     })

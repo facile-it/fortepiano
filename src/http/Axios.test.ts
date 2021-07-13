@@ -1,7 +1,7 @@
-import _axios from 'axios'
+import axios from 'axios'
 import * as E from 'fp-ts/Either'
 import { mocked } from 'ts-jest/utils'
-import { axios } from './Axios'
+import { $axios } from './Axios'
 
 jest.mock('axios')
 
@@ -9,7 +9,7 @@ describe('Http', () => {
   describe('axios', () => {
     describe('get', () => {
       it('should wrap a response', async () => {
-        mocked(_axios, true).request.mockResolvedValue({
+        mocked(axios, true).request.mockResolvedValue({
           config: { url: 'bar' },
           status: 200,
           headers: {
@@ -21,7 +21,7 @@ describe('Http', () => {
         })
 
         await expect(
-          axios(mocked(_axios, true)).get('foo')(),
+          $axios(mocked(axios, true)).get('foo')(),
         ).resolves.toStrictEqual(
           E.right({
             url: 'bar',
@@ -36,14 +36,14 @@ describe('Http', () => {
       })
       it('should wrap an error', async () => {
         const error = Error('foo')
-        mocked(_axios, true).request.mockRejectedValue(error)
+        mocked(axios, true).request.mockRejectedValue(error)
 
         await expect(
-          axios(mocked(_axios, true)).get('foo')(),
+          $axios(mocked(axios, true)).get('foo')(),
         ).resolves.toStrictEqual(E.left(error))
       })
       it('should wrap an HTTP error', async () => {
-        mocked(_axios, true).request.mockRejectedValue({
+        mocked(axios, true).request.mockRejectedValue({
           name: 'foo',
           message: 'bar',
           response: {
@@ -57,10 +57,10 @@ describe('Http', () => {
             data: 42,
           },
         })
-        mocked(_axios, true).isAxiosError.mockReturnValue(true)
+        mocked(axios, true).isAxiosError.mockReturnValue(true)
 
         await expect(
-          axios(mocked(_axios, true)).get('foo')(),
+          $axios(mocked(axios, true)).get('foo')(),
         ).resolves.toStrictEqual(
           E.left({
             name: 'foo',

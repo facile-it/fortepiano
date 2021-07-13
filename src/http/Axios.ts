@@ -23,14 +23,14 @@ const response =
   })
 
 const request = (
-  _axios: AxiosStatic,
+  axios: AxiosStatic,
   method: $H.HttpMethod,
   url: string,
   options: $H.HttpOptions = {},
 ) =>
   TE.tryCatch(
     () =>
-      _axios
+      axios
         .request({
           data: options.body,
           headers: {
@@ -44,7 +44,7 @@ const request = (
         })
         .then(response(url))
         .catch((error) => {
-          if (!_axios.isAxiosError(error) || undefined === error.response) {
+          if (!axios.isAxiosError(error) || undefined === error.response) {
             throw error
           }
 
@@ -60,7 +60,7 @@ const request = (
     ),
   )
 
-export const axios = (_axios: AxiosStatic): $H.HttpClient => ({
+export const $axios = (_axios: AxiosStatic): $H.HttpClient => ({
   delete: (url, options) => request(_axios, 'delete', url, options),
   get: (url, options) => request(_axios, 'get', url, options),
   patch: (url, options) => request(_axios, 'patch', url, options),

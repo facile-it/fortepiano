@@ -5,7 +5,6 @@ import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { memory } from './cache/Memory'
-import { redis } from './cache/Redis'
 import { storage } from './cache/Storage'
 import * as $L from './Log'
 import * as $R from './Random'
@@ -102,4 +101,4 @@ export function log(log0: $L.Logger, log1?: $L.Logger) {
   })
 }
 
-export { memory, redis, storage }
+export { memory, storage }

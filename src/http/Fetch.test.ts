@@ -4,7 +4,7 @@ import * as TE from 'fp-ts/TaskEither'
 import fetch from 'node-fetch'
 import { mocked } from 'ts-jest/utils'
 import * as $S from '../struct'
-import { fetch as _fetch } from './Fetch'
+import { $fetch } from './Fetch'
 
 jest.mock('node-fetch')
 
@@ -26,7 +26,7 @@ describe('Http', () => {
         } as any)
 
         await expect(
-          _fetch(mocked(fetch, true) as any).get('foo')(),
+          $fetch(mocked(fetch, true) as any).get('foo')(),
         ).resolves.toStrictEqual(
           E.right({
             url: 'bar',
@@ -44,7 +44,7 @@ describe('Http', () => {
         mocked(fetch, true).mockRejectedValue(error)
 
         await expect(
-          _fetch(mocked(fetch, true) as any).get('foo')(),
+          $fetch(mocked(fetch, true) as any).get('foo')(),
         ).resolves.toStrictEqual(E.left(error))
       })
       it('should wrap an HTTP error', async () => {
@@ -64,7 +64,7 @@ describe('Http', () => {
 
         await expect(
           pipe(
-            _fetch(mocked(fetch, true) as any).get('foo'),
+            $fetch(mocked(fetch, true) as any).get('foo'),
             TE.mapLeft($S.updateAt('stack', undefined)),
           )(),
         ).resolves.toStrictEqual(

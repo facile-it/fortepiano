@@ -60,7 +60,7 @@ const request = (
     ),
   )
 
-export const got = (_got: Got): $H.HttpClient => ({
+export const $got = (_got: Got): $H.HttpClient => ({
   delete: (url, options) => request(_got, 'delete', url, options),
   get: (url, options) => request(_got, 'get', url, options),
   patch: (url, options) => request(_got, 'patch', url, options),

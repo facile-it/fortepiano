@@ -6,13 +6,13 @@ import { RedisClient } from 'redis'
 import * as $C from '../Cache'
 import * as $Er from '../Error'
 
-export const redis = (_redis: RedisClient, ttl = Infinity): $C.Cache => ({
+export const $redis = (redis: RedisClient, ttl = Infinity): $C.Cache => ({
   get: (key, codec) =>
     pipe(
       TE.tryCatch(
         () =>
           new Promise<string>((resolve, reject) =>
-            _redis.get(key, (error, result) => {
+            redis.get(key, (error, result) => {
               null !== error || null === result
                 ? reject(error)
                 : resolve(result)
@@ -38,7 +38,7 @@ export const redis = (_redis: RedisClient, ttl = Infinity): $C.Cache => ({
         TE.tryCatch(
           () =>
             new Promise((resolve, reject) =>
-              _redis.set(
+              redis.set(
                 key,
                 JsonFromString.pipe(codec).encode(value),
                 'EX',
@@ -54,7 +54,7 @@ export const redis = (_redis: RedisClient, ttl = Infinity): $C.Cache => ({
       TE.tryCatch(
         () =>
           new Promise((resolve, reject) =>
-            _redis.del(key, (error, result) => {
+            redis.del(key, (error, result) => {
               null !== error || null === result ? reject(error) : resolve()
             }),
           ),
@@ -65,7 +65,7 @@ export const redis = (_redis: RedisClient, ttl = Infinity): $C.Cache => ({
     TE.tryCatch(
       () =>
         new Promise((resolve, reject) =>
-          _redis.flushdb((error) =>
+          redis.flushdb((error) =>
             null !== error ? reject(error) : resolve(),
           ),
         ),

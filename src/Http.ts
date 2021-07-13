@@ -9,9 +9,6 @@ import * as t from 'io-ts'
 import { Json } from 'io-ts-types'
 import * as $C from './Cache'
 import * as $Er from './Error'
-import { axios } from './http/Axios'
-import { fetch } from './http/Fetch'
-import { got } from './http/Got'
 import { mock } from './http/Mock'
 import * as $L from './Log'
 import * as $R from './Random'
@@ -193,4 +190,4 @@ export const log =
     put: _log('put', client.put, { start: logStart, end: logEnd }),
   })
 
-export { axios, fetch, got, mock }
+export { mock }

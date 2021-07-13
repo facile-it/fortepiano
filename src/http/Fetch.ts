@@ -92,12 +92,10 @@ const request = (
     ),
   )
 
-const _fetch = (_fetch: typeof fetch): $H.HttpClient => ({
+export const $fetch = (_fetch: typeof fetch): $H.HttpClient => ({
   delete: (url, options) => request(_fetch, 'delete', url, options),
   get: (url, options) => request(_fetch, 'get', url, options),
   patch: (url, options) => request(_fetch, 'patch', url, options),
   post: (url, options) => request(_fetch, 'post', url, options),
   put: (url, options) => request(_fetch, 'put', url, options),
 })
-
-export { _fetch as fetch }
