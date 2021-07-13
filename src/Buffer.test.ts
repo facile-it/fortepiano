@@ -4,7 +4,7 @@ import { BufferFromStringC } from './Buffer'
 
 describe('Buffer', () => {
   describe('BufferFromStringC', () => {
-    it('', () => {
+    it('should encode buffers into strings', () => {
       const buffer = Buffer.from('foo')
 
       expect(
