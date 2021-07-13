@@ -1,5 +1,6 @@
 import * as $aggregate from './Aggregate'
 import * as $binary from './Binary'
+import * as $buffer from './Buffer'
 import * as $cache from './Cache'
 import * as $console from './Console'
 import * as $date from './Date'
@@ -49,6 +50,7 @@ export type IntersectionDeep<A, B> = A extends { readonly [x: string]: unknown }
 export {
   $aggregate,
   $binary,
+  $buffer,
   $cache,
   $console,
   $date,
