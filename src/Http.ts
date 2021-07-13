@@ -184,13 +184,13 @@ const _log =
     )
 
 export const log =
-  (start: $L.Logger, end = $L.void) =>
+  (logStart: $L.Logger, logEnd = $L.void) =>
   (client: HttpClient): HttpClient => ({
-    delete: _log('delete', client.delete, { start, end }),
-    get: _log('get', client.get, { start, end }),
-    patch: _log('patch', client.patch, { start, end }),
-    post: _log('post', client.post, { start, end }),
-    put: _log('put', client.put, { start, end }),
+    delete: _log('delete', client.delete, { start: logStart, end: logEnd }),
+    get: _log('get', client.get, { start: logStart, end: logEnd }),
+    patch: _log('patch', client.patch, { start: logStart, end: logEnd }),
+    post: _log('post', client.post, { start: logStart, end: logEnd }),
+    put: _log('put', client.put, { start: logStart, end: logEnd }),
   })
 
 export { axios, fetch, got, mock }

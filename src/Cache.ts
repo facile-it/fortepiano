@@ -1,4 +1,4 @@
-import { constVoid, pipe } from 'fp-ts/function'
+import { constVoid, Endomorphism, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as R from 'fp-ts/Random'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
@@ -48,39 +48,44 @@ export const chain = (...caches: RNEA.ReadonlyNonEmptyArray<Cache>): Cache => ({
   ),
 })
 
-export const log =
-  (end: $L.Logger, start = $L.void) =>
-  (cache: Cache): Cache => ({
+// eslint-disable-next-line @typescript-eslint/unified-signatures
+export function log(logStart: $L.Logger, logEnd: $L.Logger): Endomorphism<Cache>
+export function log(log: $L.Logger): Endomorphism<Cache>
+export function log(log0: $L.Logger, log1?: $L.Logger) {
+  const logStart = undefined !== log1 ? log0 : $L.void
+  const logEnd = log1 || log0
+
+  return (cache: Cache): Cache => ({
     get: (key, codec) =>
       $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) =>
         pipe(
-          start(`[${salt}] \rItem "${key}" retrieved from cache`),
+          logStart(`[${salt}] \rItem "${key}" retrieved from cache`),
           TE.fromIO,
           TE.chain(() => cache.get(key, codec)),
           TE.chainFirstIOK(() =>
-            end(`[${salt}] \rItem "${key}" retrieved from cache`),
+            logEnd(`[${salt}] \rItem "${key}" retrieved from cache`),
           ),
         ),
       ),
     set: (key, codec, ttl) => (value) =>
       $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) =>
         pipe(
-          start(`[${salt}] \rItem "${key}" saved to cache`),
+          logStart(`[${salt}] \rItem "${key}" saved to cache`),
           TE.fromIO,
           TE.chain(() => cache.set(key, codec, ttl)(value)),
           TE.chainFirstIOK(() =>
-            end(`[${salt}] \rItem "${key}" saved to cache`),
+            logEnd(`[${salt}] \rItem "${key}" saved to cache`),
           ),
         ),
       ),
     delete: (key) =>
       $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) =>
         pipe(
-          start(`[${salt}] \rItem "${key}" deleted from cache`),
+          logStart(`[${salt}] \rItem "${key}" deleted from cache`),
           TE.fromIO,
           TE.chain(() => cache.delete(key)),
           TE.chainFirstIOK(() =>
-            end(`[${salt}] \rItem "${key}" deleted from cache`),
+            logEnd(`[${salt}] \rItem "${key}" deleted from cache`),
           ),
         ),
       ),
@@ -88,12 +93,13 @@ export const log =
       R.randomInt(0, Number.MAX_SAFE_INTEGER),
       (salt) =>
         pipe(
-          start(`[${salt}] \rCache cleared`),
+          logStart(`[${salt}] \rCache cleared`),
           TE.fromIO,
           TE.chain(() => cache.clear),
-          TE.chainFirstIOK(() => end(`[${salt}] \rCache cleared`)),
+          TE.chainFirstIOK(() => logEnd(`[${salt}] \rCache cleared`)),
         ),
     ),
   })
+}
 
 export { memory, redis, storage }
