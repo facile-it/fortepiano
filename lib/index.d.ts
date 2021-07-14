@@ -22,8 +22,10 @@ import * as $readerTaskEither from './ReaderTaskEither';
 import * as $readonlyArray from './ReadonlyArray';
 import * as $readonlyRecord from './ReadonlyRecord';
 import * as $readonlyTuple from './ReadonlyTuple';
+import * as $storage from './Storage';
 import * as $string from './string';
 import * as $struct from './struct';
+import * as $taskEither from './TaskEither';
 import * as $type from './Type';
 import * as $validation from './Validation';
 export declare type PartialDeep<A> = A extends {
@@ -41,4 +43,4 @@ export declare type IntersectionDeep<A, B> = A extends {
 } ? A & {
     readonly [K in keyof B]: IntersectionDeep<K extends keyof A ? A[K] : unknown, B[K]>;
 } : B;
-export { $aggregate, $binary, $buffer, $cache, $console, $date, $eq, $error, $generatorL, $http, $log, $magma, $matrix, $mock, $number, $option, $random, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $string, $struct, $type, $validation, };
+export { $aggregate, $binary, $buffer, $cache, $console, $date, $eq, $error, $generatorL, $http, $log, $magma, $matrix, $mock, $number, $option, $random, $reader, $readerEither, $readerTask, $readerTaskEither, $readonlyArray, $readonlyRecord, $readonlyTuple, $storage, $string, $struct, $taskEither, $type, $validation, };
