@@ -5,12 +5,12 @@ import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as Se from 'fp-ts/Semigroup'
-import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { NonEmptyString } from 'io-ts-types'
 import * as $Er from '../Error'
 import * as $H from '../Http'
 import * as $St from '../string'
+import * as $TE from '../TaskEither'
 
 const request = (
   _fetch: typeof fetch,
@@ -18,7 +18,7 @@ const request = (
   url: string,
   options: $H.HttpOptions = {},
 ) =>
-  TE.tryCatch(
+  $TE.tryCatch(
     () =>
       _fetch(
         pipe(

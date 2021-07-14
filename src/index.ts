@@ -24,6 +24,7 @@ import * as $readonlyRecord from './ReadonlyRecord'
 import * as $readonlyTuple from './ReadonlyTuple'
 import * as $string from './string'
 import * as $struct from './struct'
+import * as $taskEither from './TaskEither'
 import * as $type from './Type'
 import * as $validation from './Validation'
 
@@ -74,6 +75,7 @@ export {
   $readonlyTuple,
   $string,
   $struct,
+  $taskEither,
   $type,
   $validation,
 }

@@ -4,11 +4,12 @@ import * as TE from 'fp-ts/TaskEither'
 import Memcached from 'memcached'
 import * as $C from '../Cache'
 import * as $Er from '../Error'
+import * as $TE from '../TaskEither'
 
 export const $memcached = (memcached: Memcached, ttl = Infinity): $C.Cache => ({
   get: (key, codec) =>
     pipe(
-      TE.tryCatch(
+      $TE.tryCatch(
         () =>
           new Promise((resolve, reject) =>
             memcached.get(key, (error, data) => {
@@ -35,7 +36,7 @@ export const $memcached = (memcached: Memcached, ttl = Infinity): $C.Cache => ({
     (key, codec, _ttl = ttl) =>
     (value) =>
       pipe(
-        TE.tryCatch(
+        $TE.tryCatch(
           () =>
             new Promise((resolve, reject) =>
               memcached.set(key, codec.encode(value), _ttl / 1000, (error) =>
@@ -48,7 +49,7 @@ export const $memcached = (memcached: Memcached, ttl = Infinity): $C.Cache => ({
       ),
   delete: (key) =>
     pipe(
-      TE.tryCatch(
+      $TE.tryCatch(
         () =>
           new Promise((resolve, reject) =>
             memcached.del(key, (error) => {
@@ -60,7 +61,7 @@ export const $memcached = (memcached: Memcached, ttl = Infinity): $C.Cache => ({
       ),
     ),
   clear: pipe(
-    TE.tryCatch(
+    $TE.tryCatch(
       () =>
         new Promise((resolve, reject) =>
           memcached.flush((error) =>

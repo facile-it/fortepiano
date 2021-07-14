@@ -5,11 +5,12 @@ import { JsonFromString } from 'io-ts-types'
 import { RedisClient } from 'redis'
 import * as $C from '../Cache'
 import * as $Er from '../Error'
+import * as $TE from '../TaskEither'
 
 export const $redis = (redis: RedisClient, ttl = Infinity): $C.Cache => ({
   get: (key, codec) =>
     pipe(
-      TE.tryCatch(
+      $TE.tryCatch(
         () =>
           new Promise<string>((resolve, reject) =>
             redis.get(key, (error, result) => {
@@ -35,7 +36,7 @@ export const $redis = (redis: RedisClient, ttl = Infinity): $C.Cache => ({
     (key, codec, _ttl = ttl) =>
     (value) =>
       pipe(
-        TE.tryCatch(
+        $TE.tryCatch(
           () =>
             new Promise((resolve, reject) =>
               redis.set(
@@ -51,7 +52,7 @@ export const $redis = (redis: RedisClient, ttl = Infinity): $C.Cache => ({
       ),
   delete: (key) =>
     pipe(
-      TE.tryCatch(
+      $TE.tryCatch(
         () =>
           new Promise((resolve, reject) =>
             redis.del(key, (error, result) => {
@@ -62,7 +63,7 @@ export const $redis = (redis: RedisClient, ttl = Infinity): $C.Cache => ({
       ),
     ),
   clear: pipe(
-    TE.tryCatch(
+    $TE.tryCatch(
       () =>
         new Promise((resolve, reject) =>
           redis.flushdb((error) =>

@@ -1,11 +1,11 @@
 import { pipe } from 'fp-ts/function'
 import * as RR from 'fp-ts/ReadonlyRecord'
-import * as TE from 'fp-ts/TaskEither'
 import { Got, HTTPError } from 'got'
 import * as t from 'io-ts'
 import * as $E from '../Error'
 import * as $H from '../Http'
 import * as $S from '../string'
+import * as $TE from '../TaskEither'
 
 const request = (
   _got: Got,
@@ -13,7 +13,7 @@ const request = (
   url: string,
   options: $H.HttpOptions = {},
 ) =>
-  TE.tryCatch(
+  $TE.tryCatch(
     () =>
       _got(url, {
         headers: options.headers,
