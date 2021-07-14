@@ -34,52 +34,61 @@ class MemoryStorage extends Storage {
   }
 }
 
-const flydrive = new StorageManager({
-  disks: { test: { driver: 'memory', config: {} } },
-  default: 'test',
-})
-flydrive.registerDriver('memory', MemoryStorage)
+const flydrive = () => {
+  const _flydrive = new StorageManager({
+    disks: { test: { driver: 'memory', config: {} } },
+    default: 'test',
+  })
+  _flydrive.registerDriver('memory', MemoryStorage)
+
+  return _flydrive
+}
 
 describe('Storage', () => {
   describe('flydrive', () => {
     describe('read', () => {
       it('should fail with a missing file system', async () => {
+        const _flydrive = $flydrive(flydrive)
+
         await expect(
-          pipe(
-            $flydrive(flydrive).read('foo', { fileSystem: 'foo' }),
-            T.map(E.isLeft),
-          )(),
+          pipe(_flydrive.read('foo', { fileSystem: 'foo' }), T.map(E.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should fail with a missing file', async () => {
+        const _flydrive = $flydrive(flydrive)
+
         await expect(
           pipe(
-            $flydrive(flydrive).read('foo', { fileSystem: 'test' }),
+            _flydrive.read('foo', { fileSystem: 'test' }),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
         await expect(
-          pipe($flydrive(flydrive).read('foo'), T.map(E.isLeft))(),
+          pipe(_flydrive.read('foo'), T.map(E.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should succeed with an existent file', async () => {
+        const _flydrive = $flydrive(flydrive)
+
         await expect(
           pipe(
             Buffer.from('foo'),
-            $flydrive(flydrive).write('foo'),
-            TE.apSecond($flydrive(flydrive).read('foo')),
+            _flydrive.write('foo'),
+            TE.apSecond(_flydrive.read('foo')),
           )(),
         ).resolves.toStrictEqual(E.right(Buffer.from('foo')))
       })
     })
     describe('delete', () => {
       it('should delete a file', async () => {
+        const _flydrive = $flydrive(flydrive)
+
         await expect(
           pipe(
             Buffer.from('foo'),
-            $flydrive(flydrive).write('foo'),
-            TE.apFirst($flydrive(flydrive).delete('foo')),
-            TE.apSecond($flydrive(flydrive).read('foo')),
+            _flydrive.write('foo'),
+            TE.apFirst(_flydrive.delete('foo')),
+            TE.apSecond(_flydrive.read('foo')),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)

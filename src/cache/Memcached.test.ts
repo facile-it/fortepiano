@@ -12,32 +12,32 @@ describe('Cache', () => {
   describe('memcached', () => {
     describe('get', () => {
       it('should fail with a missing item', async () => {
-        const _memcached = new Memcached()
+        const _memcached = $memcached(() => new Memcached())
 
         await expect(
-          pipe($memcached(_memcached).get('foo', t.unknown), T.map(E.isLeft))(),
+          pipe(_memcached.get('foo', t.unknown), T.map(E.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should fail with wrong item encoding', async () => {
-        const _memcached = new Memcached()
+        const _memcached = $memcached(() => new Memcached())
 
         await expect(
           pipe(
             'foo',
-            $memcached(_memcached).set('foo', t.string),
-            TE.apSecond($memcached(_memcached).get('foo', t.number)),
+            _memcached.set('foo', t.string),
+            TE.apSecond(_memcached.get('foo', t.number)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
       })
       it('should succeed with correct item encoding', async () => {
-        const _memcached = new Memcached()
+        const _memcached = $memcached(() => new Memcached())
 
         await expect(
           pipe(
             'foo',
-            $memcached(_memcached).set('foo', t.string),
-            TE.apSecond($memcached(_memcached).get('foo', t.string)),
+            _memcached.set('foo', t.string),
+            TE.apSecond(_memcached.get('foo', t.string)),
             T.map(E.isRight),
           )(),
         ).resolves.toBe(true)
@@ -46,14 +46,14 @@ describe('Cache', () => {
 
     describe('delete', () => {
       it('should delete an item', async () => {
-        const _memcached = new Memcached()
+        const _memcached = $memcached(() => new Memcached())
 
         await expect(
           pipe(
             'foo',
-            $memcached(_memcached).set('foo', t.string),
-            TE.apFirst($memcached(_memcached).delete('foo')),
-            TE.apSecond($memcached(_memcached).get('foo', t.string)),
+            _memcached.set('foo', t.string),
+            TE.apFirst(_memcached.delete('foo')),
+            TE.apSecond(_memcached.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
@@ -62,14 +62,14 @@ describe('Cache', () => {
 
     describe('clear', () => {
       it('should clear the cache', async () => {
-        const _memcached = new Memcached()
+        const _memcached = $memcached(() => new Memcached())
 
         await expect(
           pipe(
             'foo',
-            $memcached(_memcached).set('foo', t.string),
-            TE.apFirst($memcached(_memcached).clear),
-            TE.apSecond($memcached(_memcached).get('foo', t.string)),
+            _memcached.set('foo', t.string),
+            TE.apFirst(_memcached.clear),
+            TE.apSecond(_memcached.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)

@@ -37,32 +37,32 @@ describe('Cache', () => {
   describe('storage', () => {
     describe('get', () => {
       it('should fail with a missing item', async () => {
-        const _storage = new MemoryStorage()
+        const _storage = storage(() => new MemoryStorage())
 
         await expect(
-          pipe(storage(_storage).get('foo', t.unknown), T.map(E.isLeft))(),
+          pipe(_storage.get('foo', t.unknown), T.map(E.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should fail with wrong item encoding', async () => {
-        const _storage = new MemoryStorage()
+        const _storage = storage(() => new MemoryStorage())
 
         await expect(
           pipe(
             'foo',
-            storage(_storage).set('foo', t.string),
-            TE.apSecond(storage(_storage).get('foo', t.number)),
+            _storage.set('foo', t.string),
+            TE.apSecond(_storage.get('foo', t.number)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
       })
       it('should succeed with correct item encoding', async () => {
-        const _storage = new MemoryStorage()
+        const _storage = storage(() => new MemoryStorage())
 
         await expect(
           pipe(
             'foo',
-            storage(_storage).set('foo', t.string),
-            TE.apSecond(storage(_storage).get('foo', t.string)),
+            _storage.set('foo', t.string),
+            TE.apSecond(_storage.get('foo', t.string)),
             T.map(E.isRight),
           )(),
         ).resolves.toBe(true)
@@ -71,14 +71,14 @@ describe('Cache', () => {
 
     describe('delete', () => {
       it('should delete an item', async () => {
-        const _storage = new MemoryStorage()
+        const _storage = storage(() => new MemoryStorage())
 
         await expect(
           pipe(
             'foo',
-            storage(_storage).set('foo', t.string),
-            TE.apFirst(storage(_storage).delete('foo')),
-            TE.apSecond(storage(_storage).get('foo', t.string)),
+            _storage.set('foo', t.string),
+            TE.apFirst(_storage.delete('foo')),
+            TE.apSecond(_storage.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
@@ -87,14 +87,14 @@ describe('Cache', () => {
 
     describe('clear', () => {
       it('should clear the cache', async () => {
-        const _storage = new MemoryStorage()
+        const _storage = storage(() => new MemoryStorage())
 
         await expect(
           pipe(
             'foo',
-            storage(_storage).set('foo', t.string),
-            TE.apFirst(storage(_storage).clear),
-            TE.apSecond(storage(_storage).get('foo', t.string)),
+            _storage.set('foo', t.string),
+            TE.apFirst(_storage.clear),
+            TE.apSecond(_storage.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
