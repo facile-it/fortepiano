@@ -35,7 +35,7 @@ const request: $H.HttpRequest = (url) =>
     ),
   )
 
-export const mock: $H.HttpClient = {
+export const mock: $H.Http = {
   delete: request,
   get: request,
   patch: request,

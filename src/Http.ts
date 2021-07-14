@@ -22,13 +22,12 @@ const ERRORS = {
   NotFound: 404,
 } as const
 
-export type HttpMethod = 'delete' | 'get' | 'patch' | 'post' | 'put'
-
-export interface HttpOptions {
-  readonly body?: $Stru.struct
-  readonly headers?: RR.ReadonlyRecord<string, string>
-  readonly json?: boolean
-  readonly query?: RR.ReadonlyRecord<string, boolean | number | string>
+export interface Http {
+  readonly delete: HttpRequest<'body'>
+  readonly get: HttpRequest<'body'>
+  readonly patch: HttpRequest
+  readonly post: HttpRequest
+  readonly put: HttpRequest
 }
 
 export interface HttpResponse<A = unknown> {
@@ -40,6 +39,13 @@ export interface HttpResponse<A = unknown> {
 
 export type HttpError = Error | (Error & { readonly response: HttpResponse })
 
+export interface HttpOptions {
+  readonly body?: $Stru.struct
+  readonly headers?: RR.ReadonlyRecord<string, string>
+  readonly json?: boolean
+  readonly query?: RR.ReadonlyRecord<string, boolean | number | string>
+}
+
 export interface HttpRequest<A extends keyof HttpOptions = never> {
   (url: string, options?: Omit<HttpOptions, A>): TE.TaskEither<
     HttpError,
@@ -47,13 +53,7 @@ export interface HttpRequest<A extends keyof HttpOptions = never> {
   >
 }
 
-export interface HttpClient {
-  readonly delete: HttpRequest<'body'>
-  readonly get: HttpRequest<'body'>
-  readonly patch: HttpRequest
-  readonly post: HttpRequest
-  readonly put: HttpRequest
-}
+export type HttpMethod = 'delete' | 'get' | 'patch' | 'post' | 'put'
 
 export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
   t.type(
@@ -87,30 +87,30 @@ const _json =
   (url, options) =>
     request(url, { ...options, json: true })
 
-export const json = (client: HttpClient): HttpClient => ({
-  delete: _json(client.get),
-  get: _json(client.get),
-  patch: _json(client.patch),
-  post: _json(client.post),
-  put: _json(client.post),
+export const json = (http: Http): Http => ({
+  delete: _json(http.get),
+  get: _json(http.get),
+  patch: _json(http.patch),
+  post: _json(http.post),
+  put: _json(http.post),
 })
 
 export const cache =
   (cache: $C.Cache) =>
-  (client: HttpClient): HttpClient => ({
-    ...client,
+  (http: Http): Http => ({
+    ...http,
     get: (url, options) =>
       pipe(
         [url, options] as const,
         J.stringify,
         Ei.match(
-          () => client.get(url, options),
+          () => http.get(url, options),
           (key) =>
             pipe(
               cache.get(key, HttpResponseC(t.unknown)),
               TE.alt(() =>
                 pipe(
-                  client.get(url, options),
+                  http.get(url, options),
                   TE.chainFirst((response) =>
                     pipe(
                       response as HttpResponse<J.Json>,
@@ -125,14 +125,14 @@ export const cache =
       ),
   })
 
-export const pool = (client: HttpClient): HttpClient => {
+export const pool = (http: Http): Http => {
   const pool = new Map<
     Readonly<[string, HttpOptions | undefined]>,
     Promise<Ei.Either<HttpError, HttpResponse>>
   >()
 
   return {
-    ...client,
+    ...http,
     get: (url, options) => {
       const key = [url, options] as const
 
@@ -141,7 +141,7 @@ export const pool = (client: HttpClient): HttpClient => {
         O.fromNullable,
         O.match(
           () => () => {
-            const promise = client
+            const promise = http
               .get(url, options)()
               .finally(() => pool.delete(key))
             pool.set(key, promise)
@@ -182,12 +182,12 @@ const _log =
 
 export const log =
   (logStart: $L.Logger, logEnd = $L.void) =>
-  (client: HttpClient): HttpClient => ({
-    delete: _log('delete', client.delete, { start: logStart, end: logEnd }),
-    get: _log('get', client.get, { start: logStart, end: logEnd }),
-    patch: _log('patch', client.patch, { start: logStart, end: logEnd }),
-    post: _log('post', client.post, { start: logStart, end: logEnd }),
-    put: _log('put', client.put, { start: logStart, end: logEnd }),
+  (http: Http): Http => ({
+    delete: _log('delete', http.delete, { start: logStart, end: logEnd }),
+    get: _log('get', http.get, { start: logStart, end: logEnd }),
+    patch: _log('patch', http.patch, { start: logStart, end: logEnd }),
+    post: _log('post', http.post, { start: logStart, end: logEnd }),
+    put: _log('put', http.put, { start: logStart, end: logEnd }),
   })
 
 export { mock }

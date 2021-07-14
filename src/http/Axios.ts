@@ -60,7 +60,7 @@ const request = (
     ),
   )
 
-export const $axios = (_axios: AxiosStatic): $H.HttpClient => ({
+export const $axios = (_axios: AxiosStatic): $H.Http => ({
   delete: (url, options) => request(_axios, 'delete', url, options),
   get: (url, options) => request(_axios, 'get', url, options),
   patch: (url, options) => request(_axios, 'patch', url, options),
