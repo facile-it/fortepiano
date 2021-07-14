@@ -26,7 +26,9 @@ interface StorageOptions {
 
 const _log =
   (
-    [verb, preposition]: Readonly<[string, string]>,
+    [verb, preposition]: Readonly<
+      ['reading' | 'writing' | 'deleting', 'from' | 'to']
+    >,
     path: string,
     { fileSystem }: StorageOptions,
     log: { start: $L.Logger; end: $L.Logger },

@@ -42,7 +42,7 @@ flydrive.registerDriver('memory', MemoryStorage)
 
 describe('Storage', () => {
   describe('flydrive', () => {
-    describe('get', () => {
+    describe('read', () => {
       it('should fail with a missing file system', async () => {
         await expect(
           pipe(
