@@ -9,7 +9,7 @@
       "error",
       {
         "alphabetize": { "caseInsensitive": true },
-        "groups": ["builtin", "external", "index", "parent", "sibling"]
+        "groups": [["builtin", "external"], "index", "parent", "sibling"]
       }
     ],
     "no-shadow": "off"
