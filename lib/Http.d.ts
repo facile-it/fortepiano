@@ -5,12 +5,12 @@ import * as $C from './Cache';
 import { mock } from './http/Mock';
 import * as $L from './Log';
 import * as $Stru from './struct';
-export declare type HttpMethod = 'delete' | 'get' | 'patch' | 'post' | 'put';
-export interface HttpOptions {
-    readonly body?: $Stru.struct;
-    readonly headers?: RR.ReadonlyRecord<string, string>;
-    readonly json?: boolean;
-    readonly query?: RR.ReadonlyRecord<string, boolean | number | string>;
+export interface Http {
+    readonly delete: HttpRequest<'body'>;
+    readonly get: HttpRequest<'body'>;
+    readonly patch: HttpRequest;
+    readonly post: HttpRequest;
+    readonly put: HttpRequest;
 }
 export interface HttpResponse<A = unknown> {
     readonly url: string;
@@ -21,16 +21,16 @@ export interface HttpResponse<A = unknown> {
 export declare type HttpError = Error | (Error & {
     readonly response: HttpResponse;
 });
+export interface HttpOptions {
+    readonly body?: $Stru.struct;
+    readonly headers?: RR.ReadonlyRecord<string, string>;
+    readonly json?: boolean;
+    readonly query?: RR.ReadonlyRecord<string, boolean | number | string>;
+}
 export interface HttpRequest<A extends keyof HttpOptions = never> {
     (url: string, options?: Omit<HttpOptions, A>): TE.TaskEither<HttpError, HttpResponse>;
 }
-export interface HttpClient {
-    readonly delete: HttpRequest<'body'>;
-    readonly get: HttpRequest<'body'>;
-    readonly patch: HttpRequest;
-    readonly post: HttpRequest;
-    readonly put: HttpRequest;
-}
+export declare type HttpMethod = 'delete' | 'get' | 'patch' | 'post' | 'put';
 export declare const HttpResponseC: <C extends t.Mixed>(codec: C) => t.TypeC<{
     url: t.StringC;
     status: t.NumberC;
@@ -52,8 +52,8 @@ export declare const HttpErrorC: <A extends "BadRequest" | "Unauthorized" | "For
         }[A]>;
     }>]>;
 }>]>;
-export declare const json: (client: HttpClient) => HttpClient;
-export declare const cache: (cache: $C.Cache) => (client: HttpClient) => HttpClient;
-export declare const pool: (client: HttpClient) => HttpClient;
-export declare const log: (logStart: $L.Logger, logEnd?: $L.Logger) => (client: HttpClient) => HttpClient;
+export declare const json: (http: Http) => Http;
+export declare const cache: (cache: $C.Cache) => (http: Http) => Http;
+export declare const pool: (http: Http) => Http;
+export declare const log: (logStart: $L.Logger, logEnd?: $L.Logger) => (http: Http) => Http;
 export { mock };
