@@ -28,6 +28,7 @@
     "newtype-ts": "^0.3.4"
   },
   "devDependencies": {
+    "@slynova/flydrive": "^1.0.3",
     "@types/jest": "^26.0.23",
     "@types/memcached": "^2.2.7",
     "@types/node-fetch": "^2.5.11",
@@ -49,6 +50,7 @@
     "typescript": "^4.3.5"
   },
   "peerDependencies": {
+    "@slynova/flydrive": "^1.0.0",
     "@types/memcached": "^2.0.0",
     "@types/redis": "^2.0.0",
     "axios": "^0.21.0",

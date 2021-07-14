@@ -6,26 +6,26 @@ import * as t from 'io-ts'
 import { storage } from './Storage'
 
 class MemoryStorage implements Storage {
-  private as: Record<string, string> = {}
+  private storage: Record<string, string> = {}
 
   getItem(key: string): string | null {
-    return key in this.as ? this.as[key] : null
+    return key in this.storage ? this.storage[key] : null
   }
 
   setItem(key: string, value: string): void {
-    this.as[key] = value
+    this.storage[key] = value
   }
 
   removeItem(key: string): void {
-    delete this.as[key]
+    delete this.storage[key]
   }
 
   clear(): void {
-    this.as = {}
+    this.storage = {}
   }
 
   get length(): number {
-    return Object.keys(this.as).length
+    return Object.keys(this.storage).length
   }
 
   key(_: number): string | null {

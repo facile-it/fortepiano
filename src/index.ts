@@ -22,6 +22,7 @@ import * as $readerTaskEither from './ReaderTaskEither'
 import * as $readonlyArray from './ReadonlyArray'
 import * as $readonlyRecord from './ReadonlyRecord'
 import * as $readonlyTuple from './ReadonlyTuple'
+import * as $storage from './Storage'
 import * as $string from './string'
 import * as $struct from './struct'
 import * as $taskEither from './TaskEither'
@@ -73,6 +74,7 @@ export {
   $readonlyArray,
   $readonlyRecord,
   $readonlyTuple,
+  $storage,
   $string,
   $struct,
   $taskEither,
