@@ -162,23 +162,23 @@ const _log =
     log: { start: $L.Logger; end: $L.Logger },
   ): HttpRequest =>
   (url, options) =>
-    $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) =>
-      pipe(
-        log.start(`[${salt}] \r${$Stri.uppercase(method)} ${url}`),
+    $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) => {
+      const message = `[${salt}] \r${$Stri.uppercase(method)} ${url}`
+
+      return pipe(
+        log.start(message),
         TE.fromIO,
         TE.chain(() => request(url, options)),
-        TE.chainFirstIOK(() =>
-          log.end(`[${salt}] \r${$Stri.uppercase(method)} ${url}`),
-        ),
+        TE.chainFirstIOK(() => log.end(message)),
         TE.orElseW((error) =>
           pipe(
-            log.end(`[${salt}] \r${$Stri.uppercase(method)} ${url}`),
+            log.end(message),
             TE.fromIO,
             TE.chain(() => TE.left(error)),
           ),
         ),
-      ),
-    )
+      )
+    })
 
 export const log =
   (logStart: $L.Logger, logEnd = $L.void) =>
