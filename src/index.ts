@@ -3,6 +3,7 @@ import * as $binary from './Binary'
 import * as $buffer from './Buffer'
 import * as $cache from './Cache'
 import * as $console from './Console'
+import * as $crypto from './Crypto'
 import * as $date from './Date'
 import * as $eq from './Eq'
 import * as $error from './Error'
@@ -55,6 +56,7 @@ export {
   $buffer,
   $cache,
   $console,
+  $crypto,
   $date,
   $eq,
   $error,
