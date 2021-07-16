@@ -1,16 +1,13 @@
 import { pipe, Predicate } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
-import * as Sh from 'fp-ts/Show'
-import * as St from 'fp-ts/struct'
+import * as S from 'fp-ts/struct'
 import { IntersectionDeep, PartialDeep } from '.'
 import { curry } from './function'
 import * as $t from './Type'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type struct = object
-
-export const Show: Sh.Show<struct> = { show: (a) => JSON.stringify(a) }
 
 export const toReadonlyArray = <A extends struct>(
   a: A,
@@ -69,7 +66,7 @@ export const patch =
         ...ab,
         [key]: b,
       })),
-      curry(St.getAssignSemigroup<IntersectionDeep<A, B>>().concat)(
+      curry(S.getAssignSemigroup<IntersectionDeep<A, B>>().concat)(
         a as IntersectionDeep<A, B>,
       ),
     )
