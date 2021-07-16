@@ -1,5 +1,5 @@
-import { identity } from 'fp-ts/function'
 import * as t from 'io-ts'
+import * as $S from './struct'
 
 const is = (u: unknown): u is Error =>
   t
@@ -13,7 +13,7 @@ export const ErrorC = new t.Type(
   'Error',
   is,
   (u, c) => (is(u) ? t.success(u) : t.failure(u, c)),
-  identity,
+  $S.lookup('message'),
 )
 
 export const fromUnknown = (e: Error) => (u: unknown) =>

@@ -1,4 +1,3 @@
-import { identity } from 'fp-ts/function'
 import * as t from 'io-ts'
 
 const is = (u: unknown): u is Buffer => u instanceof Buffer
@@ -7,7 +6,7 @@ export const BufferC = new t.Type(
   'Buffer',
   is,
   (u, c) => (is(u) ? t.success(u) : t.failure(u, c)),
-  identity,
+  (b) => b.toString('base64'),
 )
 
 export const BufferFromStringC = new t.Type(
@@ -22,5 +21,5 @@ export const BufferFromStringC = new t.Type(
       return t.failure(u, c)
     }
   },
-  (b) => b.toString('base64'),
+  BufferC.encode,
 )
