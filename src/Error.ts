@@ -16,6 +16,12 @@ export const ErrorC = new t.Type(
   $S.lookup('message'),
 )
 
+const withPrev = (prev: Error) => (error: Error) => {
+  ;(error as any).prev = prev
+
+  return error
+}
+
 export const fromUnknown = (e: Error) => (u: unknown) =>
   // eslint-disable-next-line no-nested-ternary
-  ErrorC.is(u) ? u : t.string.is(u) ? Error(u) : e
+  ErrorC.is(u) ? withPrev(u)(e) : t.string.is(u) ? withPrev(Error(u))(e) : e
