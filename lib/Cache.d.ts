@@ -7,7 +7,7 @@ import { memory } from './cache/Memory';
 import { storage } from './cache/Storage';
 import * as $L from './Log';
 export interface Cache {
-    readonly get: <A>(key: string, codec: t.Type<A>) => TE.TaskEither<Error, A>;
+    readonly get: <A>(key: string, codec: t.Type<A, unknown>) => TE.TaskEither<Error, A>;
     readonly set: <A>(key: string, codec: t.Type<A, J.Json>, ttl?: number) => (value: A) => TE.TaskEither<Error, void>;
     readonly delete: (key: string) => TE.TaskEither<Error, void>;
     readonly clear: TE.TaskEither<Error, void>;
