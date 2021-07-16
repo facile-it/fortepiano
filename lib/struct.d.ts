@@ -1,8 +1,6 @@
 import { Predicate } from 'fp-ts/function';
-import * as Sh from 'fp-ts/Show';
 import { IntersectionDeep, PartialDeep } from '.';
 export declare type struct = object;
-export declare const Show: Sh.Show<struct>;
 export declare const toReadonlyArray: <A extends object>(a: A) => readonly (readonly [keyof A, A[keyof A]])[];
 export declare const lookup: <S extends object, K extends keyof S>(k: K) => (s: S) => S[K];
 export declare const modifyAt: <S extends object, K extends keyof S>(k: K, f: (a: S[K]) => S[K]) => (s: S) => S;
