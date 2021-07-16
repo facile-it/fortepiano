@@ -31,9 +31,10 @@ export const fromStream = (stream: NodeJS.ReadableStream) =>
     () =>
       new Promise<Buffer>((resolve, reject) => {
         const buffer: Array<any> = []
-        stream.on('error', reject)
-        stream.on('data', (data) => buffer.push(data))
-        stream.on('end', () => resolve(Buffer.concat(buffer)))
+        stream
+          .on('error', reject)
+          .on('data', (data) => buffer.push(data))
+          .on('end', () => resolve(Buffer.concat(buffer)))
       }),
     $E.fromUnknown(Error('Cannot read stream into buffer')),
   )
