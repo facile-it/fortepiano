@@ -10,7 +10,10 @@ import * as $L from './Log'
 import * as $R from './Random'
 
 export interface Cache {
-  readonly get: <A>(key: string, codec: t.Type<A>) => TE.TaskEither<Error, A>
+  readonly get: <A>(
+    key: string,
+    codec: t.Type<A, unknown>,
+  ) => TE.TaskEither<Error, A>
   readonly set: <A>(
     key: string,
     codec: t.Type<A, J.Json>,
