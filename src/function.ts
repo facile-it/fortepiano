@@ -83,7 +83,7 @@ export const recurse = <A extends (...args: any) => any>(
  * type Div = _Op<'Div'>
  * type Op = Add | Mul | Sub | Div
  *
- * const calc = match<Op, Option<number>>({
+ * const calc = match<Op>()({
  *   Add: ({ x, y }) => option.some(x + y),
  *   Mul: ({ x, y }) => option.some(x * y),
  *   Sub: ({ x, y }) => option.some(x - y),
@@ -107,10 +107,12 @@ export const recurse = <A extends (...args: any) => any>(
  * ).toBeCloseTo(-12190)
  */
 export const match =
-  <A extends { readonly _tag: string }, B>(
+  <A extends { readonly [k in K]: string }, K extends string = '_tag'>() =>
+  <T extends A[K], B>(
     onCases: {
-      readonly [K in A['_tag']]: (a: Extract<A, { readonly _tag: K }>) => B
+      readonly [t in T]: (a: Extract<A, { readonly [k in K]: t }>) => B
     },
+    k: K = '_tag' as K,
   ) =>
   (a: A): B =>
-    onCases[a._tag as A['_tag']](a as Extract<A, { _tag: A['_tag'] }>)
+    onCases[a[k] as T](a as Extract<A, { readonly [k in K]: T }>)

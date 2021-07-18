@@ -84,7 +84,7 @@ describe('function', () => {
       const b: B = { _tag: 'B', b: 1138 }
       const c: C = { _tag: 'C', c: 'foo' }
 
-      const f = match<T, string>({
+      const f = match<T>()({
         A: ({ a }) => (a ? 'true' : 'false'),
         B: ({ b }) => (199 + b).toString(),
         C: ({ c }) => `${c}bar`,
@@ -105,7 +105,7 @@ describe('function', () => {
       type Div = _Op<'Div'>
       type Op = Add | Mul | Sub | Div
 
-      const calc = match<Op, O.Option<number>>({
+      const calc = match<Op>()({
         Add: ({ x, y }) => O.some(x + y),
         Mul: ({ x, y }) => O.some(x * y),
         Sub: ({ x, y }) => O.some(x - y),
