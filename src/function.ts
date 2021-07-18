@@ -32,7 +32,15 @@ export const memoize = <A extends (...args: any) => any>(f: A): A => {
     try {
       const hash = JSON.stringify(args)
       if (!(hash in cache)) {
-        cache[hash] = f(...args)
+        const result = f(...args)
+        cache[hash] =
+          result instanceof Promise
+            ? result.catch((error) => {
+                delete cache[hash]
+
+                throw error
+              })
+            : result
       }
 
       return cache[hash]
