@@ -29,24 +29,26 @@ export const memoize = <A extends (...args: any) => any>(f: A): A => {
   const cache: Record<string, ReturnType<A>> = {}
 
   return ((...args: any): ReturnType<A> => {
+    let key = ''
     try {
-      const hash = JSON.stringify(args)
-      if (!(hash in cache)) {
-        const result = f(...args)
-        cache[hash] =
-          result instanceof Promise
-            ? result.catch((error) => {
-                delete cache[hash]
-
-                throw error
-              })
-            : result
-      }
-
-      return cache[hash]
+      key = JSON.stringify(args)
     } catch (error) {
       return f(...args)
     }
+
+    if (!(key in cache)) {
+      const result = f(...args)
+      cache[key] =
+        result instanceof Promise
+          ? result.catch((error) => {
+              delete cache[key]
+
+              throw error
+            })
+          : result
+    }
+
+    return cache[key]
   }) as any
 }
 
