@@ -8,11 +8,14 @@ import * as $Er from '../Error'
 import { memoize } from '../function'
 import * as $TE from '../TaskEither'
 
-export const $redis = (
-  redis: Lazy<Promise<RedisClient>>,
-  ttl = Infinity,
-): $C.Cache => {
-  const _redis = memoize(redis)
+export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
+  const _redis = memoize(
+    () =>
+      new Promise<RedisClient>((resolve, reject) => {
+        const client = redis()
+        client.on('error', reject).on('ready', () => resolve(client))
+      }),
+  )
 
   return {
     get: (key, codec) =>

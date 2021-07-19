@@ -10,26 +10,14 @@ describe('Cache', () => {
   describe('redis', () => {
     describe('get', () => {
       it('should fail with a missing item', async () => {
-        const _redis = $redis(
-          () =>
-            new Promise((resolve, reject) => {
-              const client = redis.createClient()
-              client.on('error', reject).on('ready', () => resolve(client))
-            }),
-        )
+        const _redis = $redis(redis.createClient)
 
         await expect(
           pipe(_redis.get('foo', t.unknown), T.map(E.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should fail with wrong item encoding', async () => {
-        const _redis = $redis(
-          () =>
-            new Promise((resolve, reject) => {
-              const client = redis.createClient()
-              client.on('error', reject).on('ready', () => resolve(client))
-            }),
-        )
+        const _redis = $redis(redis.createClient)
 
         await expect(
           pipe(
@@ -41,13 +29,7 @@ describe('Cache', () => {
         ).resolves.toBe(true)
       })
       it('should succeed with correct item encoding', async () => {
-        const _redis = $redis(
-          () =>
-            new Promise((resolve, reject) => {
-              const client = redis.createClient()
-              client.on('error', reject).on('ready', () => resolve(client))
-            }),
-        )
+        const _redis = $redis(redis.createClient)
 
         await expect(
           pipe(
@@ -62,13 +44,7 @@ describe('Cache', () => {
 
     describe('delete', () => {
       it('should delete an item', async () => {
-        const _redis = $redis(
-          () =>
-            new Promise((resolve, reject) => {
-              const client = redis.createClient()
-              client.on('error', reject).on('ready', () => resolve(client))
-            }),
-        )
+        const _redis = $redis(redis.createClient)
 
         await expect(
           pipe(
@@ -84,13 +60,7 @@ describe('Cache', () => {
 
     describe('clear', () => {
       it('should clear the cache', async () => {
-        const _redis = $redis(
-          () =>
-            new Promise((resolve, reject) => {
-              const client = redis.createClient()
-              client.on('error', reject).on('ready', () => resolve(client))
-            }),
-        )
+        const _redis = $redis(redis.createClient)
 
         await expect(
           pipe(
