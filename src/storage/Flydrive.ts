@@ -49,7 +49,7 @@ export const $flydrive = (flydrive: Lazy<StorageManager>): $Sto.Storage => {
             .disk(fileSystem)
             .delete(path)
             .then(({ wasDeleted }) =>
-              true !== wasDeleted ? Promise.reject() : Promise.resolve(),
+              false === wasDeleted ? Promise.reject() : Promise.resolve(),
             ),
         $E.fromUnknown(
           Error(
