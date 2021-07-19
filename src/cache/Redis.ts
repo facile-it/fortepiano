@@ -20,13 +20,15 @@ export const $redis = (
         $TE.tryCatch(
           () =>
             new Promise<string>((resolve, reject) =>
-              _redis().then((client) =>
-                client.get(key, (error, result) => {
-                  null !== error || null === result
-                    ? reject(error)
-                    : resolve(result)
-                }),
-              ),
+              _redis()
+                .then((client) =>
+                  client.get(key, (error, result) => {
+                    null !== error || null === result
+                      ? reject(error)
+                      : resolve(result)
+                  }),
+                )
+                .catch(reject),
             ),
           $Er.fromUnknown(Error(`Cannot find cache item "${key}"`)),
         ),
@@ -48,15 +50,17 @@ export const $redis = (
           $TE.tryCatch(
             () =>
               new Promise((resolve, reject) =>
-                _redis().then((client) =>
-                  client.set(
-                    key,
-                    JsonFromString.pipe(codec).encode(value),
-                    'EX',
-                    _ttl / 1000,
-                    (error) => (null !== error ? reject(error) : resolve()),
-                  ),
-                ),
+                _redis()
+                  .then((client) =>
+                    client.set(
+                      key,
+                      JsonFromString.pipe(codec).encode(value),
+                      'EX',
+                      _ttl / 1000,
+                      (error) => (null !== error ? reject(error) : resolve()),
+                    ),
+                  )
+                  .catch(reject),
               ),
             $Er.fromUnknown(Error(`Cannot write cache item "${key}"`)),
           ),
@@ -66,11 +70,15 @@ export const $redis = (
         $TE.tryCatch(
           () =>
             new Promise((resolve, reject) =>
-              _redis().then((client) =>
-                client.del(key, (error, result) => {
-                  null !== error || null === result ? reject(error) : resolve()
-                }),
-              ),
+              _redis()
+                .then((client) =>
+                  client.del(key, (error, result) => {
+                    null !== error || null === result
+                      ? reject(error)
+                      : resolve()
+                  }),
+                )
+                .catch(reject),
             ),
           $Er.fromUnknown(Error(`Cannot delete cache item "${key}"`)),
         ),
@@ -79,11 +87,13 @@ export const $redis = (
       $TE.tryCatch(
         () =>
           new Promise((resolve, reject) =>
-            _redis().then((client) =>
-              client.flushdb((error) =>
-                null !== error ? reject(error) : resolve(),
-              ),
-            ),
+            _redis()
+              .then((client) =>
+                client.flushdb((error) =>
+                  null !== error ? reject(error) : resolve(),
+                ),
+              )
+              .catch(reject),
           ),
         $Er.fromUnknown(Error('Cannot clear cache')),
       ),
