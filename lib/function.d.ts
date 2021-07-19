@@ -26,7 +26,7 @@ export declare const recurse: <A extends (...args: any) => any>(f: (self: A, dep
  * type Div = _Op<'Div'>
  * type Op = Add | Mul | Sub | Div
  *
- * const calc = match<Op, Option<number>>({
+ * const calc = match<Op>()({
  *   Add: ({ x, y }) => option.some(x + y),
  *   Mul: ({ x, y }) => option.some(x * y),
  *   Sub: ({ x, y }) => option.some(x - y),
@@ -49,8 +49,4 @@ export declare const recurse: <A extends (...args: any) => any>(f: (self: A, dep
  *   )
  * ).toBeCloseTo(-12190)
  */
-export declare const match: <A extends {
-    readonly _tag: string;
-}, B>(onCases: { readonly [K in A["_tag"]]: (a: Extract<A, {
-    readonly _tag: K;
-}>) => B; }) => (a: A) => B;
+export declare const match: <A extends { readonly [k in K]: string; }, K extends string = "_tag">() => <T extends A[K], B>(onCases: { readonly [t in T]: (a: Extract<A, { readonly [k_1 in K]: t; }>) => B; }, k?: K) => (a: A) => B;
