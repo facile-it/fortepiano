@@ -6,6 +6,14 @@ import * as $R from './Random'
 import * as $Stri from './string'
 
 export interface Storage {
+  readonly getStream: (
+    path: string,
+    options?: StorageOptions,
+  ) => TE.TaskEither<Error, NodeJS.ReadableStream>
+  readonly getUrl: (
+    path: string,
+    options?: StorageOptions,
+  ) => TE.TaskEither<Error, string>
   readonly read: (
     path: string,
     options?: StorageOptions,
@@ -13,7 +21,7 @@ export interface Storage {
   readonly write: (
     path: string,
     options?: StorageOptions,
-  ) => (buffer: Buffer) => TE.TaskEither<Error, void>
+  ) => (data: Buffer | NodeJS.ReadableStream) => TE.TaskEither<Error, void>
   readonly delete: (
     path: string,
     options?: StorageOptions,
@@ -27,7 +35,16 @@ interface StorageOptions {
 const _log =
   (
     [verb, preposition]: Readonly<
-      ['reading' | 'writing' | 'deleting', 'from' | 'to']
+      [
+        (
+          | 'getting stream for'
+          | 'getting URL for'
+          | 'reading'
+          | 'writing'
+          | 'deleting'
+        ),
+        'from' | 'to',
+      ]
     >,
     path: string,
     { fileSystem }: StorageOptions,
@@ -59,6 +76,22 @@ const _log =
 export const log =
   (logStart: $L.Logger, logEnd = $L.void) =>
   (storage: Storage): Storage => ({
+    getStream: (path, options = {}) =>
+      pipe(
+        storage.getStream(path, options),
+        _log(['getting stream for', 'from'], path, options, {
+          start: logStart,
+          end: logEnd,
+        }),
+      ),
+    getUrl: (path, options = {}) =>
+      pipe(
+        storage.getUrl(path, options),
+        _log(['getting URL for', 'from'], path, options, {
+          start: logStart,
+          end: logEnd,
+        }),
+      ),
     read: (path, options = {}) =>
       pipe(
         storage.read(path, options),

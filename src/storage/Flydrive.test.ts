@@ -3,34 +3,69 @@ import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as T from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
+import { Readable } from 'stream'
 import * as $B from '../Buffer'
+import * as $S from '../Stream'
 import { $flydrive } from './Flydrive'
 
 class MemoryStorage extends Storage {
   private storage: Record<string, Buffer> = {}
 
-  getBuffer(location: string) {
-    return location in this.storage
-      ? Promise.resolve({ content: this.storage[location], raw: undefined })
-      : Promise.reject()
+  async exists(location: string) {
+    return { exists: location in this.storage, raw: undefined }
   }
 
-  put(location: string, content: unknown) {
-    if (!$B.BufferC.is(content)) {
-      return Promise.reject()
+  getStream(location: string) {
+    if (!(location in this.storage)) {
+      throw undefined
     }
 
-    this.storage[location] = content
-
-    return Promise.resolve({ raw: undefined })
+    return Readable.from($B.BufferFromStringC.encode(this.storage[location]))
   }
 
-  delete(location: string) {
-    delete this.storage[location]
+  getUrl(location: string) {
+    if (!(location in this.storage)) {
+      throw undefined
+    }
 
-    return location in this.storage
-      ? Promise.resolve({ wasDeleted: true, raw: undefined })
-      : Promise.reject()
+    return `data:;base64,${$B.BufferFromStringC.encode(this.storage[location])}`
+  }
+
+  async getBuffer(location: string) {
+    await this.exists(location)
+
+    return {
+      content: this.storage[location],
+      raw: undefined,
+    }
+  }
+
+  async put(location: string, content: unknown) {
+    if (!$B.BufferC.is(content) && !$S.ReadableStreamC.is(content)) {
+      throw undefined
+    }
+
+    const buffer = $S.ReadableStreamC.is(content)
+      ? await $B.fromStream(content)()
+      : E.right(content)
+    if (E.isLeft(buffer)) {
+      throw undefined
+    }
+
+    this.storage[location] = buffer.right
+
+    return { raw: undefined }
+  }
+
+  async delete(location: string) {
+    try {
+      await this.exists(location)
+      delete this.storage[location]
+
+      return { wasDeleted: true, raw: undefined }
+    } catch (_) {
+      return { wasDeleted: false, raw: undefined }
+    }
   }
 }
 
