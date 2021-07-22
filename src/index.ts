@@ -24,6 +24,7 @@ import * as $readonlyArray from './ReadonlyArray'
 import * as $readonlyRecord from './ReadonlyRecord'
 import * as $readonlyTuple from './ReadonlyTuple'
 import * as $storage from './Storage'
+import * as $stream from './Stream'
 import * as $string from './string'
 import * as $struct from './struct'
 import * as $taskEither from './TaskEither'
@@ -77,6 +78,7 @@ export {
   $readonlyRecord,
   $readonlyTuple,
   $storage,
+  $stream,
   $string,
   $struct,
   $taskEither,
