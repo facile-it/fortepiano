@@ -28,7 +28,7 @@ class MemoryStorage extends Storage {
       throw undefined
     }
 
-    return `data:;base64,${$B.BufferFromStringC.encode(this.storage[location])}`
+    return `data:;base64,${this.storage[location].toString('base64')}`
   }
 
   async getBuffer(location: string) {
