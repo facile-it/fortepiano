@@ -1,5 +1,6 @@
+import { flow, pipe } from 'fp-ts/function'
+import * as $O from 'fp-ts/Option'
 import * as t from 'io-ts'
-import { failure } from 'io-ts/PathReporter'
 import * as $S from './struct'
 
 const is = (u: unknown): u is Error =>
@@ -17,9 +18,15 @@ export const ErrorC = new t.Type(
   $S.lookup('message'),
 )
 
-export const fromUnknown = (e: Error) => (u: unknown) =>
+const _fromUnknown = (u: unknown) =>
   // eslint-disable-next-line no-nested-ternary
-  ErrorC.is(u) ? u : t.string.is(u) ? Error(u) : e
+  ErrorC.is(u) ? $O.some(u) : t.string.is(u) ? $O.some(Error(u)) : $O.none
+
+export const fromUnknown = (e: Error) =>
+  flow(
+    _fromUnknown,
+    $O.getOrElse(() => e),
+  )
 
 const withPrev = (prev: Error) => (error: Error) => {
   ;(error as any).prev = prev
@@ -29,15 +36,12 @@ const withPrev = (prev: Error) => (error: Error) => {
 
 export const wrap =
   (e: Error) =>
-  (u: unknown): Error & { readonly prev?: Error } => {
-    try {
-      // eslint-disable-next-line no-nested-ternary
-      return ErrorC.is(u)
-        ? withPrev(u)(e)
-        : t.string.is(u)
-        ? withPrev(Error(u))(e)
-        : withPrev(Error(failure(e as any).join('\n')))(e)
-    } catch (_) {
-      return e
-    }
-  }
+  (u: unknown): Error & { readonly prev?: Error } =>
+    pipe(
+      u,
+      _fromUnknown,
+      $O.match(
+        () => e,
+        (error) => withPrev(error)(e),
+      ),
+    )
