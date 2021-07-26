@@ -20,30 +20,28 @@
     "url": "https://github.com/facile-it/fortepiano/issues"
   },
   "homepage": "https://github.com/facile-it/fortepiano#readme",
-  "dependencies": {
-    "fp-ts": "^2.10.5",
-    "io-ts": "^2.2.16",
-    "io-ts-types": "^0.5.16",
-    "monocle-ts": "^2.3.10",
-    "newtype-ts": "^0.3.4"
-  },
   "devDependencies": {
-    "@slynova/flydrive": "^1.0.3",
-    "@types/jest": "^26.0.23",
-    "@types/memcached": "^2.2.7",
-    "@types/node-fetch": "^2.5.11",
-    "@types/redis": "^2.8.31",
+    "@slynova/flydrive": "^1.0.0",
+    "@types/jest": "^26.0.24",
+    "@types/memcached": "^2.0.0",
+    "@types/node-fetch": "^2.5.12",
+    "@types/redis": "^2.0.0",
     "@types/redis-mock": "^0.17.0",
-    "axios": "^0.21.1",
-    "eslint": "^7.26.0",
+    "axios": "^0.21.0",
+    "eslint": "^7.31.0",
     "eslint-config-facile": "^0.4.1",
-    "got": "^11.8.2",
+    "fp-ts": "^2.0.0",
+    "got": "^11.0.0",
+    "io-ts": "^2.0.0",
+    "io-ts-types": "^0.5.0",
     "jest": "^26.6.3",
-    "memcached": "^2.2.2",
+    "memcached": "^2.0.0",
     "memcached-mock": "^0.1.0",
+    "monocle-ts": "^2.3.10",
+    "newtype-ts": "^0.3.4",
     "node-fetch": "^2.6.1",
-    "prettier": "^2.3.0",
-    "redis": "^3.1.2",
+    "prettier": "^2.3.2",
+    "redis": "^3.0.0",
     "redis-mock": "^0.56.3",
     "ts-jest": "^26.5.6",
     "ts-node": "^9.1.1",
@@ -54,8 +52,34 @@
     "@types/memcached": "^2.0.0",
     "@types/redis": "^2.0.0",
     "axios": "^0.21.0",
+    "fp-ts": "^2.0.0",
     "got": "^11.0.0",
+    "io-ts": "^2.0.0",
+    "io-ts-types": "^0.5.0",
     "memcached": "^2.0.0",
     "redis": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@slynova/flydrive": {
+      "optional": true
+    },
+    "@types/memcached": {
+      "optional": true
+    },
+    "@types/redis": {
+      "optional": true
+    },
+    "axios": {
+      "optional": true
+    },
+    "got": {
+      "optional": true
+    },
+    "memcached": {
+      "optional": true
+    },
+    "redis": {
+      "optional": true
+    }
   }
 }
