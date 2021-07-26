@@ -11,10 +11,6 @@ import { $flydrive } from './Flydrive'
 class MemoryStorage extends Storage {
   private storage: Record<string, Buffer> = {}
 
-  async exists(location: string) {
-    return { exists: location in this.storage, raw: undefined }
-  }
-
   getStream(location: string) {
     if (!(location in this.storage)) {
       throw undefined
@@ -32,7 +28,9 @@ class MemoryStorage extends Storage {
   }
 
   async getBuffer(location: string) {
-    await this.exists(location)
+    if (!(location in this.storage)) {
+      throw undefined
+    }
 
     return {
       content: this.storage[location],
@@ -58,14 +56,13 @@ class MemoryStorage extends Storage {
   }
 
   async delete(location: string) {
-    try {
-      await this.exists(location)
-      delete this.storage[location]
-
-      return { wasDeleted: true, raw: undefined }
-    } catch (_) {
+    if (!(location in this.storage)) {
       return { wasDeleted: false, raw: undefined }
     }
+
+    delete this.storage[location]
+
+    return { wasDeleted: true, raw: undefined }
   }
 }
 
