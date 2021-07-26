@@ -7,7 +7,7 @@ import * as $S from './struct'
 export const pick =
   <R extends $S.struct>() =>
   <K extends keyof R>(k: K) =>
-    RE.asks<Pick<R, K>, never, Pick<R, K>[K]>($S.lookup(k))
+    RE.asks((r: Pick<R, K>) => r[k])
 
 export const picks =
   <R extends $S.struct>() =>
