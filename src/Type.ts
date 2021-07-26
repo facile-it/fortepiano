@@ -41,7 +41,10 @@ export const struct = new t.Type(
 export const nullable = <C extends t.Mixed>(codec: C, name?: string) =>
   t.union([codec, t.undefined], name)
 
-export const alias = <C extends t.Mixed>(name: string, codec: C) => ({
+export const alias = <C extends t.Mixed>(
+  name: string,
+  codec: C,
+): t.Type<t.TypeOf<C>, t.OutputOf<C>, t.InputOf<C>> => ({
   ...codec,
   name,
 })
