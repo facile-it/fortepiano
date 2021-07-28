@@ -31,9 +31,7 @@ const request = (
             response.headers,
             RR.filter(t.union([t.string, t.readonlyArray(t.string)]).is),
           ),
-          body: options.json
-            ? ((response.body as any) || {}).data
-            : response.body,
+          body: response.body,
         }))
         .catch((error) => {
           if (!(error instanceof HTTPError)) {
