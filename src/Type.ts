@@ -85,7 +85,7 @@ export const lax = <P extends t.Props>(props: P, name?: string) =>
                 partial.props,
                 RR.lookup(key),
                 O.match(
-                  () => ({ ...result, [key]: value }),
+                  () => result, // ({ ...result, [key]: value }),
                   (codec) =>
                     pipe(
                       codec.decode(value),

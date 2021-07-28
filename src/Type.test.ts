@@ -58,7 +58,11 @@ describe('Type', () => {
       ],
       [
         { foo: true, bar: null, mad: 'bar', max: 'foo' },
-        { foo: true, mad: 'bar', max: 'foo' },
+        {
+          foo: true,
+          // mad: 'bar',
+          max: 'foo',
+        },
       ],
     ]
 
