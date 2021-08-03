@@ -3,7 +3,6 @@ import { pipe } from 'fp-ts/function'
 import * as TE from 'fp-ts/TaskEither'
 import fetch from 'node-fetch'
 import { mocked } from 'ts-jest/utils'
-import * as $S from '../struct'
 import { $fetch } from './Fetch'
 
 jest.mock('node-fetch')
@@ -65,22 +64,17 @@ describe('Http', () => {
         await expect(
           pipe(
             $fetch(mocked(fetch, true) as any).get('foo'),
-            TE.mapLeft($S.updateAt('stack', undefined)),
+            TE.mapLeft((error: any) => error.response),
           )(),
         ).resolves.toStrictEqual(
           E.left({
-            name: 'Error',
-            message: 'foo',
-            stack: undefined,
-            response: {
-              url: 'bar',
-              status: 500,
-              headers: {
-                foo: 'bar',
-                mad: 'max',
-              },
-              body: 'foo',
+            url: 'bar',
+            status: 500,
+            headers: {
+              foo: 'bar',
+              mad: 'max',
             },
+            body: 'foo',
           }),
         )
       })

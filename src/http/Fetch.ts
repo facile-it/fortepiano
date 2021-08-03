@@ -73,14 +73,12 @@ const request = (
             }
 
             if (!response.ok) {
-              const error = new Error(response.statusText)
-
-              throw {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
-                response: _response,
-              }
+              throw new $H.HttpError(
+                _response,
+                `Cannot make HTTP request "${$St.uppercase(method)} ${url}": ${
+                  response.statusText
+                }`,
+              )
             }
 
             return _response

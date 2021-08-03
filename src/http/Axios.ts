@@ -48,12 +48,14 @@ const request = (
             throw error
           }
 
-          throw {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-            response: response(url)(error.response),
-          }
+          throw $E.wrap(
+            new $H.HttpError(
+              response(url)(error.response),
+              `Cannot make HTTP request "${$S.uppercase(method)} ${url}": ${
+                error.message
+              }`,
+            ),
+          )(error)
         }),
     $E.fromUnknown(
       Error(`Cannot make HTTP request "${$S.uppercase(method)} ${url}"`),

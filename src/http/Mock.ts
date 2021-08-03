@@ -16,7 +16,7 @@ const response = (url: string, error = false): $M.Mock<$H.HttpResponse> =>
     body: $M.unknown(),
   })
 
-const error = (url: string): $M.Mock<$H.HttpError> =>
+const error = (url: string): $M.Mock<Error | $H.HttpError> =>
   $M.struct({
     name: $M.string,
     message: $M.string,

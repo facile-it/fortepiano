@@ -1,5 +1,7 @@
 import axios from 'axios'
 import * as E from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
+import * as TE from 'fp-ts/TaskEither'
 import { mocked } from 'ts-jest/utils'
 import { $axios } from './Axios'
 
@@ -60,21 +62,19 @@ describe('Http', () => {
         mocked(axios, true).isAxiosError.mockReturnValue(true)
 
         await expect(
-          $axios(mocked(axios, true)).get('foo')(),
+          pipe(
+            $axios(mocked(axios, true)).get('foo'),
+            TE.mapLeft((error: any) => error.response),
+          )(),
         ).resolves.toStrictEqual(
           E.left({
-            name: 'foo',
-            message: 'bar',
-            stack: undefined,
-            response: {
-              url: 'foo',
-              status: 500,
-              headers: {
-                foo: 'bar',
-                mad: ['max'],
-              },
-              body: 42,
+            url: 'foo',
+            status: 500,
+            headers: {
+              foo: 'bar',
+              mad: ['max'],
             },
+            body: 42,
           }),
         )
       })

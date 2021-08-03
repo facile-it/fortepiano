@@ -38,20 +38,22 @@ const request = (
             throw error
           }
 
-          throw {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-            response: {
-              url: error.response.url,
-              status: error.response.statusCode,
-              headers: pipe(
-                error.response.headers,
-                RR.filter(t.union([t.string, t.readonlyArray(t.string)]).is),
-              ),
-              body: error.response.body,
-            },
-          }
+          throw $E.wrap(
+            new $H.HttpError(
+              {
+                url: error.response.url,
+                status: error.response.statusCode,
+                headers: pipe(
+                  error.response.headers,
+                  RR.filter(t.union([t.string, t.readonlyArray(t.string)]).is),
+                ),
+                body: error.response.body,
+              },
+              `Cannot make HTTP request "${$S.uppercase(method)} ${url}": ${
+                error.message
+              }`,
+            ),
+          )(error)
         }),
     $E.fromUnknown(
       Error(`Cannot make HTTP request "${$S.uppercase(method)} ${url}"`),

@@ -37,7 +37,11 @@ export interface HttpResponse<A = unknown> {
   readonly body: A
 }
 
-export type HttpError = Error | (Error & { readonly response: HttpResponse })
+export class HttpError extends Error {
+  constructor(readonly response: HttpResponse, message?: string) {
+    super(message)
+  }
+}
 
 export interface HttpOptions {
   readonly body?: $Stru.struct
@@ -48,7 +52,7 @@ export interface HttpOptions {
 
 export interface HttpRequest<A extends keyof HttpOptions = never> {
   (url: string, options?: Omit<HttpOptions, A>): TE.TaskEither<
-    HttpError,
+    Error | HttpError,
     HttpResponse
   >
 }
@@ -128,7 +132,7 @@ export const cache =
 export const pool = (http: Http): Http => {
   const pool = new Map<
     Readonly<[string, HttpOptions | undefined]>,
-    Promise<Ei.Either<HttpError, HttpResponse>>
+    Promise<Ei.Either<Error | HttpError, HttpResponse>>
   >()
 
   return {
