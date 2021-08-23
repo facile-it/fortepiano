@@ -41,4 +41,6 @@ export const mock: $H.Http = {
   patch: request,
   post: request,
   put: request,
+  head: request,
+  options: request,
 }
