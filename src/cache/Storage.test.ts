@@ -1,4 +1,4 @@
-import * as E from 'fp-ts/EIther'
+import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as T from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
