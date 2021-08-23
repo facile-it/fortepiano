@@ -67,8 +67,8 @@ const HttpMethods = [
   'post',
   'put',
 ] as const
-export type HttpMethod = typeof HttpMethods[number]
 export const HttpMethodC = $T.literalUnion(HttpMethods, 'HttpMethod')
+export type HttpMethod = t.TypeOf<typeof HttpMethodC>
 
 export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
   t.type(
