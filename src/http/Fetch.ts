@@ -96,4 +96,6 @@ export const $fetch = (_fetch: typeof fetch): $H.Http => ({
   patch: (url, options) => request(_fetch, 'patch', url, options),
   post: (url, options) => request(_fetch, 'post', url, options),
   put: (url, options) => request(_fetch, 'put', url, options),
+  head: (url, options) => request(_fetch, 'head', url, options),
+  options: (url, options) => request(_fetch, 'options', url, options),
 })

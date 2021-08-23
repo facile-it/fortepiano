@@ -66,4 +66,6 @@ export const $got = (_got: Got): $H.Http => ({
   patch: (url, options) => request(_got, 'patch', url, options),
   post: (url, options) => request(_got, 'post', url, options),
   put: (url, options) => request(_got, 'put', url, options),
+  head: (url, options) => request(_got, 'head', url, options),
+  options: (url, options) => request(_got, 'options', url, options),
 })

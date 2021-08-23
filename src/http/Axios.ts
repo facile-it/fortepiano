@@ -68,4 +68,6 @@ export const $axios = (_axios: AxiosStatic): $H.Http => ({
   patch: (url, options) => request(_axios, 'patch', url, options),
   post: (url, options) => request(_axios, 'post', url, options),
   put: (url, options) => request(_axios, 'put', url, options),
+  head: (url, options) => request(_axios, 'head', url, options),
+  options: (url, options) => request(_axios, 'options', url, options),
 })

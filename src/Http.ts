@@ -29,6 +29,8 @@ export interface Http {
   readonly patch: HttpRequest
   readonly post: HttpRequest
   readonly put: HttpRequest
+  readonly head: HttpRequest<'body'>
+  readonly options: HttpRequest<'body'>
 }
 
 export interface HttpResponse<A = unknown> {
@@ -108,6 +110,8 @@ export const json = (http: Http): Http => ({
   patch: _json(http.patch),
   post: _json(http.post),
   put: _json(http.post),
+  head: _json(http.head),
+  options: _json(http.options),
 })
 
 export const cache =
@@ -203,6 +207,8 @@ export const log =
     patch: _log('patch', http.patch, { start: logStart, end: logEnd }),
     post: _log('post', http.post, { start: logStart, end: logEnd }),
     put: _log('put', http.put, { start: logStart, end: logEnd }),
+    head: _log('head', http.head, { start: logStart, end: logEnd }),
+    options: _log('options', http.options, { start: logStart, end: logEnd }),
   })
 
 export { mock }
