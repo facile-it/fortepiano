@@ -7,6 +7,7 @@ import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { Json } from 'io-ts-types'
+import * as $T from './Type'
 import * as $C from './Cache'
 import * as $Er from './Error'
 import { mock } from './http/Mock'
@@ -57,7 +58,17 @@ export interface HttpRequest<A extends keyof HttpOptions = never> {
   >
 }
 
-export type HttpMethod = 'delete' | 'get' | 'patch' | 'post' | 'put'
+const HttpMethods = [
+  'delete',
+  'get',
+  'head',
+  'options',
+  'patch',
+  'post',
+  'put',
+] as const
+export type HttpMethod = typeof HttpMethods[number]
+export const HttpMethodC = $T.literalUnion(HttpMethods, 'HttpMethod')
 
 export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
   t.type(
