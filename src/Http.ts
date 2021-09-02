@@ -87,19 +87,17 @@ export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
 
 const is =
   <A extends keyof typeof ERRORS>(type?: A) =>
-  (u: unknown): u is HttpError => {
-    return (
-      $Er.ErrorC.is(u) &&
-      t
-        .type({
-          response: t.intersection([
-            HttpResponseC(t.unknown),
-            t.type({ status: type ? t.literal(ERRORS[type]) : t.number }),
-          ]),
-        })
-        .is({ ...u })
-    )
-  }
+  (u: unknown): u is HttpError =>
+    $Er.ErrorC.is(u) &&
+    t
+      .type({
+        response: t.intersection([
+          HttpResponseC(t.unknown),
+          t.type({ status: type ? t.literal(ERRORS[type]) : t.number }),
+        ]),
+      })
+      .is({ ...u })
+
 export const HttpErrorC = <A extends keyof typeof ERRORS>(type?: A) =>
   new t.Type(
     `Http${type || ''}Error`,
