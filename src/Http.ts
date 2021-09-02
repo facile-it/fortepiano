@@ -86,13 +86,13 @@ export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
   )
 
 export const HttpErrorC = <A extends keyof typeof ERRORS>(type?: A) =>
-  t.intersection(
+  t.union(
     [
       $Er.ErrorC,
       t.type({
         response: t.intersection([
           HttpResponseC(t.unknown),
-          t.type({ statusCode: type ? t.literal(ERRORS[type]) : t.number }),
+          t.type({ status: type ? t.literal(ERRORS[type]) : t.number }),
         ]),
       }),
     ],
