@@ -1,5 +1,5 @@
 import * as Ei from 'fp-ts/Either'
-import { constant, pipe } from 'fp-ts/function'
+import { constant, identity, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as O from 'fp-ts/Option'
 import * as R from 'fp-ts/Random'
@@ -85,18 +85,25 @@ export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
     `HttpResponse(${codec.name})`,
   )
 
-export const HttpErrorC = <A extends keyof typeof ERRORS>(type?: A) =>
-  t.intersection(
-    [
-      $Er.ErrorC,
-      t.type({
+const is =
+  <A extends keyof typeof ERRORS>(type?: A) =>
+  (u: unknown): u is HttpError =>
+    $Er.ErrorC.is(u) &&
+    t
+      .type({
         response: t.intersection([
           HttpResponseC(t.unknown),
-          t.type({ statusCode: type ? t.literal(ERRORS[type]) : t.number }),
+          t.type({ status: type ? t.literal(ERRORS[type]) : t.number }),
         ]),
-      }),
-    ],
+      })
+      .is({ ...u })
+
+export const HttpErrorC = <A extends keyof typeof ERRORS>(type?: A) =>
+  new t.Type(
     `Http${type || ''}Error`,
+    is(type),
+    (u, c) => (is(type)(u) ? t.success(u) : t.failure(u, c)),
+    identity,
   )
 
 const _json =
