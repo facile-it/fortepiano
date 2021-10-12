@@ -112,11 +112,11 @@ const _json =
     request(url, { ...options, json: true })
 
 export const json = (http: Http): Http => ({
-  delete: _json(http.get),
+  delete: _json(http.delete),
   get: _json(http.get),
   patch: _json(http.patch),
   post: _json(http.post),
-  put: _json(http.post),
+  put: _json(http.put),
   head: _json(http.head),
   options: _json(http.options),
 })
