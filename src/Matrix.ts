@@ -9,9 +9,13 @@ import * as $Eq from './Eq'
 import * as $RA from './ReadonlyArray'
 import * as $RR from './ReadonlyRecord'
 
+interface MatrixBrand {
+  readonly Matrix: unique symbol
+}
+
 export type Matrix<A> = t.Branded<
   ReadonlyArray<RNEA.ReadonlyNonEmptyArray<A>>,
-  { readonly Matrix: unique symbol }
+  MatrixBrand
 >
 
 const is =
