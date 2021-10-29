@@ -47,9 +47,10 @@ export class HttpError extends Error {
 }
 
 export interface HttpOptions {
-  readonly body?: $Stru.struct
+  readonly body?: $Stru.struct | Buffer
   readonly headers?: RR.ReadonlyRecord<string, string>
   readonly json?: boolean
+  readonly buffer?: boolean
   readonly query?: RR.ReadonlyRecord<string, boolean | number | string>
 }
 
@@ -109,7 +110,7 @@ export const HttpErrorC = <A extends keyof typeof ERRORS>(type?: A) =>
 const _json =
   (request: HttpRequest): HttpRequest =>
   (url, options) =>
-    request(url, { ...options, json: true })
+    request(url, { ...options, json: true, buffer: false })
 
 export const json = (http: Http): Http => ({
   delete: _json(http.delete),
@@ -119,6 +120,21 @@ export const json = (http: Http): Http => ({
   put: _json(http.put),
   head: _json(http.head),
   options: _json(http.options),
+})
+
+const _buffer =
+  (request: HttpRequest): HttpRequest =>
+  (url, options) =>
+    request(url, { ...options, buffer: true, json: false })
+
+export const buffer = (http: Http): Http => ({
+  delete: _buffer(http.delete),
+  get: _buffer(http.get),
+  patch: _buffer(http.patch),
+  post: _buffer(http.post),
+  put: _buffer(http.put),
+  head: _buffer(http.head),
+  options: _buffer(http.options),
 })
 
 export const cache =
