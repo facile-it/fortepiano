@@ -39,7 +39,12 @@ const request = (
           },
           method,
           params: options.query,
-          ...(options.json ? { responseType: 'json' } : null),
+          // eslint-disable-next-line no-nested-ternary
+          ...(options.json
+            ? { responseType: 'json' }
+            : options.buffer
+            ? { responseType: 'arraybuffer' }
+            : null),
           url,
         })
         .then(response(url))
