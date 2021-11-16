@@ -57,7 +57,7 @@ const request = (
             ...options.headers,
             ...(options.json ? { 'Content-Type': 'application/json' } : null),
           },
-          method,
+          method: $St.uppercase(method),
         },
       ).then((response) =>
         (response.ok && options.json ? response.json() : response.text()).then(
