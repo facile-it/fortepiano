@@ -1,4 +1,4 @@
-import { round } from './number'
+import { ceil, floor, round } from './number'
 
 // Successfully tested with `INTEGERS` equal to 1000.
 const INTEGERS = 10
@@ -17,6 +17,11 @@ describe('number', () => {
       }
       expect(round(1)(-1.111)).toBe(-1.1)
       expect(round(1)(-1.999)).toBe(-2)
+    })
+    describe('given number with 7+ "0" digits', () => {
+      it('should round to a specific digit', () => {
+        expect(round(2)(0.000000123)).toBe(0.0)
+      })
     })
     describe('given `n` digits', () => {
       it("shouldn't affect numbers with `n` significant digits", () => {
@@ -43,6 +48,32 @@ describe('number', () => {
       expect(round(0)(1.111)).toBe(1)
       expect(round(0)(1.119)).toBe(1)
       expect(round(0)(1.9)).toBe(2)
+    })
+  })
+  describe('floor', () => {
+    it('should round to a specific digit', () => {
+      expect(floor(2)(1.111)).toBe(1.11)
+      expect(floor(2)(1.119)).toBe(1.11)
+      expect(floor(2)(1.9)).toBe(1.9)
+      expect(floor(2)(1.9999999)).toBe(1.99)
+      expect(floor(2)(1.00000009999)).toBe(1)
+      expect(floor(2)(1.0090009999)).toBe(1.0)
+      expect(floor(0)(1.111)).toBe(1)
+      expect(floor(0)(1.119)).toBe(1)
+      expect(floor(0)(1.9)).toBe(1)
+    })
+  })
+  describe('ceil', () => {
+    it('should round to a specific digit', () => {
+      expect(ceil(2)(1.111)).toBe(1.12)
+      expect(ceil(2)(1.119)).toBe(1.12)
+      expect(ceil(2)(1.9)).toBe(1.9)
+      expect(ceil(2)(1.9999999)).toBe(2)
+      expect(ceil(2)(1.00000009999)).toBe(1.01)
+      expect(ceil(2)(1.0090009999)).toBe(1.01)
+      expect(ceil(0)(1.111)).toBe(2)
+      expect(ceil(0)(1.119)).toBe(2)
+      expect(ceil(0)(1.9)).toBe(2)
     })
   })
 })
