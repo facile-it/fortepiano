@@ -39,6 +39,7 @@ describe('number', () => {
       })
     })
     it('should round to a specific digit', () => {
+      expect(round(2)(1.005)).toBe(1.01)
       expect(round(2)(1.111)).toBe(1.11)
       expect(round(2)(1.119)).toBe(1.12)
       expect(round(2)(1.9)).toBe(1.9)
