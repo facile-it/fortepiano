@@ -40,7 +40,7 @@
     "memcached-mock": "^0.1.0",
     "monocle-ts": "^2.3.10",
     "newtype-ts": "^0.3.4",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "prettier": "^2.3.2",
     "redis": "^3.0.0",
     "redis-mock": "^0.56.3",
