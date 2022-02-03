@@ -44,6 +44,8 @@ describe('number', () => {
     it('should round to a specific digit', () => {
       expect(round(2)(1.004)).toBe(1)
       expect(round(2)(1.005)).toBe(1.01)
+      expect(round(2)(-1.004)).toBe(-1)
+      expect(round(2)(-1.005)).toBe(-1.01)
       expect(round(2)(1.111)).toBe(1.11)
       expect(round(2)(1.119)).toBe(1.12)
       expect(round(2)(1.9)).toBe(1.9)
@@ -59,6 +61,8 @@ describe('number', () => {
     it('should round to a specific digit', () => {
       expect(floor(2)(1.004)).toBe(1)
       expect(floor(2)(1.005)).toBe(1)
+      expect(floor(2)(-1.004)).toBe(-1.01)
+      expect(floor(2)(-1.005)).toBe(-1.01)
       expect(floor(2)(1.111)).toBe(1.11)
       expect(floor(2)(1.119)).toBe(1.11)
       expect(floor(2)(1.9)).toBe(1.9)
@@ -74,6 +78,8 @@ describe('number', () => {
     it('should round to a specific digit', () => {
       expect(ceil(2)(1.004)).toBe(1.01)
       expect(ceil(2)(1.005)).toBe(1.01)
+      expect(ceil(2)(-1.004)).toBe(-1)
+      expect(ceil(2)(-1.005)).toBe(-1)
       expect(ceil(2)(1.111)).toBe(1.12)
       expect(ceil(2)(1.119)).toBe(1.12)
       expect(ceil(2)(1.9)).toBe(1.9)
