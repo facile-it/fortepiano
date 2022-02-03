@@ -4,6 +4,8 @@ import { identity } from 'io-ts'
 import * as $C from './Cache'
 import { cache, HttpError, HttpErrorC, HttpResponse, mock } from './Http'
 
+jest.useFakeTimers()
+
 describe('Http', () => {
   describe('cache', () => {
     const _cache = $C.memory()
