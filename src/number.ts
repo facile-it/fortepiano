@@ -13,8 +13,8 @@ const approx =
       ([mantissa, exponent]) =>
         `${mantissa}e${(exponent ? Number(exponent) : 0) - digits}`,
       Number,
-      (n) => Math.sign(a) * Math.abs(n), // Helps when rounding -0.
-      (n) => (n === 0 && discardZeroSign ? Math.abs(n) : n), // If true, -0 -> 0
+      (n) =>
+        n === 0 && discardZeroSign ? Math.abs(n) : Math.sign(a) * Math.abs(n),
     )
 
 export const floor = approx('floor')
