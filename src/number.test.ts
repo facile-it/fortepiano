@@ -16,10 +16,17 @@ describe('number', () => {
     })
     it('should work with negative numbers', () => {
       for (let number = 0; number < 100; number++) {
-        expect(round(1)(-number)).toBe(-number)
+        expect(round(1)(-number)).toBe(number === 0 ? 0 : -number)
       }
       expect(round(1)(-1.111)).toBe(-1.1)
       expect(round(1)(-1.999)).toBe(-2)
+    })
+    it('should work with negative numbers preserving 0 sign', () => {
+      for (let number = 0; number < 100; number++) {
+        expect(round(1, false)(-number)).toBe(-number)
+      }
+      expect(round(1, false)(-1.111)).toBe(-1.1)
+      expect(round(1, false)(-1.999)).toBe(-2)
     })
     describe('given number with 7+ "0" digits', () => {
       it('should round to a specific digit', () => {
@@ -35,7 +42,20 @@ describe('number', () => {
                 `${integer}.${`00${decimal}`.slice(-digits)}`,
               )
               expect(round(digits)(number)).toBe(number)
-              expect(round(digits)(-number)).toBe(-number)
+              expect(round(digits)(-number)).toBe(number === 0 ? 0 : -number)
+            }
+          }
+        }
+      })
+      it("shouldn't affect numbers with `n` significant digits preserving 0 sign", () => {
+        for (let integer = 0; integer < INTEGERS; integer++) {
+          for (let digits = 1; digits <= DIGITS; digits++) {
+            for (let decimal = 0; decimal < Math.pow(10, digits); decimal++) {
+              const number = Number(
+                `${integer}.${`00${decimal}`.slice(-digits)}`,
+              )
+              expect(round(digits, false)(number)).toBe(number)
+              expect(round(digits, false)(-number)).toBe(-number)
             }
           }
         }
@@ -109,6 +129,12 @@ describe('number', () => {
       expect(round(0)(1.111)).toBe(1)
       expect(round(0)(1.119)).toBe(1)
       expect(round(0)(1.9)).toBe(2)
+      expect(round(0)(-1e-10)).toBe(0)
+      expect(round(0)(-0.000001)).toBe(0)
+      expect(round(0)(-0.000000001)).toBe(0)
+      expect(round(0, false)(-1e-10)).toBe(-0)
+      expect(round(0, false)(-0.000001)).toBe(-0)
+      expect(round(0, false)(-0.000000001)).toBe(-0)
     })
   })
   describe('floor', () => {
@@ -180,6 +206,12 @@ describe('number', () => {
       expect(floor(0)(1.111)).toBe(1)
       expect(floor(0)(1.119)).toBe(1)
       expect(floor(0)(1.9)).toBe(1)
+      expect(floor(0)(-1e-10)).toBe(-1)
+      expect(floor(0)(-0.000001)).toBe(-1)
+      expect(floor(0)(-0.000000001)).toBe(-1)
+      expect(floor(0, false)(-1e-10)).toBe(-1)
+      expect(floor(0, false)(-0.000001)).toBe(-1)
+      expect(floor(0, false)(-0.000000001)).toBe(-1)
     })
   })
   describe('ceil', () => {
@@ -196,16 +228,16 @@ describe('number', () => {
       expect(ceil(2)(1000000000.004)).toBe(1000000000.01)
       expect(ceil(2)(10000000000.004)).toBe(10000000000.01)
       expect(ceil(2)(1.005)).toBe(1.01)
-      expect(ceil(2)(10.004)).toBe(10.01)
-      expect(ceil(2)(100.004)).toBe(100.01)
-      expect(ceil(2)(1000.004)).toBe(1000.01)
-      expect(ceil(2)(10000.004)).toBe(10000.01)
-      expect(ceil(2)(100000.004)).toBe(100000.01)
-      expect(ceil(2)(1000000.004)).toBe(1000000.01)
-      expect(ceil(2)(10000000.004)).toBe(10000000.01)
-      expect(ceil(2)(100000000.004)).toBe(100000000.01)
-      expect(ceil(2)(1000000000.004)).toBe(1000000000.01)
-      expect(ceil(2)(10000000000.004)).toBe(10000000000.01)
+      expect(ceil(2)(10.005)).toBe(10.01)
+      expect(ceil(2)(100.005)).toBe(100.01)
+      expect(ceil(2)(1000.005)).toBe(1000.01)
+      expect(ceil(2)(10000.005)).toBe(10000.01)
+      expect(ceil(2)(100000.005)).toBe(100000.01)
+      expect(ceil(2)(1000000.005)).toBe(1000000.01)
+      expect(ceil(2)(10000000.005)).toBe(10000000.01)
+      expect(ceil(2)(100000000.005)).toBe(100000000.01)
+      expect(ceil(2)(1000000000.005)).toBe(1000000000.01)
+      expect(ceil(2)(10000000000.005)).toBe(10000000000.01)
       expect(ceil(2)(-1.004)).toBe(-1)
       expect(ceil(2)(-10.004)).toBe(-10)
       expect(ceil(2)(-100.004)).toBe(-100)
@@ -251,6 +283,12 @@ describe('number', () => {
       expect(ceil(0)(1.111)).toBe(2)
       expect(ceil(0)(1.119)).toBe(2)
       expect(ceil(0)(1.9)).toBe(2)
+      expect(ceil(0)(-1e-10)).toBe(0)
+      expect(ceil(0)(-0.000001)).toBe(0)
+      expect(ceil(0)(-0.0000000001)).toBe(0)
+      expect(ceil(0, false)(-1e-10)).toBe(-0)
+      expect(ceil(0, false)(-0.000001)).toBe(-0)
+      expect(ceil(0, false)(-0.0000000001)).toBe(-0)
     })
   })
 })
