@@ -2,9 +2,30 @@ import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as t from 'io-ts'
 import * as $RA from './ReadonlyArray'
-import { alias, lax, literal, literalUnion } from './Type'
+import { alias, lax, literal, literalUnion, numeric } from './Type'
 
 describe('Type', () => {
+  describe('numeric', () => {
+    test.each([42, Infinity, NaN, Number.EPSILON, Number.MIN_VALUE])(
+      'decoding a number (%d)',
+      (value) => {
+        expect(numeric.decode(value)).toStrictEqual(E.of(value))
+      },
+    )
+    test.each([42, Infinity, Number.EPSILON, Number.MIN_VALUE])(
+      'decoding a non-trimmed numeric string (" %s ")',
+      (value) => {
+        expect(numeric.decode(` ${value} `)).toStrictEqual(E.of(value))
+      },
+    )
+    test.each(['42foo', '11.38bar', '.1337qux', 'NaN', ''])(
+      'failing with a dirty numeric string ("%s")',
+      (value) => {
+        expect(numeric.decode(value)._tag).toStrictEqual('Left')
+      },
+    )
+  })
+
   describe('literal', () => {
     it('should work with literal values', () => {
       expect(literal(42).is(1138)).toBe(false)
