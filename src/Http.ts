@@ -21,6 +21,7 @@ const ERRORS = {
   Unauthorized: 401,
   Forbidden: 403,
   NotFound: 404,
+  UnprocessableEntity: 422,
 } as const
 
 export interface Http {
