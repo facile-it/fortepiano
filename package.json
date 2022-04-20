@@ -1,6 +1,7 @@
 {
   "name": "fortepiano",
   "version": "0.1.0",
+  "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -15,7 +16,7 @@
     "type": "git",
     "url": "git+https://github.com/facile-it/fortepiano.git"
   },
-  "author": "Alberto Villa <alberto.villa@facile.it>",
+  "author": "Alberto Villa <villa.alberto@gmail.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/facile-it/fortepiano/issues"
