@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepare": "npm run build",
+    "build:es6": "tsc --build tsconfig.es6.json",
+    "prepare": "npm run build && npm run build:es6",
     "test": "jest --coverage --collectCoverageFrom=src/**/*.ts"
   },
   "repository": {
