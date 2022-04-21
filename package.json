@@ -4,6 +4,7 @@
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "sideEffects": false,
   "files": [
     "lib/"
   ],
