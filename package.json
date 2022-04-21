@@ -4,8 +4,10 @@
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "module": "es6/index.js",
   "sideEffects": false,
   "files": [
+    "es6/",
     "lib/"
   ],
   "scripts": {
