@@ -1,0 +1,1 @@
+{ "collectCoverageFrom": ["./**.ts"], "preset": "ts-jest" }

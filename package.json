@@ -12,7 +12,11 @@
     "build:cjs": "tsc --build ./tsconfig.cjs.json",
     "build:esm": "tsc --build ./tsconfig.esm.json",
     "clean": "rm -rf ./dist/",
+    "eslint": "eslint --fix-dry-run ./",
+    "eslint:fix": "eslint --fix ./",
     "prepublishOnly": "npm run build && ./scripts/hybridize.sh",
+    "prettier": "prettier --check ./",
+    "prettier:fix": "prettier --write ./",
     "test": "jest --coverage --collectCoverageFrom=src/**/*.ts"
   },
   "repository": {
