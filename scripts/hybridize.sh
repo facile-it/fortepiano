@@ -18,10 +18,10 @@ while read path; do
     # Create proxy modules to shadow ESM and CJS modules.
     cat <<EOF >"${DIST}/${module}/package.json" ||
 {
-    "main": "${relative_prefix}/${CJS}/${module}.js",
-    "module": "${relative_prefix}/${ESM}/${module}.js",
-    "types": "${relative_prefix}/${module}.d.ts",
-    "sideEffects": false
+  "main": "${relative_prefix}/${CJS}/${module}.js",
+  "module": "${relative_prefix}/${ESM}/${module}.js",
+  "types": "${relative_prefix}/${module}.d.ts",
+  "sideEffects": false
 }
 EOF
     exit 1
