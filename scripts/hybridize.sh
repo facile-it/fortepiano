@@ -1,25 +1,28 @@
 #!/bin/sh
 
 DIST=./dist
-ESM=${DIST}/esm
-CJS=${DIST}/cjs
+ESM=esm
+CJS=lib # TODO: change to "cjs" on v0.2.0.
 
-PKGJSON='{"main":"index.cjs.js","module":"index.esm.js","types":"index.d.ts","sideEffects":false}'
+mv "${DIST}/${ESM}/index.d.ts" "${DIST}/" &&
 
-mv ${ESM}/index.d.ts ${DIST}/ &&
-mv ${ESM}/index.js ${DIST}/index.esm.js &&
-mv ${CJS}/index.js ${DIST}/index.cjs.js &&
-
-find ${ESM} -name '*.js' -type f |
+find "${DIST}/${ESM}" -name '*.js' \! -name index.js -type f |
 while read path; do
-    file=${path#${ESM}/} &&
-    module=${file%.js} &&
-    mkdir -p ${DIST}/${module} &&
-    mv ${ESM}/${module}.d.ts ${DIST}/${module}/index.d.ts &&
-    mv ${ESM}/${file} ${DIST}/${module}/index.esm.js &&
-    mv ${CJS}/${file} ${DIST}/${module}/index.cjs.js &&
-    echo ${PKGJSON} > ${DIST}/${module}/package.json ||
+    file="${path#${DIST}/${ESM}/}" &&
+    module="${file%.js}" &&
+    mkdir -p "${DIST}/${module}" &&
+    # Help auto import of files from project root
+    # (es., `import { curry } from 'fortepiano/function'`).
+    mv "${DIST}/${ESM}/${module}.d.ts" "${DIST}/${module}.d.ts" &&
+    relative_prefix="$(echo "${module}" | sed -E 's,[^/]+,..,g')" &&
+    # Create proxy modules to shadow ESM and CJS modules.
+    cat <<EOF >"${DIST}/${module}/package.json" ||
+{
+    "main": "${relative_prefix}/${CJS}/${module}.js",
+    "module": "${relative_prefix}/${ESM}/${module}.js",
+    "types": "${relative_prefix}/${module}.d.ts",
+    "sideEffects": false
+}
+EOF
     exit 1
-done &&
-
-rm -rf ${ESM} ${CJS}
+done
