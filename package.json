@@ -2,18 +2,15 @@
   "name": "fortepiano",
   "version": "0.1.0",
   "description": "",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "module": "es6/index.js",
+  "main": "index.cjs.js",
+  "module": "index.esm.js",
+  "types": "index.d.ts",
   "sideEffects": false,
-  "files": [
-    "es6/",
-    "lib/"
-  ],
   "scripts": {
-    "build": "tsc",
-    "build:es6": "tsc --build tsconfig.es6.json",
-    "prepare": "npm run build && npm run build:es6",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc",
+    "build:esm": "tsc --build tsconfig.esm.json",
+    "prepublishOnly": "npm run build && ./scripts/hybridize.sh",
     "test": "jest --coverage --collectCoverageFrom=src/**/*.ts"
   },
   "repository": {
