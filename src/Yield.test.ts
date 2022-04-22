@@ -82,9 +82,9 @@ import {
   wilt,
   wither,
   zip,
-} from './GeneratorL'
+} from './Yield'
 
-describe('GeneratorL', () => {
+describe('Yield', () => {
   describe('makeBy', () => {
     it('should create a generator using a function', () => {
       expect(
