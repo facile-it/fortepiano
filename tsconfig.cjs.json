@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "module": "es2015",
-    "outDir": "./dist/esm/"
+    "module": "commonjs",
+    "outDir": "./dist/cjs/"
   }
 }

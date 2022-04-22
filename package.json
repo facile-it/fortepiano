@@ -7,9 +7,11 @@
   "types": "index.d.ts",
   "sideEffects": false,
   "scripts": {
+    "prebuild": "npm run clean",
     "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc",
-    "build:esm": "tsc --build tsconfig.esm.json",
+    "build:cjs": "tsc --build ./tsconfig.cjs.json",
+    "build:esm": "tsc --build ./tsconfig.esm.json",
+    "clean": "rm -rf ./dist/",
     "prepublishOnly": "npm run build && ./scripts/hybridize.sh",
     "test": "jest --coverage --collectCoverageFrom=src/**/*.ts"
   },
