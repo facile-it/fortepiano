@@ -1,6 +1,6 @@
 {
   "name": "fortepiano",
-  "version": "0.1.0",
+  "version": "0.1.1-rc.1",
   "description": "",
   "main": "./lib/index.js",
   "module": "./esm/index.js",
@@ -14,10 +14,12 @@
     "clean": "rm -rf ./dist/",
     "eslint": "eslint --fix-dry-run ./",
     "eslint:fix": "eslint --fix ./",
-    "prepublishOnly": "npm run build && ./scripts/hybridize.sh",
     "prettier": "prettier --check ./",
     "prettier:fix": "prettier --write ./",
-    "test": "jest --coverage --collectCoverageFrom=src/**/*.ts"
+    "prerelease": "npm run build && ./scripts/hybridize.sh && cp ./package.json ./*.md ./dist/",
+    "release": "npm publish ./dist/",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
