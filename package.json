@@ -14,9 +14,10 @@
     "clean": "rm -rf ./dist/",
     "eslint": "eslint --fix-dry-run ./",
     "eslint:fix": "eslint --fix ./",
-    "prepublishOnly": "npm run build && ./scripts/hybridize.sh",
     "prettier": "prettier --check ./",
     "prettier:fix": "prettier --write ./",
+    "prerelease": "npm run build && ./scripts/hybridize.sh && cp ./package.json ./*.md ./dist/",
+    "release": "npm publish ./dist/",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },
