@@ -1,8 +1,6 @@
 {
   "extends": "facile",
-  "parserOptions": {
-    "project": "./tsconfig.eslint.json"
-  },
+  "parserOptions": { "project": "./tsconfig.json" },
   "rules": {
     "@typescript-eslint/no-shadow": "off",
     "import/order": [
@@ -11,7 +9,6 @@
         "alphabetize": { "caseInsensitive": true },
         "groups": [["builtin", "external"], "index", "parent", "sibling"]
       }
-    ],
-    "no-shadow": "off"
+    ]
   }
 }

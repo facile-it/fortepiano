@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true, // TODO: remove on v0.2.0.
+    "outDir": "./dist/lib/" // TODO: change to "./dist/cjs/" on v0.2.0.
+  }
+}
