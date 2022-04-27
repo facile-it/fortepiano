@@ -1,97 +1,17 @@
-import * as Ei from 'fp-ts/Either'
-import * as Eq from 'fp-ts/Eq'
+import { either, number, option, readonlyArray, separated, string } from 'fp-ts'
+import { Eq } from 'fp-ts/Eq'
 import { flow, pipe } from 'fp-ts/function'
-import * as N from 'fp-ts/number'
-import * as O from 'fp-ts/Option'
-import * as RA from 'fp-ts/ReadonlyArray'
-import * as Se from 'fp-ts/Separated'
-import * as St from 'fp-ts/string'
-import {
-  Alt,
-  Alternative,
-  append,
-  Applicative,
-  Apply,
-  Chain,
-  chunksOf,
-  Compactable,
-  deleteAt,
-  dropLeft,
-  dropLeftWhile,
-  duplicate,
-  elem,
-  exp,
-  fibonacci,
-  filter,
-  filterMap,
-  filterMapWithIndex,
-  filterWithIndex,
-  findFirstIndex,
-  findLast,
-  findLastIndex,
-  findLastMap,
-  flatten,
-  foldMapWithIndex,
-  FromIO,
-  fromReadonlyArray,
-  fromReadonlyRecord,
-  Functor,
-  FunctorWithIndex,
-  getEq,
-  getMonoid,
-  getOrd,
-  head,
-  init,
-  insertAt,
-  intersperse,
-  isEmpty,
-  isNonEmpty,
-  lefts,
-  lookup,
-  makeBy,
-  map,
-  matchLeft,
-  matchRight,
-  Monad,
-  of,
-  partition,
-  partitionMap,
-  partitionMapWithIndex,
-  partitionWithIndex,
-  prepend,
-  prime,
-  range,
-  replicate,
-  reverse,
-  rights,
-  rotate,
-  scanRight,
-  sequence,
-  sieve,
-  size,
-  spanLeft,
-  splitAt,
-  tail,
-  takeLeft,
-  takeLeftWhile,
-  toReadonlyArray,
-  unfold,
-  uniq,
-  unzip,
-  updateAt,
-  wilt,
-  wither,
-  zip,
-} from './Yield'
+import { Option } from 'fp-ts/Option'
+import * as $yield from './Yield'
 
 describe('Yield', () => {
   describe('makeBy', () => {
     it('should create a generator using a function', () => {
       expect(
         pipe(
-          makeBy((i) => Math.sin((i * Math.PI) / 4)),
-          takeLeft(8),
-          toReadonlyArray,
+          $yield.makeBy((i) => Math.sin((i * Math.PI) / 4)),
+          $yield.takeLeft(8),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([
         Math.sin((0 * Math.PI) / 4),
@@ -108,43 +28,48 @@ describe('Yield', () => {
 
   describe('range', () => {
     it('should return a list of numbers', () => {
-      expect(pipe(range(0), takeLeft(5), toReadonlyArray)).toStrictEqual([
-        0, 1, 2, 3, 4,
-      ])
-      expect(pipe(range(1138), takeLeft(5), toReadonlyArray)).toStrictEqual([
-        1138, 1139, 1140, 1141, 1142,
-      ])
+      expect(
+        pipe($yield.range(0), $yield.takeLeft(5), $yield.toReadonlyArray),
+      ).toStrictEqual([0, 1, 2, 3, 4])
+      expect(
+        pipe($yield.range(1138), $yield.takeLeft(5), $yield.toReadonlyArray),
+      ).toStrictEqual([1138, 1139, 1140, 1141, 1142])
     })
     it('should allow starting from a negative number', () => {
-      expect(pipe(range(-1337), takeLeft(5), toReadonlyArray)).toStrictEqual([
-        -1337, -1336, -1335, -1334, -1333,
-      ])
+      expect(
+        pipe($yield.range(-1337), $yield.takeLeft(5), $yield.toReadonlyArray),
+      ).toStrictEqual([-1337, -1336, -1335, -1334, -1333])
     })
     it('should allow setting a top boundary', () => {
-      expect(pipe(range(0, 9), toReadonlyArray)).toStrictEqual([
+      expect(pipe($yield.range(0, 9), $yield.toReadonlyArray)).toStrictEqual([
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
       ])
-      expect(pipe(range(42, 49), toReadonlyArray)).toStrictEqual([
+      expect(pipe($yield.range(42, 49), $yield.toReadonlyArray)).toStrictEqual([
         42, 43, 44, 45, 46, 47, 48, 49,
       ])
     })
     it('should support a top boundary smaller than the bottom one', () => {
-      expect(pipe(range(42, -Infinity), toReadonlyArray)).toStrictEqual([42])
+      expect(
+        pipe($yield.range(42, -Infinity), $yield.toReadonlyArray),
+      ).toStrictEqual([42])
     })
   })
 
   describe('replicate', () => {
     it('should replicate the specified element', () => {
-      expect(pipe(replicate(42), takeLeft(5), toReadonlyArray)).toStrictEqual([
-        42, 42, 42, 42, 42,
-      ])
+      expect(
+        pipe($yield.replicate(42), $yield.takeLeft(5), $yield.toReadonlyArray),
+      ).toStrictEqual([42, 42, 42, 42, 42])
     })
   })
 
   describe('fromReadonlyArray', () => {
     it('should transform an array into a generator', () => {
       expect(
-        pipe(fromReadonlyArray([42, 1138, 1337]), toReadonlyArray),
+        pipe(
+          $yield.fromReadonlyArray([42, 1138, 1337]),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual([42, 1138, 1337])
     })
   })
@@ -153,8 +78,8 @@ describe('Yield', () => {
     it('should transform a record into a generator', () => {
       expect(
         pipe(
-          fromReadonlyRecord({ foo: 42, bar: 1138, max: 1337 }),
-          toReadonlyArray,
+          $yield.fromReadonlyRecord({ foo: 42, bar: 1138, max: 1337 }),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([
         ['bar', 1138],
@@ -166,15 +91,17 @@ describe('Yield', () => {
 
   describe('prime', () => {
     it('should return a list of prime numbers', () => {
-      expect(pipe(prime, takeLeft(5), toReadonlyArray)).toStrictEqual([
-        2, 3, 5, 7, 11,
-      ])
+      expect(
+        pipe($yield.prime, $yield.takeLeft(5), $yield.toReadonlyArray),
+      ).toStrictEqual([2, 3, 5, 7, 11])
     })
   })
 
   describe('exp', () => {
     it('should return the exponential function', () => {
-      expect(pipe(exp, takeLeft(5), toReadonlyArray)).toStrictEqual([
+      expect(
+        pipe($yield.exp, $yield.takeLeft(5), $yield.toReadonlyArray),
+      ).toStrictEqual([
         Math.exp(0),
         Math.exp(1),
         Math.exp(2),
@@ -186,9 +113,9 @@ describe('Yield', () => {
 
   describe('fibonacci', () => {
     it('should return the Fibonacci sequence', () => {
-      expect(pipe(fibonacci, takeLeft(10), toReadonlyArray)).toStrictEqual([
-        0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
-      ])
+      expect(
+        pipe($yield.fibonacci, $yield.takeLeft(10), $yield.toReadonlyArray),
+      ).toStrictEqual([0, 1, 1, 2, 3, 5, 8, 13, 21, 34])
     })
   })
 
@@ -196,11 +123,13 @@ describe('Yield', () => {
     it('should flatten nested generators', () => {
       expect(
         pipe(
-          fromReadonlyArray([0, 1, 2]),
+          $yield.fromReadonlyArray([0, 1, 2]),
           // eslint-disable-next-line fp-ts/prefer-chain
-          map((a) => fromReadonlyArray([3 * a, 3 * a + 1, 3 * a + 2])),
-          flatten,
-          toReadonlyArray,
+          $yield.map((a) =>
+            $yield.fromReadonlyArray([3 * a, 3 * a + 1, 3 * a + 2]),
+          ),
+          $yield.flatten,
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 8])
     })
@@ -209,7 +138,12 @@ describe('Yield', () => {
   describe('prepend', () => {
     it('should add an element at the top of the list', () => {
       expect(
-        pipe(prime, prepend(42), takeLeft(5), toReadonlyArray),
+        pipe(
+          $yield.prime,
+          $yield.prepend(42),
+          $yield.takeLeft(5),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual([42, 2, 3, 5, 7])
     })
   })
@@ -217,20 +151,33 @@ describe('Yield', () => {
   describe('append', () => {
     it('should add an element at the bottom of the list', () => {
       expect(
-        pipe(prime, takeLeft(5), append(42), toReadonlyArray),
+        pipe(
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.append(42),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual([2, 3, 5, 7, 11, 42])
     })
   })
 
   describe('takeLeft', () => {
     it('should select only specified elements', () => {
-      const x = pipe(range(0), takeLeft(5), toReadonlyArray)
+      const x = pipe(
+        $yield.range(0),
+        $yield.takeLeft(5),
+        $yield.toReadonlyArray,
+      )
 
       expect(x).toHaveLength(5)
       expect(x).toStrictEqual([0, 1, 2, 3, 4])
     })
     it('should handle negative numbers', () => {
-      const x = pipe(range(0), takeLeft(-Infinity), toReadonlyArray)
+      const x = pipe(
+        $yield.range(0),
+        $yield.takeLeft(-Infinity),
+        $yield.toReadonlyArray,
+      )
 
       expect(x).toHaveLength(0)
     })
@@ -240,18 +187,18 @@ describe('Yield', () => {
     it('should select elements according to a predicate', () => {
       expect(
         pipe(
-          prime,
-          takeLeftWhile((n) => n <= 10),
-          toReadonlyArray,
+          $yield.prime,
+          $yield.takeLeftWhile((n) => n <= 10),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([2, 3, 5, 7])
     })
     it('should handle always false predicates', () => {
       expect(
         pipe(
-          prime,
-          takeLeftWhile(() => false),
-          toReadonlyArray,
+          $yield.prime,
+          $yield.takeLeftWhile(() => false),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([])
     })
@@ -259,17 +206,22 @@ describe('Yield', () => {
 
   describe('dropLeft', () => {
     it('should drop specified elements', () => {
-      const x = pipe(range(0), dropLeft(5), takeLeft(5), toReadonlyArray)
+      const x = pipe(
+        $yield.range(0),
+        $yield.dropLeft(5),
+        $yield.takeLeft(5),
+        $yield.toReadonlyArray,
+      )
 
       expect(x).toHaveLength(5)
       expect(x).toStrictEqual([5, 6, 7, 8, 9])
     })
     it('should handle negative numbers', () => {
       const x = pipe(
-        range(0),
-        dropLeft(-Infinity),
-        takeLeft(5),
-        toReadonlyArray,
+        $yield.range(0),
+        $yield.dropLeft(-Infinity),
+        $yield.takeLeft(5),
+        $yield.toReadonlyArray,
       )
 
       expect(x).toHaveLength(5)
@@ -281,20 +233,20 @@ describe('Yield', () => {
     it('should drop elements according to a predicate', () => {
       expect(
         pipe(
-          prime,
-          dropLeftWhile((n) => n < 10),
-          takeLeft(5),
-          toReadonlyArray,
+          $yield.prime,
+          $yield.dropLeftWhile((n) => n < 10),
+          $yield.takeLeft(5),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([11, 13, 17, 19, 23])
     })
     it('should handle always false predicates', () => {
       expect(
         pipe(
-          prime,
-          dropLeftWhile(() => false),
-          takeLeft(5),
-          toReadonlyArray,
+          $yield.prime,
+          $yield.dropLeftWhile(() => false),
+          $yield.takeLeft(5),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([2, 3, 5, 7, 11])
     })
@@ -303,7 +255,12 @@ describe('Yield', () => {
   describe('zip', () => {
     it('should zip two lists together', () => {
       expect(
-        pipe(range(0), zip(prime), takeLeft(5), toReadonlyArray),
+        pipe(
+          $yield.range(0),
+          $yield.zip($yield.prime),
+          $yield.takeLeft(5),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual([
         [0, 2],
         [1, 3],
@@ -314,7 +271,11 @@ describe('Yield', () => {
     })
     it('should cut to the shortest list', () => {
       expect(
-        pipe(pipe(range(0), takeLeft(5)), zip(prime), toReadonlyArray),
+        pipe(
+          pipe($yield.range(0), $yield.takeLeft(5)),
+          $yield.zip($yield.prime),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual([
         [0, 2],
         [1, 3],
@@ -323,7 +284,11 @@ describe('Yield', () => {
         [4, 11],
       ])
       expect(
-        pipe(range(0), zip(pipe(prime, takeLeft(5))), toReadonlyArray),
+        pipe(
+          $yield.range(0),
+          $yield.zip(pipe($yield.prime, $yield.takeLeft(5))),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual([
         [0, 2],
         [1, 3],
@@ -337,12 +302,12 @@ describe('Yield', () => {
   describe('sieve', () => {
     it('should allow filtering a list according to its past elements', () => {
       const atMost =
-        <A>(E: Eq.Eq<A>) =>
+        <A>(E: Eq<A>) =>
         (n: number) =>
         (as: ReadonlyArray<A>, a: A): boolean =>
           pipe(
             as,
-            RA.reduce(
+            readonlyArray.reduce(
               [true, 0] as Readonly<[boolean, number]>,
               ([all, m], _a) =>
                 // eslint-disable-next-line no-nested-ternary
@@ -357,7 +322,7 @@ describe('Yield', () => {
 
       expect(
         pipe(
-          fromReadonlyArray([
+          $yield.fromReadonlyArray([
             'a',
             'b',
             'a',
@@ -379,8 +344,8 @@ describe('Yield', () => {
             'b',
             'c',
           ]),
-          sieve(atMost(St.Eq)(3)),
-          toReadonlyArray,
+          $yield.sieve(atMost(string.Eq)(3)),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual(['a', 'b', 'a', 'b', 'a', 'b', 'c', 'c', 'c'])
     })
@@ -390,10 +355,10 @@ describe('Yield', () => {
     it('should return all steps of a reduction', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(5),
-          scanRight(0, (b, a) => a + b),
-          toReadonlyArray,
+          $yield.range(0),
+          $yield.takeLeft(5),
+          $yield.scanRight(0, (b, a) => a + b),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([10, 6, 3, 1, 0, 0])
     })
@@ -403,12 +368,12 @@ describe('Yield', () => {
     it('should split the list when given condition is not met', () => {
       expect(
         pipe(
-          prime,
-          takeLeft(5),
-          spanLeft((n) => 0 !== n % 5),
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.spanLeft((n) => 0 !== n % 5),
           ({ init, rest }) => ({
-            init: toReadonlyArray(init),
-            rest: toReadonlyArray(rest),
+            init: $yield.toReadonlyArray(init),
+            rest: $yield.toReadonlyArray(rest),
           }),
         ),
       ).toStrictEqual({ init: [2, 3], rest: [5, 7, 11] })
@@ -419,7 +384,7 @@ describe('Yield', () => {
     it('should remove repeated elements', () => {
       expect(
         pipe(
-          fromReadonlyArray([
+          $yield.fromReadonlyArray([
             'a',
             'b',
             'a',
@@ -441,8 +406,8 @@ describe('Yield', () => {
             'b',
             'c',
           ]),
-          uniq(St.Eq),
-          toReadonlyArray,
+          $yield.uniq(string.Eq),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual(['a', 'b', 'c'])
     })
@@ -450,9 +415,14 @@ describe('Yield', () => {
 
   describe('reverse', () => {
     it('should return the inverted list', () => {
-      expect(pipe(prime, takeLeft(5), reverse, toReadonlyArray)).toStrictEqual([
-        11, 7, 5, 3, 2,
-      ])
+      expect(
+        pipe(
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.reverse,
+          $yield.toReadonlyArray,
+        ),
+      ).toStrictEqual([11, 7, 5, 3, 2])
     })
   })
 
@@ -460,15 +430,15 @@ describe('Yield', () => {
     it('should extract Right values', () => {
       expect(
         pipe(
-          fromReadonlyArray([
-            Ei.right(0),
-            Ei.left(1),
-            Ei.right(2),
-            Ei.left(3),
-            Ei.right(4),
+          $yield.fromReadonlyArray([
+            either.right(0),
+            either.left(1),
+            either.right(2),
+            either.left(3),
+            either.right(4),
           ]),
-          rights,
-          toReadonlyArray,
+          $yield.rights,
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([0, 2, 4])
     })
@@ -478,15 +448,15 @@ describe('Yield', () => {
     it('should extract Left values', () => {
       expect(
         pipe(
-          fromReadonlyArray([
-            Ei.right(0),
-            Ei.left(1),
-            Ei.right(2),
-            Ei.left(3),
-            Ei.right(4),
+          $yield.fromReadonlyArray([
+            either.right(0),
+            either.left(1),
+            either.right(2),
+            either.left(3),
+            either.right(4),
           ]),
-          lefts,
-          toReadonlyArray,
+          $yield.lefts,
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([1, 3])
     })
@@ -495,23 +465,40 @@ describe('Yield', () => {
   describe('intersperse', () => {
     it('should insert given element between each pair of list elements', () => {
       expect(
-        pipe(prime, intersperse(42), takeLeft(5), toReadonlyArray),
+        pipe(
+          $yield.prime,
+          $yield.intersperse(42),
+          $yield.takeLeft(5),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual([2, 42, 3, 42, 5])
     })
     it('should handle empty lists', () => {
-      expect(pipe(prime, takeLeft(0), toReadonlyArray)).toStrictEqual([])
+      expect(
+        pipe($yield.prime, $yield.takeLeft(0), $yield.toReadonlyArray),
+      ).toStrictEqual([])
     })
   })
 
   describe('rotate', () => {
     it('should rotate the list by given steps', () => {
       expect(
-        pipe(prime, takeLeft(5), rotate(2), toReadonlyArray),
+        pipe(
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.rotate(2),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual([7, 11, 2, 3, 5])
     })
     it('should handle negative numbers', () => {
       expect(
-        pipe(prime, takeLeft(5), rotate(-2), toReadonlyArray),
+        pipe(
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.rotate(-2),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual([5, 7, 11, 2, 3])
     })
   })
@@ -520,33 +507,33 @@ describe('Yield', () => {
     it('should split the list into chunks of a given size', () => {
       expect(
         pipe(
-          prime,
-          takeLeft(10),
-          chunksOf(3),
-          map(toReadonlyArray),
-          toReadonlyArray,
+          $yield.prime,
+          $yield.takeLeft(10),
+          $yield.chunksOf(3),
+          $yield.map($yield.toReadonlyArray),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([[2, 3, 5], [7, 11, 13], [17, 19, 23], [29]])
     })
     it('should force the chunk size to be at least 1', () => {
       expect(
         pipe(
-          prime,
-          takeLeft(5),
-          chunksOf(-Infinity),
-          map(toReadonlyArray),
-          toReadonlyArray,
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.chunksOf(-Infinity),
+          $yield.map($yield.toReadonlyArray),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([[2], [3], [5], [7], [11]])
     })
     it('should handle empty lists', () => {
       expect(
         pipe(
-          prime,
-          takeLeft(0),
-          chunksOf(3),
-          map(toReadonlyArray),
-          toReadonlyArray,
+          $yield.prime,
+          $yield.takeLeft(0),
+          $yield.chunksOf(3),
+          $yield.map($yield.toReadonlyArray),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([])
     })
@@ -556,8 +543,8 @@ describe('Yield', () => {
     it('should handle empty lists', () => {
       expect(
         pipe(
-          getMonoid().empty,
-          matchLeft(
+          $yield.getMonoid().empty,
+          $yield.matchLeft(
             () => 'nil',
             (a) => `cons(${a})`,
           ),
@@ -567,8 +554,8 @@ describe('Yield', () => {
     it('should handle non-empty lists', () => {
       expect(
         pipe(
-          range(0),
-          matchLeft(
+          $yield.range(0),
+          $yield.matchLeft(
             () => 'nil',
             (a) => `cons(${a})`,
           ),
@@ -578,14 +565,14 @@ describe('Yield', () => {
     it('should handle lists of one element', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(1),
-          matchLeft(
+          $yield.range(0),
+          $yield.takeLeft(1),
+          $yield.matchLeft(
             () => 'nil',
             (head, tail) =>
               `cons(${head}), ${pipe(
                 tail,
-                matchLeft(
+                $yield.matchLeft(
                   () => 'nil',
                   (a) => `cons(${a})`,
                 ),
@@ -597,13 +584,13 @@ describe('Yield', () => {
     it('should handle infinite lists', () => {
       expect(
         pipe(
-          range(0),
-          matchLeft(
+          $yield.range(0),
+          $yield.matchLeft(
             () => 'nil',
             (head, tail) =>
               `cons(${head}), ${pipe(
                 tail,
-                matchLeft(
+                $yield.matchLeft(
                   () => 'nil',
                   (a) => `cons(${a})`,
                 ),
@@ -618,11 +605,11 @@ describe('Yield', () => {
     it('should handle empty lists', () => {
       expect(
         pipe(
-          prime,
-          takeLeft(0),
-          matchRight(
+          $yield.prime,
+          $yield.takeLeft(0),
+          $yield.matchRight(
             () => [],
-            (init, last) => [toReadonlyArray(init), last],
+            (init, last) => [$yield.toReadonlyArray(init), last],
           ),
         ),
       ).toHaveLength(0)
@@ -630,11 +617,11 @@ describe('Yield', () => {
     it('should handle non-empty lists', () => {
       expect(
         pipe(
-          prime,
-          takeLeft(5),
-          matchRight(
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.matchRight(
             () => [],
-            (init, last) => [toReadonlyArray(init), last],
+            (init, last) => [$yield.toReadonlyArray(init), last],
           ),
         ),
       ).toStrictEqual([[2, 3, 5, 7], 11])
@@ -642,11 +629,11 @@ describe('Yield', () => {
     it('should handle lists of one element', () => {
       expect(
         pipe(
-          prime,
-          takeLeft(1),
-          matchRight(
+          $yield.prime,
+          $yield.takeLeft(1),
+          $yield.matchRight(
             () => [],
-            (init, last) => [toReadonlyArray(init), last],
+            (init, last) => [$yield.toReadonlyArray(init), last],
           ),
         ),
       ).toStrictEqual([[], 2])
@@ -663,7 +650,7 @@ describe('Yield', () => {
               yield 1138
               yield 1337
             })(),
-          toReadonlyArray,
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual([42, 1138, 1337])
     })
@@ -672,57 +659,86 @@ describe('Yield', () => {
   describe('tail', () => {
     it('should return all elements but first one', () => {
       expect(
-        pipe(prime, takeLeft(5), tail, O.map(toReadonlyArray)),
-      ).toStrictEqual(O.some([3, 5, 7, 11]))
+        pipe(
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.tail,
+          option.map($yield.toReadonlyArray),
+        ),
+      ).toStrictEqual(option.some([3, 5, 7, 11]))
     })
     it('should fail with empty lists', () => {
       expect(
-        pipe(prime, takeLeft(0), tail, O.map(toReadonlyArray)),
-      ).toStrictEqual(O.none)
+        pipe(
+          $yield.prime,
+          $yield.takeLeft(0),
+          $yield.tail,
+          option.map($yield.toReadonlyArray),
+        ),
+      ).toStrictEqual(option.none)
     })
   })
 
   describe('init', () => {
     it('should return all elements but last one', () => {
       expect(
-        pipe(prime, takeLeft(5), init, O.map(toReadonlyArray)),
-      ).toStrictEqual(O.some([2, 3, 5, 7]))
+        pipe(
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.init,
+          option.map($yield.toReadonlyArray),
+        ),
+      ).toStrictEqual(option.some([2, 3, 5, 7]))
     })
     it('should fail with empty lists', () => {
       expect(
-        pipe(prime, takeLeft(0), init, O.map(toReadonlyArray)),
-      ).toStrictEqual(O.none)
+        pipe(
+          $yield.prime,
+          $yield.takeLeft(0),
+          $yield.init,
+          option.map($yield.toReadonlyArray),
+        ),
+      ).toStrictEqual(option.none)
     })
   })
 
   describe('splitAt', () => {
     it('should split a list at a given position', () => {
-      const x = pipe(prime, takeLeft(10), splitAt(5))
+      const x = pipe($yield.prime, $yield.takeLeft(10), $yield.splitAt(5))
 
-      expect(pipe(x[0], toReadonlyArray)).toStrictEqual([2, 3, 5, 7, 11])
-      expect(pipe(x[1], toReadonlyArray)).toStrictEqual([13, 17, 19, 23, 29])
+      expect(pipe(x[0], $yield.toReadonlyArray)).toStrictEqual([2, 3, 5, 7, 11])
+      expect(pipe(x[1], $yield.toReadonlyArray)).toStrictEqual([
+        13, 17, 19, 23, 29,
+      ])
     })
     it('should handle negative indices', () => {
-      const x = pipe(prime, takeLeft(5), splitAt(-Infinity))
+      const x = pipe(
+        $yield.prime,
+        $yield.takeLeft(5),
+        $yield.splitAt(-Infinity),
+      )
 
-      expect(pipe(x[0], toReadonlyArray)).toStrictEqual([])
-      expect(pipe(x[1], toReadonlyArray)).toStrictEqual([2, 3, 5, 7, 11])
+      expect(pipe(x[0], $yield.toReadonlyArray)).toStrictEqual([])
+      expect(pipe(x[1], $yield.toReadonlyArray)).toStrictEqual([2, 3, 5, 7, 11])
     })
     it('should handle out of scale indices', () => {
-      const x = pipe(prime, takeLeft(5), splitAt(Infinity))
+      const x = pipe($yield.prime, $yield.takeLeft(5), $yield.splitAt(Infinity))
 
-      expect(pipe(x[0], toReadonlyArray)).toStrictEqual([2, 3, 5, 7, 11])
-      expect(pipe(x[1], toReadonlyArray)).toStrictEqual([])
+      expect(pipe(x[0], $yield.toReadonlyArray)).toStrictEqual([2, 3, 5, 7, 11])
+      expect(pipe(x[1], $yield.toReadonlyArray)).toStrictEqual([])
     })
   })
 
   describe('unzip', () => {
     it('should restore two zipped lists', () => {
       expect(
-        pipe(prime, zip(range(0)), takeLeft(5), unzip, ([a, b]) => [
-          toReadonlyArray(a),
-          toReadonlyArray(b),
-        ]),
+        pipe(
+          $yield.prime,
+          $yield.zip($yield.range(0)),
+          $yield.takeLeft(5),
+          $yield.unzip,
+          ([a, b]) => [$yield.toReadonlyArray(a), $yield.toReadonlyArray(b)],
+        ),
       ).toStrictEqual([
         [2, 3, 5, 7, 11],
         [0, 1, 2, 3, 4],
@@ -732,49 +748,57 @@ describe('Yield', () => {
 
   describe('isEmpty', () => {
     it('should recognize empty lists', () => {
-      expect(pipe(getMonoid().empty, isEmpty)).toBe(true)
+      expect(pipe($yield.getMonoid().empty, $yield.isEmpty)).toBe(true)
     })
     it('should recognize non-empty lists', () => {
-      expect(pipe(range(0), isEmpty)).toBe(false)
+      expect(pipe($yield.range(0), $yield.isEmpty)).toBe(false)
     })
   })
 
   describe('isNonEmpty', () => {
     it('should recognize empty lists', () => {
-      expect(pipe(getMonoid().empty, isNonEmpty)).toBe(false)
+      expect(pipe($yield.getMonoid().empty, $yield.isNonEmpty)).toBe(false)
     })
     it('should recognize non-empty lists', () => {
-      expect(pipe(range(0), isNonEmpty)).toBe(true)
+      expect(pipe($yield.range(0), $yield.isNonEmpty)).toBe(true)
     })
   })
 
   describe('size', () => {
     it('should return list size', () => {
-      expect(pipe(prime, takeLeft(5), size)).toBe(5)
+      expect(pipe($yield.prime, $yield.takeLeft(5), $yield.size)).toBe(5)
     })
     it('should handle empty lists', () => {
-      expect(pipe(prime, takeLeft(0), size)).toBe(0)
+      expect(pipe($yield.prime, $yield.takeLeft(0), $yield.size)).toBe(0)
     })
   })
 
   describe('lookup', () => {
     it('should return None when the index is out of bound', () => {
-      expect(pipe(range(0), takeLeft(5), lookup(5))).toStrictEqual(O.none)
+      expect(
+        pipe($yield.range(0), $yield.takeLeft(5), $yield.lookup(5)),
+      ).toStrictEqual(option.none)
     })
     it('should return Some when the index is in bound', () => {
-      expect(pipe(range(0), takeLeft(5), lookup(4))).toStrictEqual(O.some(4))
+      expect(
+        pipe($yield.range(0), $yield.takeLeft(5), $yield.lookup(4)),
+      ).toStrictEqual(option.some(4))
     })
     it('should handle negative numbers', () => {
-      expect(pipe(range(0), lookup(-Infinity))).toStrictEqual(O.none)
+      expect(pipe($yield.range(0), $yield.lookup(-Infinity))).toStrictEqual(
+        option.none,
+      )
     })
   })
 
   describe('head', () => {
     it('should return None with empty lists', () => {
-      expect(pipe(getMonoid().empty, head)).toStrictEqual(O.none)
+      expect(pipe($yield.getMonoid().empty, $yield.head)).toStrictEqual(
+        option.none,
+      )
     })
     it('should return Some with non-empty lists', () => {
-      expect(pipe(range(0), head)).toStrictEqual(O.some(0))
+      expect(pipe($yield.range(0), $yield.head)).toStrictEqual(option.some(0))
     })
   })
 
@@ -782,20 +806,20 @@ describe('Yield', () => {
     it('should find first matching element and return its index', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(5),
-          findFirstIndex((i) => 0 !== i % 2),
+          $yield.range(0),
+          $yield.takeLeft(5),
+          $yield.findFirstIndex((i) => 0 !== i % 2),
         ),
-      ).toStrictEqual(O.some(1))
+      ).toStrictEqual(option.some(1))
     })
     it('should return None when no element is found', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(5),
-          findFirstIndex((i) => i >= 5),
+          $yield.range(0),
+          $yield.takeLeft(5),
+          $yield.findFirstIndex((i) => i >= 5),
         ),
-      ).toStrictEqual(O.none)
+      ).toStrictEqual(option.none)
     })
   })
 
@@ -803,20 +827,20 @@ describe('Yield', () => {
     it('should return None when no element is found', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(5),
-          findLast((n) => n >= 5),
+          $yield.range(0),
+          $yield.takeLeft(5),
+          $yield.findLast((n) => n >= 5),
         ),
-      ).toStrictEqual(O.none)
+      ).toStrictEqual(option.none)
     })
     it('should return Some when an element is found', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(5),
-          findLast((n) => n >= 4),
+          $yield.range(0),
+          $yield.takeLeft(5),
+          $yield.findLast((n) => n >= 4),
         ),
-      ).toStrictEqual(O.some(4))
+      ).toStrictEqual(option.some(4))
     })
   })
 
@@ -824,26 +848,28 @@ describe('Yield', () => {
     it('should find last matching element and transform it', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(5),
-          findLastMap((i) =>
+          $yield.range(0),
+          $yield.takeLeft(5),
+          $yield.findLastMap((i) =>
             0 === i % 2
-              ? O.none
-              : O.some(String.fromCharCode('a'.charCodeAt(0) + i)),
+              ? option.none
+              : option.some(String.fromCharCode('a'.charCodeAt(0) + i)),
           ),
         ),
-      ).toStrictEqual(O.some('d'))
+      ).toStrictEqual(option.some('d'))
     })
     it('should return None when no element is found', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(5),
-          findLastMap((i) =>
-            i < 5 ? O.none : O.some(String.fromCharCode('a'.charCodeAt(0) + i)),
+          $yield.range(0),
+          $yield.takeLeft(5),
+          $yield.findLastMap((i) =>
+            i < 5
+              ? option.none
+              : option.some(String.fromCharCode('a'.charCodeAt(0) + i)),
           ),
         ),
-      ).toStrictEqual(O.none)
+      ).toStrictEqual(option.none)
     })
   })
 
@@ -851,121 +877,142 @@ describe('Yield', () => {
     it('should find last matching element and return its index', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(5),
-          findLastIndex((i) => 0 !== i % 2),
+          $yield.range(0),
+          $yield.takeLeft(5),
+          $yield.findLastIndex((i) => 0 !== i % 2),
         ),
-      ).toStrictEqual(O.some(3))
+      ).toStrictEqual(option.some(3))
     })
     it('should return None when no element is found', () => {
       expect(
         pipe(
-          range(0),
-          takeLeft(5),
-          findLastIndex((i) => i >= 5),
+          $yield.range(0),
+          $yield.takeLeft(5),
+          $yield.findLastIndex((i) => i >= 5),
         ),
-      ).toStrictEqual(O.none)
+      ).toStrictEqual(option.none)
     })
   })
 
   describe('elem', () => {
     it('should return None when the element is not found', () => {
-      expect(pipe(range(0), takeLeft(5), elem(N.Eq)(5))).toStrictEqual(O.none)
+      expect(
+        pipe($yield.range(0), $yield.takeLeft(5), $yield.elem(number.Eq)(5)),
+      ).toStrictEqual(option.none)
     })
     it('should return Some when the element is found', () => {
-      expect(pipe(range(0), elem(N.Eq)(4))).toStrictEqual(O.some(4))
+      expect(pipe($yield.range(0), $yield.elem(number.Eq)(4))).toStrictEqual(
+        option.some(4),
+      )
     })
   })
 
   describe('insertAt', () => {
     it('should insert an element at a given position', () => {
       expect(
-        pipe(prime, insertAt(2, 42), O.map(flow(takeLeft(5), toReadonlyArray))),
-      ).toStrictEqual(O.some([2, 3, 42, 5, 7]))
+        pipe(
+          $yield.prime,
+          $yield.insertAt(2, 42),
+          option.map(flow($yield.takeLeft(5), $yield.toReadonlyArray)),
+        ),
+      ).toStrictEqual(option.some([2, 3, 42, 5, 7]))
     })
     it('should handle out of bound indices', () => {
       expect(
         pipe(
-          prime,
-          takeLeft(5),
-          insertAt(Infinity, 42),
-          O.map(toReadonlyArray),
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.insertAt(Infinity, 42),
+          option.map($yield.toReadonlyArray),
         ),
-      ).toStrictEqual(O.none)
+      ).toStrictEqual(option.none)
     })
   })
 
   describe('updateAt', () => {
     it('should update an element at a given position', () => {
       expect(
-        pipe(prime, updateAt(2, 42), O.map(flow(takeLeft(5), toReadonlyArray))),
-      ).toStrictEqual(O.some([2, 3, 42, 7, 11]))
+        pipe(
+          $yield.prime,
+          $yield.updateAt(2, 42),
+          option.map(flow($yield.takeLeft(5), $yield.toReadonlyArray)),
+        ),
+      ).toStrictEqual(option.some([2, 3, 42, 7, 11]))
     })
     it('should handle out of bound indices', () => {
       expect(
         pipe(
-          prime,
-          takeLeft(5),
-          updateAt(Infinity, 42),
-          O.map(toReadonlyArray),
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.updateAt(Infinity, 42),
+          option.map($yield.toReadonlyArray),
         ),
-      ).toStrictEqual(O.none)
+      ).toStrictEqual(option.none)
     })
   })
 
   describe('deleteAt', () => {
     it('should delete an element at a given position', () => {
       expect(
-        pipe(prime, deleteAt(2), O.map(flow(takeLeft(5), toReadonlyArray))),
-      ).toStrictEqual(O.some([2, 3, 7, 11, 13]))
+        pipe(
+          $yield.prime,
+          $yield.deleteAt(2),
+          option.map(flow($yield.takeLeft(5), $yield.toReadonlyArray)),
+        ),
+      ).toStrictEqual(option.some([2, 3, 7, 11, 13]))
     })
     it('should handle out of bound indices', () => {
       expect(
-        pipe(prime, takeLeft(5), deleteAt(Infinity), O.map(toReadonlyArray)),
-      ).toStrictEqual(O.none)
+        pipe(
+          $yield.prime,
+          $yield.takeLeft(5),
+          $yield.deleteAt(Infinity),
+          option.map($yield.toReadonlyArray),
+        ),
+      ).toStrictEqual(option.none)
     })
   })
 
   describe('Monoid', () => {
-    const { empty, concat } = getMonoid<number>()
-    const a = fromReadonlyArray([0, 1, 2])
-    const b = fromReadonlyArray([3, 4, 5])
-    const c = fromReadonlyArray([6, 7, 8])
+    const { empty, concat } = $yield.getMonoid<number>()
+    const a = $yield.fromReadonlyArray([0, 1, 2])
+    const b = $yield.fromReadonlyArray([3, 4, 5])
+    const c = $yield.fromReadonlyArray([6, 7, 8])
 
     it('associativity', () => {
-      expect(pipe(concat(a, concat(b, c)), toReadonlyArray)).toStrictEqual(
-        pipe(concat(concat(a, b), c), toReadonlyArray),
-      )
+      expect(
+        pipe(concat(a, concat(b, c)), $yield.toReadonlyArray),
+      ).toStrictEqual(pipe(concat(concat(a, b), c), $yield.toReadonlyArray))
     })
     it('identity', () => {
-      expect(pipe(concat(empty, empty), toReadonlyArray)).toStrictEqual(
-        pipe(empty, toReadonlyArray),
+      expect(pipe(concat(empty, empty), $yield.toReadonlyArray)).toStrictEqual(
+        pipe(empty, $yield.toReadonlyArray),
       )
-      expect(pipe(concat(a, empty), toReadonlyArray)).toStrictEqual(
-        pipe(a, toReadonlyArray),
+      expect(pipe(concat(a, empty), $yield.toReadonlyArray)).toStrictEqual(
+        pipe(a, $yield.toReadonlyArray),
       )
-      expect(pipe(concat(empty, a), toReadonlyArray)).toStrictEqual(
-        pipe(a, toReadonlyArray),
+      expect(pipe(concat(empty, a), $yield.toReadonlyArray)).toStrictEqual(
+        pipe(a, $yield.toReadonlyArray),
       )
     })
 
     it('should concatenate generated values', () => {
-      expect(pipe(concat(a, concat(b, c)), toReadonlyArray)).toStrictEqual([
-        0, 1, 2, 3, 4, 5, 6, 7, 8,
-      ])
+      expect(
+        pipe(concat(a, concat(b, c)), $yield.toReadonlyArray),
+      ).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 8])
     })
   })
 
   describe('Eq', () => {
-    const { equals } = getEq<number>(N.Eq)
-    const fa = fromReadonlyArray([0, 1, 2])
-    const fb = pipe(range(0), takeLeft(3))
+    const { equals } = $yield.getEq<number>(number.Eq)
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
+    const fb = pipe($yield.range(0), $yield.takeLeft(3))
     const fc = function* () {
       yield 0
       yield 1
       yield 2
     }
-    const fd = fromReadonlyArray([3, 4, 5])
+    const fd = $yield.fromReadonlyArray([3, 4, 5])
 
     it('reflexivity', () => {
       expect(equals(fa, fa)).toBe(true)
@@ -986,15 +1033,15 @@ describe('Yield', () => {
   })
 
   describe('Ord', () => {
-    const { equals, compare } = getOrd<number>(N.Ord)
-    const fa = fromReadonlyArray([0, 1, 2])
-    const fb = pipe(range(3), takeLeft(3))
+    const { equals, compare } = $yield.getOrd<number>(number.Ord)
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
+    const fb = pipe($yield.range(3), $yield.takeLeft(3))
     const fc = function* () {
       yield 6
       yield 7
       yield 8
     }
-    const fd = fromReadonlyArray([0, 1, 2])
+    const fd = $yield.fromReadonlyArray([0, 1, 2])
 
     it('reflexivity', () => {
       expect(compare(fa, fa)).toBeLessThanOrEqual(0)
@@ -1016,15 +1063,15 @@ describe('Yield', () => {
   })
 
   describe('Functor', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
 
     it('identity', () => {
       expect(
         pipe(
-          Functor.map(fa, (a) => a),
-          toReadonlyArray,
+          $yield.Functor.map(fa, (a) => a),
+          $yield.toReadonlyArray,
         ),
-      ).toStrictEqual(pipe(fa, toReadonlyArray))
+      ).toStrictEqual(pipe(fa, $yield.toReadonlyArray))
     })
     it('composition', () => {
       const ab = (a: number) => a + 1
@@ -1032,25 +1079,28 @@ describe('Yield', () => {
 
       expect(
         pipe(
-          Functor.map(fa, (a) => bc(ab(a))),
-          toReadonlyArray,
+          $yield.Functor.map(fa, (a) => bc(ab(a))),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual(
-        pipe(Functor.map(Functor.map(fa, ab), bc), toReadonlyArray),
+        pipe(
+          $yield.Functor.map($yield.Functor.map(fa, ab), bc),
+          $yield.toReadonlyArray,
+        ),
       )
     })
   })
 
   describe('FunctorWithIndex', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
 
     it('identity', () => {
       expect(
         pipe(
-          FunctorWithIndex.mapWithIndex(fa, (_, a) => a),
-          toReadonlyArray,
+          $yield.FunctorWithIndex.mapWithIndex(fa, (_, a) => a),
+          $yield.toReadonlyArray,
         ),
-      ).toStrictEqual(pipe(fa, toReadonlyArray))
+      ).toStrictEqual(pipe(fa, $yield.toReadonlyArray))
     })
     it('composition', () => {
       const ab = (a: number) => a + 1
@@ -1058,101 +1108,115 @@ describe('Yield', () => {
 
       expect(
         pipe(
-          FunctorWithIndex.mapWithIndex(fa, (_, a) => bc(ab(a))),
-          toReadonlyArray,
+          $yield.FunctorWithIndex.mapWithIndex(fa, (_, a) => bc(ab(a))),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual(
         pipe(
-          FunctorWithIndex.mapWithIndex(
-            FunctorWithIndex.mapWithIndex(fa, (_, a) => ab(a)),
+          $yield.FunctorWithIndex.mapWithIndex(
+            $yield.FunctorWithIndex.mapWithIndex(fa, (_, a) => ab(a)),
             (_, b) => bc(b),
           ),
-          toReadonlyArray,
+          $yield.toReadonlyArray,
         ),
       )
     })
   })
 
   describe('Apply', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
     const ab = (a: number) => a + 1
     const bc = (a: number) => a / 2
 
     it('associative composition', () => {
       expect(
         pipe(
-          Apply.ap(
-            Apply.ap(
-              Apply.map(
-                of(bc),
+          $yield.Apply.ap(
+            $yield.Apply.ap(
+              $yield.Apply.map(
+                $yield.of(bc),
                 (bc) => (ab: (a: number) => number) => (a: number) => bc(ab(a)),
               ),
-              of(ab),
+              $yield.of(ab),
             ),
             fa,
           ),
-          toReadonlyArray,
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual(
-        pipe(Apply.ap(of(bc), Apply.ap(of(ab), fa)), toReadonlyArray),
+        pipe(
+          $yield.Apply.ap($yield.of(bc), $yield.Apply.ap($yield.of(ab), fa)),
+          $yield.toReadonlyArray,
+        ),
       )
     })
   })
 
   describe('Applicative', () => {
     const a = 42
-    const fa = fromReadonlyArray([0, 1, 2])
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
     const ab = (a: number) => a + 1
 
     it('identity', () => {
       expect(
         pipe(
-          Applicative.ap(
-            Applicative.of((a: number) => a),
+          $yield.Applicative.ap(
+            $yield.Applicative.of((a: number) => a),
             fa,
           ),
-          toReadonlyArray,
+          $yield.toReadonlyArray,
         ),
-      ).toStrictEqual(pipe(fa, toReadonlyArray))
+      ).toStrictEqual(pipe(fa, $yield.toReadonlyArray))
     })
     it('homomorphism', () => {
       expect(
         pipe(
-          Applicative.ap(Applicative.of(ab), Applicative.of(a)),
-          toReadonlyArray,
+          $yield.Applicative.ap(
+            $yield.Applicative.of(ab),
+            $yield.Applicative.of(a),
+          ),
+          $yield.toReadonlyArray,
         ),
-      ).toStrictEqual(pipe(Applicative.of(ab(a)), toReadonlyArray))
+      ).toStrictEqual(
+        pipe($yield.Applicative.of(ab(a)), $yield.toReadonlyArray),
+      )
     })
     it('interchange', () => {
       expect(
         pipe(
-          Applicative.ap(Applicative.of(ab), Applicative.of(a)),
-          toReadonlyArray,
+          $yield.Applicative.ap(
+            $yield.Applicative.of(ab),
+            $yield.Applicative.of(a),
+          ),
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual(
         pipe(
-          Applicative.ap(
-            Applicative.of((ab: (a: number) => number) => ab(a)),
-            Applicative.of(ab),
+          $yield.Applicative.ap(
+            $yield.Applicative.of((ab: (a: number) => number) => ab(a)),
+            $yield.Applicative.of(ab),
           ),
-          toReadonlyArray,
+          $yield.toReadonlyArray,
         ),
       )
     })
   })
 
   describe('Chain', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
-    const afb = (a: number) => of(a + 1)
-    const bfc = (a: number) => of(a / 2)
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
+    const afb = (a: number) => $yield.of(a + 1)
+    const bfc = (a: number) => $yield.of(a / 2)
 
     it('associativity', () => {
       expect(
-        pipe(Chain.chain(Chain.chain(fa, afb), bfc), toReadonlyArray),
+        pipe(
+          $yield.Chain.chain($yield.Chain.chain(fa, afb), bfc),
+          $yield.toReadonlyArray,
+        ),
       ).toStrictEqual(
         pipe(
-          Chain.chain(fa, (a) => Chain.chain(afb(a), bfc)),
-          toReadonlyArray,
+          $yield.Chain.chain(fa, (a) => $yield.Chain.chain(afb(a), bfc)),
+          $yield.toReadonlyArray,
         ),
       )
     })
@@ -1160,18 +1224,18 @@ describe('Yield', () => {
 
   describe('Monad', () => {
     const a = 42
-    const fa = fromReadonlyArray([0, 1, 2])
-    const f = (a: number) => of(a + 1)
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
+    const f = (a: number) => $yield.of(a + 1)
 
     it('left identity', () => {
-      expect(pipe(Monad.chain(Monad.of(a), f), toReadonlyArray)).toStrictEqual(
-        pipe(f(a), toReadonlyArray),
-      )
+      expect(
+        pipe($yield.Monad.chain($yield.Monad.of(a), f), $yield.toReadonlyArray),
+      ).toStrictEqual(pipe(f(a), $yield.toReadonlyArray))
     })
     it('right identity', () => {
-      expect(pipe(Monad.chain(fa, Monad.of), toReadonlyArray)).toStrictEqual(
-        pipe(fa, toReadonlyArray),
-      )
+      expect(
+        pipe($yield.Monad.chain(fa, $yield.Monad.of), $yield.toReadonlyArray),
+      ).toStrictEqual(pipe(fa, $yield.toReadonlyArray))
     })
   })
 
@@ -1180,9 +1244,9 @@ describe('Yield', () => {
       it('should generate values using an IO', () => {
         const now = Date.now()
         const as = pipe(
-          FromIO.fromIO(() => Date.now()),
-          takeLeft(100),
-          toReadonlyArray,
+          $yield.FromIO.fromIO(() => Date.now()),
+          $yield.takeLeft(100),
+          $yield.toReadonlyArray,
         )
 
         expect(as[0]).toBeGreaterThanOrEqual(now)
@@ -1194,39 +1258,41 @@ describe('Yield', () => {
   describe('Unfoldable', () => {
     describe('unfold', () => {
       it('should return a list starting from a given value using a function', () => {
-        const factors = unfold((b: number) =>
+        const factors = $yield.unfold((b: number) =>
           pipe(
-            prime,
-            takeLeftWhile((n) => n <= b),
-            dropLeftWhile((n) => 0 !== b % n),
-            head,
-            O.map((n) => [n, b / n]),
+            $yield.prime,
+            $yield.takeLeftWhile((n) => n <= b),
+            $yield.dropLeftWhile((n) => 0 !== b % n),
+            $yield.head,
+            option.map((n) => [n, b / n]),
           ),
         )
 
-        expect(pipe(42, factors, toReadonlyArray)).toStrictEqual([2, 3, 7])
+        expect(pipe(42, factors, $yield.toReadonlyArray)).toStrictEqual([
+          2, 3, 7,
+        ])
       })
     })
   })
 
   describe('Alt', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
-    const ga = fromReadonlyArray([3, 4, 5])
-    const ha = fromReadonlyArray([6, 7, 8])
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
+    const ga = $yield.fromReadonlyArray([3, 4, 5])
+    const ha = $yield.fromReadonlyArray([6, 7, 8])
 
     it('associativity', () => {
       expect(
         pipe(
-          Alt.alt(
-            Alt.alt(fa, () => ga),
+          $yield.Alt.alt(
+            $yield.Alt.alt(fa, () => ga),
             () => ha,
           ),
-          toReadonlyArray,
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual(
         pipe(
-          Alt.alt(fa, () => Alt.alt(ga, () => ha)),
-          toReadonlyArray,
+          $yield.Alt.alt(fa, () => $yield.Alt.alt(ga, () => ha)),
+          $yield.toReadonlyArray,
         ),
       )
     })
@@ -1235,69 +1301,78 @@ describe('Yield', () => {
 
       expect(
         pipe(
-          Alt.map(
-            Alt.alt(fa, () => ga),
+          $yield.Alt.map(
+            $yield.Alt.alt(fa, () => ga),
             ab,
           ),
-          toReadonlyArray,
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual(
         pipe(
-          Alt.alt(Alt.map(fa, ab), () => Alt.map(ga, ab)),
-          toReadonlyArray,
+          $yield.Alt.alt($yield.Alt.map(fa, ab), () => $yield.Alt.map(ga, ab)),
+          $yield.toReadonlyArray,
         ),
       )
     })
   })
 
   describe('Alternative', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
+    const fa = $yield.fromReadonlyArray([0, 1, 2])
 
     it('left identity', () => {
       expect(
         pipe(
-          Alternative.alt(Alternative.zero(), () => fa),
-          toReadonlyArray,
+          $yield.Alternative.alt($yield.Alternative.zero(), () => fa),
+          $yield.toReadonlyArray,
         ),
-      ).toStrictEqual(pipe(fa, toReadonlyArray))
+      ).toStrictEqual(pipe(fa, $yield.toReadonlyArray))
     })
     it('right identity', () => {
       expect(
-        pipe(Alternative.alt(fa, Alternative.zero), toReadonlyArray),
-      ).toStrictEqual(pipe(fa, toReadonlyArray))
+        pipe(
+          $yield.Alternative.alt(fa, $yield.Alternative.zero),
+          $yield.toReadonlyArray,
+        ),
+      ).toStrictEqual(pipe(fa, $yield.toReadonlyArray))
     })
     it('annihilation', () => {
       const f = (a: number) => a + 1
 
       expect(
-        pipe(Alternative.map(Alternative.zero(), f), toReadonlyArray),
-      ).toStrictEqual(pipe(Alternative.zero(), toReadonlyArray))
+        pipe(
+          $yield.Alternative.map($yield.Alternative.zero(), f),
+          $yield.toReadonlyArray,
+        ),
+      ).toStrictEqual(pipe($yield.Alternative.zero(), $yield.toReadonlyArray))
     })
     it('distributivity', () => {
-      const fab = of((a: number) => a + 1)
-      const gab = of((a: number) => a / 2)
+      const fab = $yield.of((a: number) => a + 1)
+      const gab = $yield.of((a: number) => a / 2)
 
       expect(
         pipe(
-          Alternative.ap(
-            Alternative.alt(fab, () => gab),
+          $yield.Alternative.ap(
+            $yield.Alternative.alt(fab, () => gab),
             fa,
           ),
-          toReadonlyArray,
+          $yield.toReadonlyArray,
         ),
       ).toStrictEqual(
         pipe(
-          Alternative.alt(Alternative.ap(fab, fa), () =>
-            Alternative.ap(gab, fa),
+          $yield.Alternative.alt($yield.Alternative.ap(fab, fa), () =>
+            $yield.Alternative.ap(gab, fa),
           ),
-          toReadonlyArray,
+          $yield.toReadonlyArray,
         ),
       )
     })
     it('annihilation', () => {
       expect(
-        pipe(Alternative.ap(Alternative.zero(), fa), toReadonlyArray),
-      ).toStrictEqual(pipe(Alternative.zero(), toReadonlyArray))
+        pipe(
+          $yield.Alternative.ap($yield.Alternative.zero(), fa),
+          $yield.toReadonlyArray,
+        ),
+      ).toStrictEqual(pipe($yield.Alternative.zero(), $yield.toReadonlyArray))
     })
   })
 
@@ -1306,11 +1381,11 @@ describe('Yield', () => {
       it('should duplicate the list on each element', () => {
         expect(
           pipe(
-            prime,
-            takeLeft(5),
-            duplicate,
-            map(toReadonlyArray),
-            toReadonlyArray,
+            $yield.prime,
+            $yield.takeLeft(5),
+            $yield.duplicate,
+            $yield.map($yield.toReadonlyArray),
+            $yield.toReadonlyArray,
           ),
         ).toStrictEqual([
           [2, 3, 5, 7, 11],
@@ -1328,16 +1403,16 @@ describe('Yield', () => {
       it('should remove None elements', () => {
         expect(
           pipe(
-            fromReadonlyArray([
-              O.none,
-              O.some(0),
-              O.none,
-              O.some(1),
-              O.none,
-              O.some(2),
+            $yield.fromReadonlyArray([
+              option.none,
+              option.some(0),
+              option.none,
+              option.some(1),
+              option.none,
+              option.some(2),
             ]),
-            Compactable.compact,
-            toReadonlyArray,
+            $yield.Compactable.compact,
+            $yield.toReadonlyArray,
           ),
         ).toStrictEqual([0, 1, 2])
       })
@@ -1347,19 +1422,22 @@ describe('Yield', () => {
       it('should split Left and Right elements', () => {
         expect(
           pipe(
-            fromReadonlyArray([
-              Ei.left('a'),
-              Ei.right(0),
-              Ei.left('b'),
-              Ei.right(1),
-              Ei.left('c'),
-              Ei.right(2),
+            $yield.fromReadonlyArray([
+              either.left('a'),
+              either.right(0),
+              either.left('b'),
+              either.right(1),
+              either.left('c'),
+              either.right(2),
             ]),
-            Compactable.separate,
+            $yield.Compactable.separate,
             (as) =>
-              Se.separated(toReadonlyArray(as.left), toReadonlyArray(as.right)),
+              separated.separated(
+                $yield.toReadonlyArray(as.left),
+                $yield.toReadonlyArray(as.right),
+              ),
           ),
-        ).toStrictEqual(Se.separated(['a', 'b', 'c'], [0, 1, 2]))
+        ).toStrictEqual(separated.separated(['a', 'b', 'c'], [0, 1, 2]))
       })
     })
   })
@@ -1369,10 +1447,10 @@ describe('Yield', () => {
       it('should filter elements', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            filter((n) => 0 !== n % 2),
-            toReadonlyArray,
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.filter((n) => 0 !== n % 2),
+            $yield.toReadonlyArray,
           ),
         ).toStrictEqual([1, 3, 5, 7, 9])
       })
@@ -1382,10 +1460,12 @@ describe('Yield', () => {
       it('should filter and transform elements', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            filterMap((n) => (0 !== n % 2 ? O.some(2 * n) : O.none)),
-            toReadonlyArray,
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.filterMap((n) =>
+              0 !== n % 2 ? option.some(2 * n) : option.none,
+            ),
+            $yield.toReadonlyArray,
           ),
         ).toStrictEqual([2, 6, 10, 14, 18])
       })
@@ -1395,13 +1475,16 @@ describe('Yield', () => {
       it('should split elements', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            partition((n) => 0 !== n % 2),
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.partition((n) => 0 !== n % 2),
             (as) =>
-              Se.separated(toReadonlyArray(as.left), toReadonlyArray(as.right)),
+              separated.separated(
+                $yield.toReadonlyArray(as.left),
+                $yield.toReadonlyArray(as.right),
+              ),
           ),
-        ).toStrictEqual(Se.separated([0, 2, 4, 6, 8], [1, 3, 5, 7, 9]))
+        ).toStrictEqual(separated.separated([0, 2, 4, 6, 8], [1, 3, 5, 7, 9]))
       })
     })
 
@@ -1409,16 +1492,19 @@ describe('Yield', () => {
       it('should split and transform elements', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            partitionMap((n) =>
-              0 !== n % 2 ? Ei.right(2 * n) : Ei.left(-2 * n),
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.partitionMap((n) =>
+              0 !== n % 2 ? either.right(2 * n) : either.left(-2 * n),
             ),
             (as) =>
-              Se.separated(toReadonlyArray(as.left), toReadonlyArray(as.right)),
+              separated.separated(
+                $yield.toReadonlyArray(as.left),
+                $yield.toReadonlyArray(as.right),
+              ),
           ),
         ).toStrictEqual(
-          Se.separated([-0, -4, -8, -12, -16], [2, 6, 10, 14, 18]),
+          separated.separated([-0, -4, -8, -12, -16], [2, 6, 10, 14, 18]),
         )
       })
     })
@@ -1429,10 +1515,10 @@ describe('Yield', () => {
       it('should filter elements using their index', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            filterWithIndex((i, n) => i < 5 && 0 !== n % 2),
-            toReadonlyArray,
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.filterWithIndex((i, n) => i < 5 && 0 !== n % 2),
+            $yield.toReadonlyArray,
           ),
         ).toStrictEqual([1, 3])
       })
@@ -1442,12 +1528,12 @@ describe('Yield', () => {
       it('should filter and transform elements using their index', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            filterMapWithIndex((i, n) =>
-              i < 5 && 0 !== n % 2 ? O.some(2 * n) : O.none,
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.filterMapWithIndex((i, n) =>
+              i < 5 && 0 !== n % 2 ? option.some(2 * n) : option.none,
             ),
-            toReadonlyArray,
+            $yield.toReadonlyArray,
           ),
         ).toStrictEqual([2, 6])
       })
@@ -1457,13 +1543,16 @@ describe('Yield', () => {
       it('should split elements using their index', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            partitionWithIndex((i, n) => i < 5 && 0 !== n % 2),
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.partitionWithIndex((i, n) => i < 5 && 0 !== n % 2),
             (as) =>
-              Se.separated(toReadonlyArray(as.left), toReadonlyArray(as.right)),
+              separated.separated(
+                $yield.toReadonlyArray(as.left),
+                $yield.toReadonlyArray(as.right),
+              ),
           ),
-        ).toStrictEqual(Se.separated([0, 2, 4, 5, 6, 7, 8, 9], [1, 3]))
+        ).toStrictEqual(separated.separated([0, 2, 4, 5, 6, 7, 8, 9], [1, 3]))
       })
     })
 
@@ -1471,16 +1560,19 @@ describe('Yield', () => {
       it('should split and transform elements using their index', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            partitionMapWithIndex((i, n) =>
-              i < 5 && 0 !== n % 2 ? Ei.right(2 * n) : Ei.left(-2 * n),
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.partitionMapWithIndex((i, n) =>
+              i < 5 && 0 !== n % 2 ? either.right(2 * n) : either.left(-2 * n),
             ),
             (as) =>
-              Se.separated(toReadonlyArray(as.left), toReadonlyArray(as.right)),
+              separated.separated(
+                $yield.toReadonlyArray(as.left),
+                $yield.toReadonlyArray(as.right),
+              ),
           ),
         ).toStrictEqual(
-          Se.separated([-0, -4, -8, -10, -12, -14, -16, -18], [2, 6]),
+          separated.separated([-0, -4, -8, -10, -12, -14, -16, -18], [2, 6]),
         )
       })
     })
@@ -1491,9 +1583,9 @@ describe('Yield', () => {
       it('should map elements using their index and fold the resulting list', () => {
         expect(
           pipe(
-            prime,
-            takeLeft(5),
-            foldMapWithIndex(N.MonoidSum)((i, a) => i * a),
+            $yield.prime,
+            $yield.takeLeft(5),
+            $yield.foldMapWithIndex(number.MonoidSum)((i, a) => i * a),
           ),
         ).toBe(78)
       })
@@ -1505,23 +1597,23 @@ describe('Yield', () => {
       it('should accumulate the results of the effects contained in a list', () => {
         expect(
           pipe(
-            prime,
-            map(O.some),
-            takeLeft(5),
-            sequence(O.Applicative),
-            O.map(toReadonlyArray),
+            $yield.prime,
+            $yield.map(option.some),
+            $yield.takeLeft(5),
+            $yield.sequence(option.Applicative),
+            option.map($yield.toReadonlyArray),
           ),
-        ).toStrictEqual(O.some([2, 3, 5, 7, 11]))
+        ).toStrictEqual(option.some([2, 3, 5, 7, 11]))
         expect(
           pipe(
-            prime,
-            map(O.some),
-            takeLeft(5),
-            append<O.Option<number>>(O.none),
-            sequence(O.Applicative),
-            O.map(toReadonlyArray),
+            $yield.prime,
+            $yield.map(option.some),
+            $yield.takeLeft(5),
+            $yield.append<Option<number>>(option.none),
+            $yield.sequence(option.Applicative),
+            option.map($yield.toReadonlyArray),
           ),
-        ).toStrictEqual(O.none)
+        ).toStrictEqual(option.none)
       })
     })
   })
@@ -1531,26 +1623,34 @@ describe('Yield', () => {
       it('should split a list applying an effect', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            wilt(O.Applicative)((n) =>
-              n >= 10 ? O.none : O.some(0 === n % 3 ? Ei.right(n) : Ei.left(n)),
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.wilt(option.Applicative)((n) =>
+              n >= 10
+                ? option.none
+                : option.some(0 === n % 3 ? either.right(n) : either.left(n)),
             ),
-            O.map(Se.bimap(toReadonlyArray, toReadonlyArray)),
+            option.map(
+              separated.bimap($yield.toReadonlyArray, $yield.toReadonlyArray),
+            ),
           ),
-        ).toStrictEqual(O.some(Se.separated([1, 2, 4, 5, 7, 8], [0, 3, 6, 9])))
+        ).toStrictEqual(
+          option.some(separated.separated([1, 2, 4, 5, 7, 8], [0, 3, 6, 9])),
+        )
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            wilt(O.Applicative)((n) =>
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.wilt(option.Applicative)((n) =>
               0 === n % 2
-                ? O.none
-                : O.some(0 === n % 3 ? Ei.right(n) : Ei.left(n)),
+                ? option.none
+                : option.some(0 === n % 3 ? either.right(n) : either.left(n)),
             ),
-            O.map(Se.bimap(toReadonlyArray, toReadonlyArray)),
+            option.map(
+              separated.bimap($yield.toReadonlyArray, $yield.toReadonlyArray),
+            ),
           ),
-        ).toStrictEqual(O.none)
+        ).toStrictEqual(option.none)
       })
     })
 
@@ -1558,23 +1658,23 @@ describe('Yield', () => {
       it('should filter a list applying an effect', () => {
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            wither(O.Applicative)((n) =>
-              O.some(0 === n % 2 ? O.none : O.some(n)),
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.wither(option.Applicative)((n) =>
+              option.some(0 === n % 2 ? option.none : option.some(n)),
             ),
-            O.map(toReadonlyArray),
+            option.map($yield.toReadonlyArray),
           ),
-        ).toStrictEqual(O.some([1, 3, 5, 7, 9]))
+        ).toStrictEqual(option.some([1, 3, 5, 7, 9]))
         expect(
           pipe(
-            range(0),
-            takeLeft(10),
-            wither(O.Applicative)((n) =>
-              0 === n % 2 ? O.none : O.some(O.some(n)),
+            $yield.range(0),
+            $yield.takeLeft(10),
+            $yield.wither(option.Applicative)((n) =>
+              0 === n % 2 ? option.none : option.some(option.some(n)),
             ),
           ),
-        ).toStrictEqual(O.none)
+        ).toStrictEqual(option.none)
       })
     })
   })
