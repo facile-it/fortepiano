@@ -1,16 +1,16 @@
 import { reader } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
 import { Reader } from 'fp-ts/Reader'
-import * as $struct from './struct'
-import { struct } from './struct'
+import * as $struct from './Struct'
+import { Struct } from './Struct'
 
 export const pick =
-  <R extends struct>() =>
+  <R extends Struct>() =>
   <K extends keyof R>(k: K) =>
     reader.asks<Pick<R, K>, Pick<R, K>[K]>($struct.lookup(k))
 
 export const picks =
-  <R extends struct>() =>
+  <R extends Struct>() =>
   <K extends keyof R, B>(
     k: K,
     f: (r: Pick<R, K>[K]) => Reader<Pick<R, K>, B>,
@@ -18,6 +18,6 @@ export const picks =
     picksW<R>()(k, f)
 
 export const picksW =
-  <R1 extends struct>() =>
+  <R1 extends Struct>() =>
   <K extends keyof R1, R2, B>(k: K, f: (r: Pick<R1, K>[K]) => Reader<R2, B>) =>
     pipe(pick<R1>()(k), reader.chainW(f))

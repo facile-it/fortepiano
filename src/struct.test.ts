@@ -1,9 +1,9 @@
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { flow, increment, pipe } from 'fp-ts/function'
 import { Predicate } from 'fp-ts/Predicate'
-import * as $struct from './struct'
+import * as $struct from './Struct'
 
-describe('struct', () => {
+describe('Struct', () => {
   describe('toReadonlyArray', () => {
     it('should return a list of key-value tuples', () => {
       expect(

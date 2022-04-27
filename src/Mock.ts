@@ -35,7 +35,8 @@ import { ReadonlyRecord } from 'fp-ts/ReadonlyRecord'
 import * as t from 'io-ts'
 import { PartialDeep } from '.'
 import { curry, recurse, run } from './function'
-import * as $struct from './struct'
+import * as $struct from './Struct'
+import { Struct } from './Struct'
 import * as $type from './Type'
 import * as $yield from './Yield'
 
@@ -82,10 +83,9 @@ export const Pointed: Pointed1<URI> = {
                     _a,
                     $struct.filterDeep(predicate.not(t.undefined.is)),
                     (_a) =>
-                      $struct.patch<
-                        A & $struct.struct,
-                        PartialDeep<A & $struct.struct>
-                      >(_a as PartialDeep<A & $struct.struct>)(a),
+                      $struct.patch<A & Struct, PartialDeep<A & Struct>>(
+                        _a as PartialDeep<A & Struct>,
+                      )(a),
                   ) as A)
                 : (_a as A),
           ),
