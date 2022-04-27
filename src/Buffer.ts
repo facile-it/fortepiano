@@ -1,6 +1,6 @@
 import * as t from 'io-ts'
-import * as $E from './Error'
-import * as $TE from './TaskEither'
+import * as $error from './Error'
+import * as $taskEither from './TaskEither'
 
 const is = (u: unknown): u is Buffer => u instanceof Buffer
 
@@ -27,7 +27,7 @@ export const BufferFromStringC = new t.Type(
 )
 
 export const fromStream = (stream: NodeJS.ReadableStream) =>
-  $TE.tryCatch(
+  $taskEither.tryCatch(
     () =>
       new Promise<Buffer>((resolve, reject) => {
         const buffer: Array<any> = []
@@ -36,5 +36,5 @@ export const fromStream = (stream: NodeJS.ReadableStream) =>
           .on('data', (data) => buffer.push(data))
           .on('end', () => resolve(Buffer.concat(buffer)))
       }),
-    $E.fromUnknown(Error('Cannot read stream into buffer')),
+    $error.fromUnknown(Error('Cannot read stream into buffer')),
   )

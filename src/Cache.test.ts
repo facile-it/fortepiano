@@ -1,47 +1,45 @@
-import * as E from 'fp-ts/Either'
+import { either, task, taskEither } from 'fp-ts'
 import { constUndefined, pipe } from 'fp-ts/function'
-import * as T from 'fp-ts/Task'
-import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
-import { chain, memory } from './Cache'
+import * as $cache from './Cache'
 
 describe('Cache', () => {
   describe('chain', () => {
-    const c0 = memory()
-    const c1 = memory()
-    const c = chain(c0, c1)
+    const c0 = $cache.memory()
+    const c1 = $cache.memory()
+    const c = $cache.chain(c0, c1)
 
     describe('get', () => {
       it('should fail when no cache is warm', async () => {
         await expect(
-          pipe(c.get('foo', t.number), T.map(E.isLeft))(),
+          pipe(c.get('foo', t.number), task.map(either.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should succeed when first level cache is warm', async () => {
         await expect(
           pipe(
             c0.set('foo', t.string)('bar'),
-            TE.apSecond(c.get('foo', t.string)),
+            taskEither.apSecond(c.get('foo', t.string)),
           )(),
-        ).resolves.toStrictEqual(E.right('bar'))
+        ).resolves.toStrictEqual(either.right('bar'))
       })
       it('should succeed when second level cache is warm', async () => {
         await expect(
           pipe(
             c1.set('foo', t.string)('bar'),
-            TE.apSecond(c.get('foo', t.string)),
+            taskEither.apSecond(c.get('foo', t.string)),
           )(),
-        ).resolves.toStrictEqual(E.right('bar'))
+        ).resolves.toStrictEqual(either.right('bar'))
       })
       it('should resist to a cache level failure', async () => {
         await expect(
           pipe(
             c.set('foo', t.string)('bar'),
-            TE.apFirst(c0.clear),
-            TE.apS('c', c.get('foo', t.string)),
-            TE.apS('c1', c1.get('foo', t.string)),
+            taskEither.apFirst(c0.clear),
+            taskEither.apS('c', c.get('foo', t.string)),
+            taskEither.apS('c1', c1.get('foo', t.string)),
           )(),
-        ).resolves.toStrictEqual(E.right({ c: 'bar', c1: 'bar' }))
+        ).resolves.toStrictEqual(either.right({ c: 'bar', c1: 'bar' }))
       })
     })
 
@@ -50,11 +48,13 @@ describe('Cache', () => {
         await expect(
           pipe(
             c.set('foo', t.string)('bar'),
-            TE.apS('c', c.get('foo', t.string)),
-            TE.apS('c0', c0.get('foo', t.string)),
-            TE.apS('c1', c1.get('foo', t.string)),
+            taskEither.apS('c', c.get('foo', t.string)),
+            taskEither.apS('c0', c0.get('foo', t.string)),
+            taskEither.apS('c1', c1.get('foo', t.string)),
           )(),
-        ).resolves.toStrictEqual(E.right({ c: 'bar', c0: 'bar', c1: 'bar' }))
+        ).resolves.toStrictEqual(
+          either.right({ c: 'bar', c0: 'bar', c1: 'bar' }),
+        )
       })
     })
 
@@ -63,11 +63,20 @@ describe('Cache', () => {
         await expect(
           pipe(
             c.set('foo', t.string)('bar'),
-            T.apFirst(c.delete('foo')),
-            T.map(constUndefined),
-            T.apS('c', pipe(c.get('foo', t.string), T.map(E.isLeft))),
-            T.apS('c0', pipe(c0.get('foo', t.string), T.map(E.isLeft))),
-            T.apS('c1', pipe(c1.get('foo', t.string), T.map(E.isLeft))),
+            task.apFirst(c.delete('foo')),
+            task.map(constUndefined),
+            task.apS(
+              'c',
+              pipe(c.get('foo', t.string), task.map(either.isLeft)),
+            ),
+            task.apS(
+              'c0',
+              pipe(c0.get('foo', t.string), task.map(either.isLeft)),
+            ),
+            task.apS(
+              'c1',
+              pipe(c1.get('foo', t.string), task.map(either.isLeft)),
+            ),
           )(),
         ).resolves.toStrictEqual({ c: true, c0: true, c1: true })
       })
@@ -78,11 +87,20 @@ describe('Cache', () => {
         await expect(
           pipe(
             c.set('foo', t.string)('bar'),
-            T.apFirst(c.clear),
-            T.map(constUndefined),
-            T.apS('c', pipe(c.get('foo', t.string), T.map(E.isLeft))),
-            T.apS('c0', pipe(c0.get('foo', t.string), T.map(E.isLeft))),
-            T.apS('c1', pipe(c1.get('foo', t.string), T.map(E.isLeft))),
+            task.apFirst(c.clear),
+            task.map(constUndefined),
+            task.apS(
+              'c',
+              pipe(c.get('foo', t.string), task.map(either.isLeft)),
+            ),
+            task.apS(
+              'c0',
+              pipe(c0.get('foo', t.string), task.map(either.isLeft)),
+            ),
+            task.apS(
+              'c1',
+              pipe(c1.get('foo', t.string), task.map(either.isLeft)),
+            ),
           )(),
         ).resolves.toStrictEqual({ c: true, c0: true, c1: true })
       })

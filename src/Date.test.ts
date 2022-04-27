@@ -1,27 +1,27 @@
-import * as O from 'fp-ts/Option'
-import { fromString, parse } from './Date'
+import { option } from 'fp-ts'
+import * as $date from './Date'
 
 describe('Date', () => {
   describe('fromString', () => {
     it('should fail with invalid date strings', () => {
-      expect(fromString('')).toStrictEqual(O.none)
-      expect(fromString('foo')).toStrictEqual(O.none)
+      expect($date.fromString('')).toStrictEqual(option.none)
+      expect($date.fromString('foo')).toStrictEqual(option.none)
     })
     it('should succeed with valid date strings', () => {
-      expect(fromString('1977-05-25')).toStrictEqual(
-        O.some(new Date('1977-05-25')),
+      expect($date.fromString('1977-05-25')).toStrictEqual(
+        option.some(new Date('1977-05-25')),
       )
     })
   })
 
   describe('parse', () => {
     it('should fail with invalid date strings', () => {
-      expect(parse('')).toStrictEqual(O.none)
-      expect(parse('foo')).toStrictEqual(O.none)
+      expect($date.parse('')).toStrictEqual(option.none)
+      expect($date.parse('foo')).toStrictEqual(option.none)
     })
     it('should succeed with valid date strings', () => {
-      expect(parse('1977-05-25')).toStrictEqual(
-        O.some(Date.parse('1977-05-25')),
+      expect($date.parse('1977-05-25')).toStrictEqual(
+        option.some(Date.parse('1977-05-25')),
       )
     })
   })
