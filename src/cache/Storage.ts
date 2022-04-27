@@ -5,7 +5,7 @@ import * as tt from 'io-ts-types'
 import { Cache } from '../Cache'
 import * as $error from '../Error'
 import { memoize } from '../function'
-import * as $struct from '../_Struct'
+import * as $struct from '../Struct'
 
 const CacheItemC = t.type({
   exp: t.number,

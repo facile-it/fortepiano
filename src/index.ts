@@ -25,11 +25,11 @@ import * as $readonlyTuple from './ReadonlyTuple'
 import * as $storage from './Storage'
 import * as $stream from './Stream'
 import * as $string from './string'
+import * as $struct from './Struct'
 import * as $taskEither from './TaskEither'
 import * as $type from './Type'
 import * as $validation from './Validation'
 import * as $yield from './Yield'
-import * as $struct from './_Struct'
 
 export type PartialDeep<A> = A extends { readonly [x: string]: unknown }
   ? Partial<{ readonly [K in keyof A]: PartialDeep<A[K]> }>

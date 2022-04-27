@@ -12,8 +12,8 @@ import { mock } from './http/Mock'
 import * as $log from './Log'
 import * as $random from './Random'
 import * as $string from './string'
+import { Struct } from './Struct'
 import * as $type from './Type'
-import { Struct } from './_Struct'
 
 const ERRORS = {
   BadRequest: 400,
