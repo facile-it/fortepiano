@@ -1,34 +1,36 @@
-import * as Ei from 'fp-ts/Either'
+import {
+  either,
+  json,
+  option,
+  readonlyArray,
+  readonlyRecord,
+  semigroup,
+} from 'fp-ts'
 import { constUndefined, pipe } from 'fp-ts/function'
-import * as J from 'fp-ts/Json'
-import * as O from 'fp-ts/Option'
-import * as RA from 'fp-ts/ReadonlyArray'
-import * as RR from 'fp-ts/ReadonlyRecord'
-import * as Se from 'fp-ts/Semigroup'
 import * as t from 'io-ts'
 import * as tt from 'io-ts-types'
-import * as $Er from '../Error'
-import * as $H from '../Http'
-import * as $St from '../string'
-import * as $TE from '../TaskEither'
+import * as $error from '../Error'
+import { Http, HttpError, HttpMethod, HttpOptions } from '../Http'
+import * as $string from '../string'
+import * as $taskEither from '../TaskEither'
 
 const request = (
   _fetch: typeof fetch,
-  method: $H.HttpMethod,
+  method: HttpMethod,
   url: string,
-  options: $H.HttpOptions = {},
+  options: HttpOptions = {},
 ) =>
-  $TE.tryCatch(
+  $taskEither.tryCatch(
     () =>
       _fetch(
         pipe(
           options.query,
-          O.fromNullable,
-          O.map(RR.map((value) => value.toString())),
-          O.map((query) => new URLSearchParams(query)),
-          O.map((params) => params.toString()),
-          O.filter(tt.NonEmptyString.is),
-          O.match(
+          option.fromNullable,
+          option.map(readonlyRecord.map((value) => value.toString())),
+          option.map((query) => new URLSearchParams(query)),
+          option.map((params) => params.toString()),
+          option.filter(tt.NonEmptyString.is),
+          option.match(
             () => url,
             (queryString) => `${url}?${queryString}`,
           ),
@@ -36,28 +38,35 @@ const request = (
         {
           // eslint-disable-next-line no-nested-ternary
           body: options.json
-            ? pipe(options.body, J.stringify, Ei.getOrElseW(constUndefined))
+            ? pipe(
+                options.body,
+                json.stringify,
+                either.getOrElseW(constUndefined),
+              )
             : t.record(t.string, t.unknown).is(options.body)
             ? pipe(
                 options.body,
-                O.fromNullable,
-                O.map(
-                  RR.reduceWithIndex(new FormData(), (name, form, value) => {
-                    if (t.union([t.boolean, t.number, t.string]).is(value)) {
-                      form.append(name, value.toString())
-                    }
+                option.fromNullable,
+                option.map(
+                  readonlyRecord.reduceWithIndex(
+                    new FormData(),
+                    (name, form, value) => {
+                      if (t.union([t.boolean, t.number, t.string]).is(value)) {
+                        form.append(name, value.toString())
+                      }
 
-                    return form
-                  }),
+                      return form
+                    },
+                  ),
                 ),
-                O.getOrElseW(constUndefined),
+                option.getOrElseW(constUndefined),
               )
             : undefined,
           headers: {
             ...options.headers,
             ...(options.json ? { 'Content-Type': 'application/json' } : null),
           },
-          method: $St.uppercase(method),
+          method: $string.uppercase(method),
         },
       ).then((response) =>
         (response.ok && options.json ? response.json() : response.text()).then(
@@ -67,17 +76,20 @@ const request = (
               status: response.status,
               headers: pipe(
                 [...response.headers.entries()],
-                RR.fromFoldable(Se.last<string>(), RA.Foldable),
+                readonlyRecord.fromFoldable(
+                  semigroup.last<string>(),
+                  readonlyArray.Foldable,
+                ),
               ),
               body,
             }
 
             if (!response.ok) {
-              throw new $H.HttpError(
+              throw new HttpError(
                 _response,
-                `Cannot make HTTP request "${$St.uppercase(method)} ${url}": ${
-                  response.statusText
-                }`,
+                `Cannot make HTTP request "${$string.uppercase(
+                  method,
+                )} ${url}": ${response.statusText}`,
               )
             }
 
@@ -85,12 +97,12 @@ const request = (
           },
         ),
       ),
-    $Er.fromUnknown(
-      Error(`Cannot make HTTP request "${$St.uppercase(method)} ${url}"`),
+    $error.fromUnknown(
+      Error(`Cannot make HTTP request "${$string.uppercase(method)} ${url}"`),
     ),
   )
 
-export const $fetch = (_fetch: typeof fetch): $H.Http => ({
+export const $fetch = (_fetch: typeof fetch): Http => ({
   delete: (url, options) => request(_fetch, 'delete', url, options),
   get: (url, options) => request(_fetch, 'get', url, options),
   patch: (url, options) => request(_fetch, 'patch', url, options),

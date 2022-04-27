@@ -1,4 +1,4 @@
-import * as E from 'fp-ts/Either'
+import { either } from 'fp-ts'
 import got from 'got'
 import { mocked } from 'ts-jest/utils'
 import { $got } from './Got'
@@ -23,7 +23,7 @@ describe('Http', () => {
         await expect(
           $got(mocked(got, true)).get('foo')(),
         ).resolves.toStrictEqual(
-          E.right({
+          either.right({
             url: 'bar',
             status: 200,
             headers: {
@@ -40,7 +40,7 @@ describe('Http', () => {
 
         await expect(
           $got(mocked(got, true)).get('foo')(),
-        ).resolves.toStrictEqual(E.left(error))
+        ).resolves.toStrictEqual(either.left(error))
       })
     })
   })

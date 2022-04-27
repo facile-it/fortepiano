@@ -1,41 +1,47 @@
+import { taskEither } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { run } from '../function'
-import * as $H from '../Http'
-import * as $M from '../Mock'
+import {
+  Http,
+  HttpError,
+  HttpRequest,
+  HttpResponse,
+  HttpResponseC,
+} from '../Http'
+import * as $mock from '../Mock'
 
-const response = (url: string, error = false): $M.Mock<$H.HttpResponse> =>
-  $M.struct({
-    url: $M.literal(url),
-    status: error ? $M.integer(300, 599) : $M.integer(200, 299),
-    headers: $M.readonlyRecord(
-      $M.string,
-      $M.union($M.string, $M.readonlyArray($M.string)),
+const response = (url: string, error = false): $mock.Mock<HttpResponse> =>
+  $mock.struct({
+    url: $mock.literal(url),
+    status: error ? $mock.integer(300, 599) : $mock.integer(200, 299),
+    headers: $mock.readonlyRecord(
+      $mock.string,
+      $mock.union($mock.string, $mock.readonlyArray($mock.string)),
     ),
-    body: $M.unknown(),
+    body: $mock.unknown(),
   })
 
-const error = (url: string): $M.Mock<Error | $H.HttpError> =>
-  $M.struct({
-    name: $M.string,
-    message: $M.string,
-    stack: $M.string,
-    response: $M.nullable(response(url, true)),
+const error = (url: string): $mock.Mock<Error | HttpError> =>
+  $mock.struct({
+    name: $mock.string,
+    message: $mock.string,
+    stack: $mock.string,
+    response: $mock.nullable(response(url, true)),
   })
 
-const request: $H.HttpRequest = (url) =>
+const request: HttpRequest = (url) =>
   pipe(
-    $M.union(error(url), response(url)),
-    TE.fromIOK(run),
-    TE.chain((mock) =>
-      $H.HttpResponseC(t.unknown).is(mock)
-        ? TE.right<$H.HttpError, $H.HttpResponse>(mock)
-        : TE.left(mock),
+    $mock.union(error(url), response(url)),
+    taskEither.fromIOK(run),
+    taskEither.chain((mock) =>
+      HttpResponseC(t.unknown).is(mock)
+        ? taskEither.right<HttpError, HttpResponse>(mock)
+        : taskEither.left(mock),
     ),
   )
 
-export const mock: $H.Http = {
+export const mock: Http = {
   delete: request,
   get: request,
   patch: request,
