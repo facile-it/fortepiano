@@ -1,31 +1,32 @@
 /* eslint-disable no-bitwise */
 import crypto from 'crypto'
+import { taskEither } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as TE from 'fp-ts/TaskEither'
-import * as $E from './Error'
+import { TaskEither } from 'fp-ts/TaskEither'
+import * as $error from './Error'
 
-export const randomBytes = (size: number): TE.TaskEither<Error, Buffer> =>
+export const randomBytes = (size: number): TaskEither<Error, Buffer> =>
   pipe(
-    TE.tryCatch(
+    taskEither.tryCatch(
       () =>
         new Promise((resolve, reject) =>
           crypto.randomBytes(size, (error, buffer) =>
             null !== error ? reject(error) : resolve(buffer),
           ),
         ),
-      $E.fromUnknown(Error(`Cannot generate ${size} random bytes`)),
+      $error.fromUnknown(Error(`Cannot generate ${size} random bytes`)),
     ),
   )
 
 export const hash = (size: number, encoding: BufferEncoding = 'hex') =>
   pipe(
     randomBytes(size),
-    TE.map((buffer) => buffer.toString(encoding)),
+    taskEither.map((buffer) => buffer.toString(encoding)),
   )
 
 export const uuid4 = pipe(
   hash(16, 'hex'),
-  TE.map(
+  taskEither.map(
     (s) =>
       `${s.slice(0, 8)}-${s.slice(8, 12)}-4${s.slice(13, 16)}-${(
         ((s.charCodeAt(16) > 57
