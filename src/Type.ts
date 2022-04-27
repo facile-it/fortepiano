@@ -3,7 +3,7 @@ import { flow, identity, pipe } from 'fp-ts/function'
 import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
 import * as t from 'io-ts'
 import * as tt from 'io-ts-types'
-import * as $struct from './struct'
+import { Struct } from './Struct'
 
 export const numeric = new t.Type(
   'Numeric',
@@ -37,7 +37,7 @@ export function literal(a: number | string | RegExp, name?: string) {
     : t.literal(a, name)
 }
 
-const isStruct = (u: unknown): u is $struct.struct =>
+const isStruct = (u: unknown): u is Struct =>
   'object' === typeof u && null !== u && !Array.isArray(u)
 
 export const struct = new t.Type(

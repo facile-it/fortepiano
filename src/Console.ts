@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { IO } from 'fp-ts/IO'
 import { ReadonlyRecord } from 'fp-ts/ReadonlyRecord'
-import { struct } from './struct'
+import { Struct } from './Struct'
 
 const _noArgs =
   (method: 'groupEnd'): IO<void> =>
@@ -47,11 +47,11 @@ export const group = _multipleArgs('group')
 export const groupCollapsed = _multipleArgs('groupCollapsed')
 export const groupEnd = _noArgs('groupEnd')
 
-export function table<A extends struct, K extends keyof A>(
+export function table<A extends Struct, K extends keyof A>(
   data: ReadonlyArray<A> | ReadonlyRecord<string, A>,
   columns?: ReadonlyArray<K>,
 ): IO<void>
-export function table(data: struct | ReadonlyArray<unknown>): IO<void>
+export function table(data: Struct | ReadonlyArray<unknown>): IO<void>
 export function table(
   a?: undefined | boolean | number | string,
   ...as: ReadonlyArray<unknown>

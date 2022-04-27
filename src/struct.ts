@@ -6,27 +6,27 @@ import { curry } from './function'
 import * as $type from './Type'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type struct = object
+export type Struct = object
 
-export const toReadonlyArray = <A extends struct>(
+export const toReadonlyArray = <A extends Struct>(
   a: A,
 ): ReadonlyArray<Readonly<[keyof A, A[keyof A]]>> =>
   readonlyRecord.toReadonlyArray(a)
 
 export const lookup =
-  <S extends struct, K extends keyof S>(k: K) =>
+  <S extends Struct, K extends keyof S>(k: K) =>
   (s: S): S[K] =>
     s[k]
 
 export const modifyAt =
-  <S extends struct, K extends keyof S>(k: K, f: (a: S[K]) => S[K]) =>
+  <S extends Struct, K extends keyof S>(k: K, f: (a: S[K]) => S[K]) =>
   (s: S): S => ({ ...s, [k]: f(s[k]) })
 
-export const updateAt = <S extends struct, K extends keyof S>(k: K, a: S[K]) =>
+export const updateAt = <S extends Struct, K extends keyof S>(k: K, a: S[K]) =>
   modifyAt(k, () => a)
 
 export const filterDeep =
-  <A extends struct>(f: Predicate<unknown /*ValuesDeep<A>*/>) =>
+  <A extends Struct>(f: Predicate<unknown /*ValuesDeep<A>*/>) =>
   (a: A): PartialDeep<A> =>
     pipe(
       a,
@@ -52,14 +52,14 @@ export const filterDeep =
     )
 
 export const patch =
-  <A extends struct, B extends PartialDeep<A> & struct>(b: B) =>
+  <A extends Struct, B extends PartialDeep<A> & Struct>(b: B) =>
   (a: A): IntersectionDeep<A, B> =>
     pipe(
       b,
       toReadonlyArray,
       readonlyArray.map(([key, b]) =>
         $type.struct.is(b)
-          ? ([key, patch(b)(a[key as keyof A] as A[keyof A] & struct)] as const)
+          ? ([key, patch(b)(a[key as keyof A] as A[keyof A] & Struct)] as const)
           : ([key, b] as const),
       ),
       readonlyArray.reduce({} as IntersectionDeep<A, B>, (ab, [key, b]) => ({

@@ -12,7 +12,7 @@ import { mock } from './http/Mock'
 import * as $log from './Log'
 import * as $random from './Random'
 import * as $string from './string'
-import * as $struct from './struct'
+import { Struct } from './Struct'
 import * as $type from './Type'
 
 const ERRORS = {
@@ -47,7 +47,7 @@ export class HttpError extends Error {
 }
 
 export interface HttpOptions {
-  readonly body?: $struct.struct | Buffer
+  readonly body?: Struct | Buffer
   readonly headers?: ReadonlyRecord<string, string>
   readonly json?: boolean
   readonly buffer?: boolean
