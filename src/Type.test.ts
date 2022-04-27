@@ -1,62 +1,64 @@
-import * as E from 'fp-ts/Either'
+import { either } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
 import * as t from 'io-ts'
-import * as $RA from './ReadonlyArray'
-import { alias, lax, literal, literalUnion, numeric } from './Type'
+import * as $readonlyArray from './ReadonlyArray'
+import * as $type from './Type'
 
 describe('Type', () => {
   describe('numeric', () => {
     test.each([42, Infinity, NaN, Number.EPSILON, Number.MIN_VALUE])(
       'decoding a number (%d)',
       (value) => {
-        expect(numeric.decode(value)).toStrictEqual(E.of(value))
+        expect($type.numeric.decode(value)).toStrictEqual(either.of(value))
       },
     )
     test.each([42, Infinity, Number.EPSILON, Number.MIN_VALUE])(
       'decoding a non-trimmed numeric string (" %s ")',
       (value) => {
-        expect(numeric.decode(` ${value} `)).toStrictEqual(E.of(value))
+        expect($type.numeric.decode(` ${value} `)).toStrictEqual(
+          either.of(value),
+        )
       },
     )
     test.each(['42foo', '11.38bar', '.1337qux', 'NaN', ''])(
       'failing with a dirty numeric string ("%s")',
       (value) => {
-        expect(numeric.decode(value)._tag).toStrictEqual('Left')
+        expect($type.numeric.decode(value)._tag).toStrictEqual('Left')
       },
     )
   })
 
   describe('literal', () => {
     it('should work with literal values', () => {
-      expect(literal(42).is(1138)).toBe(false)
-      expect(literal(42).is(42)).toBe(true)
-      expect(literal('foo').is('bar')).toBe(false)
-      expect(literal('foo').is('foo')).toBe(true)
+      expect($type.literal(42).is(1138)).toBe(false)
+      expect($type.literal(42).is(42)).toBe(true)
+      expect($type.literal('foo').is('bar')).toBe(false)
+      expect($type.literal('foo').is('foo')).toBe(true)
     })
     it('should work with regular expressions', () => {
-      expect(literal(/foo/).is('bar')).toBe(false)
-      expect(literal(/foo/).is('foobar')).toBe(true)
+      expect($type.literal(/foo/).is('bar')).toBe(false)
+      expect($type.literal(/foo/).is('foobar')).toBe(true)
     })
   })
 
   describe('alias', () => {
     it('should return an equivalent codec with a different name', () => {
-      $RA
+      $readonlyArray
         .cartesian(
           [t.boolean, t.number, t.string, t.UnknownArray, t.UnknownRecord],
           [true, 1138, 'foo', [], {}],
         )
         .forEach(([codec, a]) => {
-          expect(alias('foo', codec).is(a)).toBe(codec.is(a))
-          expect(alias('bar', codec).name).toBe('bar')
+          expect($type.alias('foo', codec).is(a)).toBe(codec.is(a))
+          expect($type.alias('bar', codec).name).toBe('bar')
         })
     })
   })
 
   describe('literalUnion', () => {
     it('should optimize literal union decoding', () => {
-      const number = literalUnion([1138, 1337])
-      const string = literalUnion(['foo', 'bar'])
+      const number = $type.literalUnion([1138, 1337])
+      const string = $type.literalUnion(['foo', 'bar'])
 
       expect(number.is(1138)).toBe(true)
       expect(number.is(Infinity)).toBe(false)
@@ -67,7 +69,7 @@ describe('Type', () => {
 
   describe('lax', () => {
     const partial = t.partial({ foo: t.boolean, bar: t.number, max: t.string })
-    const codec = lax(partial.props)
+    const codec = $type.lax(partial.props)
     const data = [
       [42, null],
       [{}, {}],
@@ -95,7 +97,7 @@ describe('Type', () => {
         expect(
           pipe(
             codec.decode(u),
-            E.getOrElseW(() => null),
+            either.getOrElseW(() => null),
           ),
         ).toStrictEqual(output),
       )

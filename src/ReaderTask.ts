@@ -1,36 +1,38 @@
+import { readerTask } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as IO from 'fp-ts/IO'
-import * as RT from 'fp-ts/ReaderTask'
-import * as T from 'fp-ts/Task'
-import * as $S from './struct'
+import { IO } from 'fp-ts/IO'
+import { ReaderTask } from 'fp-ts/ReaderTask'
+import { Task } from 'fp-ts/Task'
+import * as $struct from './struct'
+import { struct } from './struct'
 
 export const pick =
-  <R extends $S.struct>() =>
+  <R extends struct>() =>
   <K extends keyof R>(k: K) =>
-    RT.asks<Pick<R, K>, Pick<R, K>[K]>($S.lookup(k))
+    readerTask.asks<Pick<R, K>, Pick<R, K>[K]>($struct.lookup(k))
 
 export const picks =
-  <R extends $S.struct>() =>
+  <R extends struct>() =>
   <K extends keyof R, B>(
     k: K,
-    f: (r: Pick<R, K>[K]) => RT.ReaderTask<Pick<R, K>, B>,
+    f: (r: Pick<R, K>[K]) => ReaderTask<Pick<R, K>, B>,
   ) =>
     picksW<R>()(k, f)
 
 export const picksW =
-  <R1 extends $S.struct>() =>
+  <R1 extends struct>() =>
   <K extends keyof R1, R2, B>(
     k: K,
-    f: (r: Pick<R1, K>[K]) => RT.ReaderTask<R2, B>,
+    f: (r: Pick<R1, K>[K]) => ReaderTask<R2, B>,
   ) =>
-    pipe(pick<R1>()(k), RT.chainW(f))
+    pipe(pick<R1>()(k), readerTask.chainW(f))
 
 export const picksIOK =
-  <R extends $S.struct>() =>
-  <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => IO.IO<B>) =>
-    picks<R>()(k, RT.fromIOK(f))
+  <R extends struct>() =>
+  <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => IO<B>) =>
+    picks<R>()(k, readerTask.fromIOK(f))
 
 export const picksTaskK =
-  <R extends $S.struct>() =>
-  <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => T.Task<B>) =>
-    picks<R>()(k, RT.fromTaskK(f))
+  <R extends struct>() =>
+  <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => Task<B>) =>
+    picks<R>()(k, readerTask.fromTaskK(f))
