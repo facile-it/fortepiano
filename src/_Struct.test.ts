@@ -1,7 +1,7 @@
 import { Endomorphism } from 'fp-ts/Endomorphism'
 import { flow, increment, pipe } from 'fp-ts/function'
 import { Predicate } from 'fp-ts/Predicate'
-import * as $struct from './Struct'
+import * as $struct from './_Struct'
 
 describe('Struct', () => {
   describe('toReadonlyArray', () => {
