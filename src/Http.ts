@@ -6,8 +6,7 @@ import * as R from 'fp-ts/Random'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
-import { Json } from 'io-ts-types'
-import * as $T from './Type'
+import * as tt from 'io-ts-types'
 import * as $C from './Cache'
 import * as $Er from './Error'
 import { mock } from './http/Mock'
@@ -15,6 +14,7 @@ import * as $L from './Log'
 import * as $R from './Random'
 import * as $Stri from './string'
 import * as $Stru from './struct'
+import * as $T from './Type'
 
 const ERRORS = {
   BadRequest: 400,
@@ -157,7 +157,7 @@ export const cache =
                   TE.chainFirst((response) =>
                     pipe(
                       response as HttpResponse<J.Json>,
-                      cache.set(key, HttpResponseC(Json)),
+                      cache.set(key, HttpResponseC(tt.Json)),
                       TE.altW(() => TE.of(undefined)),
                     ),
                   ),

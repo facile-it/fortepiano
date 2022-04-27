@@ -5,7 +5,7 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as t from 'io-ts'
-import { NumberFromString } from 'io-ts-types'
+import * as tt from 'io-ts-types'
 import * as $S from './struct'
 
 export const numeric = new t.Type(
@@ -14,7 +14,7 @@ export const numeric = new t.Type(
   (u, c) =>
     pipe(
       t.number.validate(u, c),
-      E.alt(() => NumberFromString.validate(u, c)),
+      E.alt(() => tt.NumberFromString.validate(u, c)),
     ),
   t.number.encode,
 )

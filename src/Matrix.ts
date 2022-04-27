@@ -4,7 +4,7 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as t from 'io-ts'
-import { readonlyNonEmptyArray } from 'io-ts-types'
+import * as tt from 'io-ts-types'
 import * as $Eq from './Eq'
 import * as $RA from './ReadonlyArray'
 import * as $RR from './ReadonlyRecord'
@@ -23,13 +23,13 @@ const is =
   (u: unknown): u is Matrix<t.TypeOf<C>> =>
     pipe(
       u,
-      t.readonlyArray(readonlyNonEmptyArray(item)).decode,
+      t.readonlyArray(tt.readonlyNonEmptyArray(item)).decode,
       Ei.filterOrElseW($RA.same($Eq.getEqSize(RA)), constNull),
       Ei.match(constFalse, constTrue),
     )
 
 export const MatrixC = <C extends t.Mixed>(item: C) =>
-  t.brand(t.readonlyArray(readonlyNonEmptyArray(item)), is(item), 'Matrix')
+  t.brand(t.readonlyArray(tt.readonlyNonEmptyArray(item)), is(item), 'Matrix')
 
 export const transpose = <A>(as: Matrix<A>): Matrix<A> =>
   pipe(
