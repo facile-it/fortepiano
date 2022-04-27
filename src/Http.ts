@@ -1,20 +1,19 @@
-import * as Ei from 'fp-ts/Either'
+import { either, json as _json, option, random, taskEither } from 'fp-ts'
+import { Either } from 'fp-ts/Either'
 import { constant, identity, pipe } from 'fp-ts/function'
-import * as J from 'fp-ts/Json'
-import * as O from 'fp-ts/Option'
-import * as R from 'fp-ts/Random'
-import * as RR from 'fp-ts/ReadonlyRecord'
-import * as TE from 'fp-ts/TaskEither'
+import { Json } from 'fp-ts/Json'
+import { ReadonlyRecord } from 'fp-ts/ReadonlyRecord'
+import { TaskEither } from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import * as tt from 'io-ts-types'
-import * as $C from './Cache'
-import * as $Er from './Error'
+import * as $cache from './Cache'
+import * as $error from './Error'
 import { mock } from './http/Mock'
-import * as $L from './Log'
-import * as $R from './Random'
-import * as $Stri from './string'
-import * as $Stru from './struct'
-import * as $T from './Type'
+import * as $log from './Log'
+import * as $random from './Random'
+import * as $string from './string'
+import * as $struct from './struct'
+import * as $type from './Type'
 
 const ERRORS = {
   BadRequest: 400,
@@ -37,7 +36,7 @@ export interface Http {
 export interface HttpResponse<A = unknown> {
   readonly url: string
   readonly status: number
-  readonly headers: RR.ReadonlyRecord<string, string | ReadonlyArray<string>>
+  readonly headers: ReadonlyRecord<string, string | ReadonlyArray<string>>
   readonly body: A
 }
 
@@ -48,15 +47,15 @@ export class HttpError extends Error {
 }
 
 export interface HttpOptions {
-  readonly body?: $Stru.struct | Buffer
-  readonly headers?: RR.ReadonlyRecord<string, string>
+  readonly body?: $struct.struct | Buffer
+  readonly headers?: ReadonlyRecord<string, string>
   readonly json?: boolean
   readonly buffer?: boolean
-  readonly query?: RR.ReadonlyRecord<string, boolean | number | string>
+  readonly query?: ReadonlyRecord<string, boolean | number | string>
 }
 
 export interface HttpRequest<A extends keyof HttpOptions = never> {
-  (url: string, options?: Omit<HttpOptions, A>): TE.TaskEither<
+  (url: string, options?: Omit<HttpOptions, A>): TaskEither<
     Error | HttpError,
     HttpResponse
   >
@@ -71,7 +70,7 @@ const HttpMethods = [
   'post',
   'put',
 ] as const
-export const HttpMethodC = $T.literalUnion(HttpMethods, 'HttpMethod')
+export const HttpMethodC = $type.literalUnion(HttpMethods, 'HttpMethod')
 export type HttpMethod = t.TypeOf<typeof HttpMethodC>
 
 export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
@@ -90,7 +89,7 @@ export const HttpResponseC = <C extends t.Mixed>(codec: C) =>
 const is =
   <A extends keyof typeof ERRORS>(type?: A) =>
   (u: unknown): u is HttpError =>
-    $Er.ErrorC.is(u) &&
+    $error.ErrorC.is(u) &&
     t
       .type({
         response: t.intersection([
@@ -108,19 +107,19 @@ export const HttpErrorC = <A extends keyof typeof ERRORS>(type?: A) =>
     identity,
   )
 
-const _json =
+const __json =
   (request: HttpRequest): HttpRequest =>
   (url, options) =>
     request(url, { ...options, json: true, buffer: false })
 
 export const json = (http: Http): Http => ({
-  delete: _json(http.delete),
-  get: _json(http.get),
-  patch: _json(http.patch),
-  post: _json(http.post),
-  put: _json(http.put),
-  head: _json(http.head),
-  options: _json(http.options),
+  delete: __json(http.delete),
+  get: __json(http.get),
+  patch: __json(http.patch),
+  post: __json(http.post),
+  put: __json(http.put),
+  head: __json(http.head),
+  options: __json(http.options),
 })
 
 const _buffer =
@@ -139,26 +138,26 @@ export const buffer = (http: Http): Http => ({
 })
 
 export const cache =
-  (cache: $C.Cache) =>
+  (cache: $cache.Cache) =>
   (http: Http): Http => ({
     ...http,
     get: (url, options) =>
       pipe(
         [url, options] as const,
-        J.stringify,
-        Ei.match(
+        _json.stringify,
+        either.match(
           () => http.get(url, options),
           (key) =>
             pipe(
               cache.get(key, HttpResponseC(t.unknown)),
-              TE.alt(() =>
+              taskEither.alt(() =>
                 pipe(
                   http.get(url, options),
-                  TE.chainFirst((response) =>
+                  taskEither.chainFirst((response) =>
                     pipe(
-                      response as HttpResponse<J.Json>,
+                      response as HttpResponse<Json>,
                       cache.set(key, HttpResponseC(tt.Json)),
-                      TE.altW(() => TE.of(undefined)),
+                      taskEither.altW(() => taskEither.of(undefined)),
                     ),
                   ),
                 ),
@@ -171,7 +170,7 @@ export const cache =
 export const pool = (http: Http): Http => {
   const pool = new Map<
     Readonly<[string, HttpOptions | undefined]>,
-    Promise<Ei.Either<Error | HttpError, HttpResponse>>
+    Promise<Either<Error | HttpError, HttpResponse>>
   >()
 
   return {
@@ -181,8 +180,8 @@ export const pool = (http: Http): Http => {
 
       return pipe(
         pool.get(key),
-        O.fromNullable,
-        O.match(
+        option.fromNullable,
+        option.match(
           () => () => {
             const promise = http
               .get(url, options)()
@@ -202,29 +201,32 @@ const _log =
   (
     method: HttpMethod,
     request: HttpRequest,
-    log: { start: $L.Logger; end: $L.Logger },
+    log: { start: $log.Logger; end: $log.Logger },
   ): HttpRequest =>
   (url, options) =>
-    $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) => {
-      const message = `[${salt}] \r${$Stri.uppercase(method)} ${url}`
+    $random.salt(taskEither.MonadIO)(
+      random.randomInt(0, Number.MAX_SAFE_INTEGER),
+      (salt) => {
+        const message = `[${salt}] \r${$string.uppercase(method)} ${url}`
 
-      return pipe(
-        log.start(message),
-        TE.fromIO,
-        TE.chain(() => request(url, options)),
-        TE.chainFirstIOK(() => log.end(message)),
-        TE.orElseW((error) =>
-          pipe(
-            log.end(message),
-            TE.fromIO,
-            TE.chain(() => TE.left(error)),
+        return pipe(
+          log.start(message),
+          taskEither.fromIO,
+          taskEither.chain(() => request(url, options)),
+          taskEither.chainFirstIOK(() => log.end(message)),
+          taskEither.orElseW((error) =>
+            pipe(
+              log.end(message),
+              taskEither.fromIO,
+              taskEither.chain(() => taskEither.left(error)),
+            ),
           ),
-        ),
-      )
-    })
+        )
+      },
+    )
 
 export const log =
-  (logStart: $L.Logger, logEnd = $L.void) =>
+  (logStart: $log.Logger, logEnd = $log.void) =>
   (http: Http): Http => ({
     delete: _log('delete', http.delete, { start: logStart, end: logEnd }),
     get: _log('get', http.get, { start: logStart, end: logEnd }),
