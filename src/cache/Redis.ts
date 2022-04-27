@@ -1,7 +1,7 @@
 import * as Ei from 'fp-ts/Either'
 import { flow, Lazy, pipe } from 'fp-ts/function'
 import * as TE from 'fp-ts/TaskEither'
-import { JsonFromString } from 'io-ts-types'
+import * as tt from 'io-ts-types'
 import { RedisClient } from 'redis'
 import * as $C from '../Cache'
 import * as $Er from '../Error'
@@ -57,7 +57,7 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
                   .then((client) =>
                     client.set(
                       key,
-                      JsonFromString.pipe(codec).encode(value),
+                      tt.JsonFromString.pipe(codec).encode(value),
                       'EX',
                       _ttl / 1000,
                       (error) => (null !== error ? reject(error) : resolve()),

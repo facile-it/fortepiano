@@ -2,7 +2,7 @@ import * as Ei from 'fp-ts/Either'
 import { flow, Lazy, pipe } from 'fp-ts/function'
 import * as J from 'fp-ts/Json'
 import * as t from 'io-ts'
-import { Json } from 'io-ts-types'
+import * as tt from 'io-ts-types'
 import * as $C from '../Cache'
 import * as $Er from '../Error'
 import { memoize } from '../function'
@@ -10,7 +10,7 @@ import * as $S from '../struct'
 
 const CacheItemC = t.type({
   exp: t.number,
-  value: Json,
+  value: tt.Json,
 })
 
 const _storage = (

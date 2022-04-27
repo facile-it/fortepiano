@@ -6,7 +6,7 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as Se from 'fp-ts/Semigroup'
 import * as t from 'io-ts'
-import { NonEmptyString } from 'io-ts-types'
+import * as tt from 'io-ts-types'
 import * as $Er from '../Error'
 import * as $H from '../Http'
 import * as $St from '../string'
@@ -27,7 +27,7 @@ const request = (
           O.map(RR.map((value) => value.toString())),
           O.map((query) => new URLSearchParams(query)),
           O.map((params) => params.toString()),
-          O.filter(NonEmptyString.is),
+          O.filter(tt.NonEmptyString.is),
           O.match(
             () => url,
             (queryString) => `${url}?${queryString}`,
