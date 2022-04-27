@@ -1,12 +1,9 @@
-import * as E from 'fp-ts/Either'
+import { either, option, readonlyArray, readonlyRecord } from 'fp-ts'
 import { flow, identity, pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
-import * as RA from 'fp-ts/ReadonlyArray'
 import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
-import * as RR from 'fp-ts/ReadonlyRecord'
 import * as t from 'io-ts'
 import * as tt from 'io-ts-types'
-import * as $S from './struct'
+import * as $struct from './struct'
 
 export const numeric = new t.Type(
   'Numeric',
@@ -14,7 +11,7 @@ export const numeric = new t.Type(
   (u, c) =>
     pipe(
       t.number.validate(u, c),
-      E.alt(() => tt.NumberFromString.validate(u, c)),
+      either.alt(() => tt.NumberFromString.validate(u, c)),
     ),
   t.number.encode,
 )
@@ -40,7 +37,7 @@ export function literal(a: number | string | RegExp, name?: string) {
     : t.literal(a, name)
 }
 
-const isStruct = (u: unknown): u is $S.struct =>
+const isStruct = (u: unknown): u is $struct.struct =>
   'object' === typeof u && null !== u && !Array.isArray(u)
 
 export const struct = new t.Type(
@@ -90,18 +87,18 @@ export const lax = <P extends t.Props>(props: P, name?: string) =>
         partial.is,
         flow(
           t.UnknownRecord.validate,
-          E.map(RR.toReadonlyArray),
-          E.map(
-            RA.reduce({}, (result, [key, value]) =>
+          either.map(readonlyRecord.toReadonlyArray),
+          either.map(
+            readonlyArray.reduce({}, (result, [key, value]) =>
               pipe(
                 partial.props,
-                RR.lookup(key),
-                O.match(
+                readonlyRecord.lookup(key),
+                option.match(
                   () => result, // ({ ...result, [key]: value }),
                   (codec) =>
                     pipe(
                       codec.decode(value),
-                      E.match(
+                      either.match(
                         () => result,
                         (value) => ({ ...result, [key]: value }),
                       ),
@@ -110,7 +107,7 @@ export const lax = <P extends t.Props>(props: P, name?: string) =>
               ),
             ),
           ),
-          E.chain(t.success),
+          either.chain(t.success),
         ),
         partial.encode,
       ),

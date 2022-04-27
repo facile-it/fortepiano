@@ -1,31 +1,31 @@
+import { random, taskEither } from 'fp-ts'
 import { flow, pipe } from 'fp-ts/function'
-import * as R from 'fp-ts/Random'
-import * as TE from 'fp-ts/TaskEither'
-import * as $L from './Log'
-import * as $R from './Random'
-import * as $Stri from './string'
+import { TaskEither } from 'fp-ts/TaskEither'
+import * as $log from './Log'
+import * as $random from './Random'
+import * as $string from './string'
 
 export interface Storage {
   readonly getStream: (
     path: string,
     options?: StorageOptions,
-  ) => TE.TaskEither<Error, NodeJS.ReadableStream>
+  ) => TaskEither<Error, NodeJS.ReadableStream>
   readonly getUrl: (
     path: string,
     options?: StorageOptions,
-  ) => TE.TaskEither<Error, string>
+  ) => TaskEither<Error, string>
   readonly read: (
     path: string,
     options?: StorageOptions,
-  ) => TE.TaskEither<Error, Buffer>
+  ) => TaskEither<Error, Buffer>
   readonly write: (
     path: string,
     options?: StorageOptions,
-  ) => (data: Buffer | NodeJS.ReadableStream) => TE.TaskEither<Error, void>
+  ) => (data: Buffer | NodeJS.ReadableStream) => TaskEither<Error, void>
   readonly delete: (
     path: string,
     options?: StorageOptions,
-  ) => TE.TaskEither<Error, void>
+  ) => TaskEither<Error, void>
 }
 
 interface StorageOptions {
@@ -48,33 +48,38 @@ const _log =
     >,
     path: string,
     { fileSystem }: StorageOptions,
-    log: { start: $L.Logger; end: $L.Logger },
+    log: { start: $log.Logger; end: $log.Logger },
   ) =>
-  <A>(ma: TE.TaskEither<Error, A>): TE.TaskEither<Error, A> =>
-    $R.salt(TE.MonadIO)(R.randomInt(0, Number.MAX_SAFE_INTEGER), (salt) => {
-      const message = `[${salt}] \r${$Stri.capitalize(verb)} file "${path}"${
-        undefined !== fileSystem
-          ? ` ${preposition} file system "${fileSystem}"`
-          : ''
-      }`
+  <A>(ma: TaskEither<Error, A>): TaskEither<Error, A> =>
+    $random.salt(taskEither.MonadIO)(
+      random.randomInt(0, Number.MAX_SAFE_INTEGER),
+      (salt) => {
+        const message = `[${salt}] \r${$string.capitalize(
+          verb,
+        )} file "${path}"${
+          undefined !== fileSystem
+            ? ` ${preposition} file system "${fileSystem}"`
+            : ''
+        }`
 
-      return pipe(
-        log.start(message),
-        TE.fromIO,
-        TE.chain(() => ma),
-        TE.chainFirstIOK(() => log.end(message)),
-        TE.orElseW((error) =>
-          pipe(
-            log.end(message),
-            TE.fromIO,
-            TE.chain(() => TE.left(error)),
+        return pipe(
+          log.start(message),
+          taskEither.fromIO,
+          taskEither.chain(() => ma),
+          taskEither.chainFirstIOK(() => log.end(message)),
+          taskEither.orElseW((error) =>
+            pipe(
+              log.end(message),
+              taskEither.fromIO,
+              taskEither.chain(() => taskEither.left(error)),
+            ),
           ),
-        ),
-      )
-    })
+        )
+      },
+    )
 
 export const log =
-  (logStart: $L.Logger, logEnd = $L.void) =>
+  (logStart: $log.Logger, logEnd = $log.void) =>
   (storage: Storage): Storage => ({
     getStream: (path, options = {}) =>
       pipe(

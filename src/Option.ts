@@ -1,5 +1,6 @@
+import { option } from 'fp-ts'
 import { constTrue } from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { Option, Some } from 'fp-ts/Option'
 
-export const toBoolean = <A>(ma: O.Option<A>): ma is O.Some<A> =>
-  O.exists(constTrue)(ma)
+export const toBoolean = <A>(ma: Option<A>): ma is Some<A> =>
+  option.exists(constTrue)(ma)
