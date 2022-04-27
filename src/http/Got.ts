@@ -1,19 +1,19 @@
+import { readonlyRecord } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as RR from 'fp-ts/ReadonlyRecord'
 import { Got, HTTPError } from 'got'
 import * as t from 'io-ts'
-import * as $E from '../Error'
-import * as $H from '../Http'
-import * as $S from '../string'
-import * as $TE from '../TaskEither'
+import * as $error from '../Error'
+import { Http, HttpError, HttpMethod, HttpOptions } from '../Http'
+import * as $string from '../string'
+import * as $taskEither from '../TaskEither'
 
 const request = (
   _got: Got,
-  method: $H.HttpMethod,
+  method: HttpMethod,
   url: string,
-  options: $H.HttpOptions = {},
+  options: HttpOptions = {},
 ) =>
-  $TE.tryCatch(
+  $taskEither.tryCatch(
     () =>
       _got(url, {
         headers: options.headers,
@@ -29,7 +29,9 @@ const request = (
           status: response.statusCode,
           headers: pipe(
             response.headers,
-            RR.filter(t.union([t.string, t.readonlyArray(t.string)]).is),
+            readonlyRecord.filter(
+              t.union([t.string, t.readonlyArray(t.string)]).is,
+            ),
           ),
           body: response.body,
         }))
@@ -38,32 +40,34 @@ const request = (
             throw error
           }
 
-          throw $E.wrap(
-            new $H.HttpError(
+          throw $error.wrap(
+            new HttpError(
               {
                 url: error.response.url,
                 status: error.response.statusCode,
                 headers: pipe(
                   error.response.headers,
-                  RR.filter(t.union([t.string, t.readonlyArray(t.string)]).is),
+                  readonlyRecord.filter(
+                    t.union([t.string, t.readonlyArray(t.string)]).is,
+                  ),
                 ),
                 body: error.response.body,
               },
-              `Cannot make HTTP request "${$S.uppercase(method)} ${url}": ${
-                error.message
-              }`,
+              `Cannot make HTTP request "${$string.uppercase(
+                method,
+              )} ${url}": ${error.message}`,
             ),
           )(error)
         }),
-    $E.fromUnknown(
-      Error(`Cannot make HTTP request "${$S.uppercase(method)} ${url}"`),
+    $error.fromUnknown(
+      Error(`Cannot make HTTP request "${$string.uppercase(method)} ${url}"`),
     ),
   )
 
 /**
  * @deprecated Use `$axios` instead
  */
-export const $got = (_got: Got): $H.Http => ({
+export const $got = (_got: Got): Http => ({
   delete: (url, options) => request(_got, 'delete', url, options),
   get: (url, options) => request(_got, 'get', url, options),
   patch: (url, options) => request(_got, 'patch', url, options),
