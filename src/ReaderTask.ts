@@ -3,8 +3,8 @@ import { pipe } from 'fp-ts/function'
 import { IO } from 'fp-ts/IO'
 import { ReaderTask } from 'fp-ts/ReaderTask'
 import { Task } from 'fp-ts/Task'
-import * as $struct from './_Struct'
-import { Struct } from './_Struct'
+import * as $struct from './Struct'
+import { Struct } from './Struct'
 
 export const pick =
   <R extends Struct>() =>
