@@ -3,7 +3,7 @@ import { Either } from 'fp-ts/Either'
 import { Lazy, pipe } from 'fp-ts/function'
 import { Option } from 'fp-ts/Option'
 import { ReaderEither } from 'fp-ts/ReaderEither'
-import { Struct } from './Struct'
+import { Struct } from './_Struct'
 
 export const pick =
   <R extends Struct>() =>

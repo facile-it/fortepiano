@@ -1,8 +1,8 @@
 import { reader } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
 import { Reader } from 'fp-ts/Reader'
-import * as $struct from './Struct'
-import { Struct } from './Struct'
+import * as $struct from './_Struct'
+import { Struct } from './_Struct'
 
 export const pick =
   <R extends Struct>() =>
