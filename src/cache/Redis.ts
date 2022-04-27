@@ -1,14 +1,13 @@
-import * as Ei from 'fp-ts/Either'
+import { either, taskEither } from 'fp-ts'
 import { flow, Lazy, pipe } from 'fp-ts/function'
-import * as TE from 'fp-ts/TaskEither'
 import * as tt from 'io-ts-types'
 import { RedisClient } from 'redis'
-import * as $C from '../Cache'
-import * as $Er from '../Error'
+import { Cache } from '../Cache'
+import * as $error from '../Error'
 import { memoize } from '../function'
-import * as $TE from '../TaskEither'
+import * as $taskEither from '../TaskEither'
 
-export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
+export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): Cache => {
   const _redis = memoize(
     () =>
       new Promise<RedisClient>((resolve, reject) => {
@@ -20,7 +19,7 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
   return {
     get: (key, codec) =>
       pipe(
-        $TE.tryCatch(
+        $taskEither.tryCatch(
           () =>
             new Promise<string>((resolve, reject) =>
               _redis()
@@ -33,13 +32,13 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
                 )
                 .catch(reject),
             ),
-          $Er.fromUnknown(Error(`Cannot find cache item "${key}"`)),
+          $error.fromUnknown(Error(`Cannot find cache item "${key}"`)),
         ),
-        TE.chainEitherK(
+        taskEither.chainEitherK(
           flow(
             codec.decode,
-            Ei.mapLeft(
-              $Er.fromUnknown(
+            either.mapLeft(
+              $error.fromUnknown(
                 Error(`Cannot decode cache item "${key}" into "${codec.name}"`),
               ),
             ),
@@ -50,7 +49,7 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
       (key, codec, _ttl = ttl) =>
       (value) =>
         pipe(
-          $TE.tryCatch(
+          $taskEither.tryCatch(
             () =>
               new Promise((resolve, reject) =>
                 _redis()
@@ -65,12 +64,12 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
                   )
                   .catch(reject),
               ),
-            $Er.fromUnknown(Error(`Cannot write cache item "${key}"`)),
+            $error.fromUnknown(Error(`Cannot write cache item "${key}"`)),
           ),
         ),
     delete: (key) =>
       pipe(
-        $TE.tryCatch(
+        $taskEither.tryCatch(
           () =>
             new Promise((resolve, reject) =>
               _redis()
@@ -83,11 +82,11 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
                 )
                 .catch(reject),
             ),
-          $Er.fromUnknown(Error(`Cannot delete cache item "${key}"`)),
+          $error.fromUnknown(Error(`Cannot delete cache item "${key}"`)),
         ),
       ),
     clear: pipe(
-      $TE.tryCatch(
+      $taskEither.tryCatch(
         () =>
           new Promise((resolve, reject) =>
             _redis()
@@ -98,7 +97,7 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
               )
               .catch(reject),
           ),
-        $Er.fromUnknown(Error('Cannot clear cache')),
+        $error.fromUnknown(Error('Cannot clear cache')),
       ),
     ),
   }
