@@ -1,11 +1,9 @@
 import { Storage, StorageManager } from '@slynova/flydrive'
-import * as E from 'fp-ts/Either'
+import { either, task, taskEither } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as T from 'fp-ts/Task'
-import * as TE from 'fp-ts/TaskEither'
 import { Readable } from 'stream'
-import * as $B from '../Buffer'
-import * as $S from '../Stream'
+import * as $buffer from '../Buffer'
+import * as $stream from '../Stream'
 import { $flydrive } from './Flydrive'
 
 class MemoryStorage extends Storage {
@@ -16,7 +14,9 @@ class MemoryStorage extends Storage {
       throw undefined
     }
 
-    return Readable.from($B.BufferFromStringC.encode(this.storage[location]))
+    return Readable.from(
+      $buffer.BufferFromStringC.encode(this.storage[location]),
+    )
   }
 
   getUrl(location: string) {
@@ -39,14 +39,14 @@ class MemoryStorage extends Storage {
   }
 
   async put(location: string, content: unknown) {
-    if (!$B.BufferC.is(content) && !$S.ReadableStreamC.is(content)) {
+    if (!$buffer.BufferC.is(content) && !$stream.ReadableStreamC.is(content)) {
       throw undefined
     }
 
-    const buffer = $S.ReadableStreamC.is(content)
-      ? await $B.fromStream(content)()
-      : E.right(content)
-    if (E.isLeft(buffer)) {
+    const buffer = $stream.ReadableStreamC.is(content)
+      ? await $buffer.fromStream(content)()
+      : either.right(content)
+    if (either.isLeft(buffer)) {
       throw undefined
     }
 
@@ -83,7 +83,10 @@ describe('Storage', () => {
         const _flydrive = $flydrive(flydrive)
 
         await expect(
-          pipe(_flydrive.read('foo', { fileSystem: 'foo' }), T.map(E.isLeft))(),
+          pipe(
+            _flydrive.read('foo', { fileSystem: 'foo' }),
+            task.map(either.isLeft),
+          )(),
         ).resolves.toBe(true)
       })
       it('should fail with a missing file', async () => {
@@ -92,11 +95,11 @@ describe('Storage', () => {
         await expect(
           pipe(
             _flydrive.read('foo', { fileSystem: 'test' }),
-            T.map(E.isLeft),
+            task.map(either.isLeft),
           )(),
         ).resolves.toBe(true)
         await expect(
-          pipe(_flydrive.read('foo'), T.map(E.isLeft))(),
+          pipe(_flydrive.read('foo'), task.map(either.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should succeed with an existent file', async () => {
@@ -106,9 +109,9 @@ describe('Storage', () => {
           pipe(
             Buffer.from('foo'),
             _flydrive.write('foo'),
-            TE.apSecond(_flydrive.read('foo')),
+            taskEither.apSecond(_flydrive.read('foo')),
           )(),
-        ).resolves.toStrictEqual(E.right(Buffer.from('foo')))
+        ).resolves.toStrictEqual(either.right(Buffer.from('foo')))
       })
     })
     describe('delete', () => {
@@ -119,9 +122,9 @@ describe('Storage', () => {
           pipe(
             Buffer.from('foo'),
             _flydrive.write('foo'),
-            TE.apFirst(_flydrive.delete('foo')),
-            TE.apSecond(_flydrive.read('foo')),
-            T.map(E.isLeft),
+            taskEither.apFirst(_flydrive.delete('foo')),
+            taskEither.apSecond(_flydrive.read('foo')),
+            task.map(either.isLeft),
           )(),
         ).resolves.toBe(true)
       })

@@ -1,6 +1,6 @@
 import { constVoid } from 'fp-ts/function'
-import * as $L from '../Log'
+import { Logger } from '../Log'
 
-const _void: $L.Logger = () => constVoid
+const _void: Logger = () => constVoid
 
 export { _void as void }
