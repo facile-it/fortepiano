@@ -1,19 +1,19 @@
+import { readonlyArray } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as M from 'fp-ts/Magma'
-import * as RA from 'fp-ts/ReadonlyArray'
-import { concatAll } from './Magma'
+import { Magma } from 'fp-ts/Magma'
+import * as $magma from './Magma'
 
 describe('Magma', () => {
   describe('concatAll', () => {
     it('should concatenate values', () => {
-      const M: M.Magma<ReadonlyArray<boolean>> = {
+      const M: Magma<ReadonlyArray<boolean>> = {
         concat: (x, y) =>
           pipe(
             [...x, ...y],
-            RA.reduce([] as ReadonlyArray<boolean>, (b, a) =>
+            readonlyArray.reduce([] as ReadonlyArray<boolean>, (b, a) =>
               pipe(
                 b,
-                RA.matchRight(
+                readonlyArray.matchRight(
                   () => [a],
                   (init, last) =>
                     false === last && false === a
@@ -26,7 +26,7 @@ describe('Magma', () => {
       }
 
       expect(
-        concatAll(M)([false, false, false])([[true, false, true]]),
+        $magma.concatAll(M)([false, false, false])([[true, false, true]]),
       ).toStrictEqual([true, false, true, false, true])
     })
   })

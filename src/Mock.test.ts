@@ -1,146 +1,115 @@
+import { number } from 'fp-ts'
 import { pipe, tupled } from 'fp-ts/function'
-import * as N from 'fp-ts/number'
 import { curry } from './function'
-import {
-  ap,
-  Applicative,
-  Apply,
-  apS,
-  boolean,
-  chain,
-  Chain,
-  Do,
-  float,
-  FromIO,
-  Functor,
-  integer,
-  literal,
-  map,
-  Mock,
-  Monad,
-  null as _null,
-  nullable,
-  number,
-  of,
-  partial,
-  Pointed,
-  readonlyArray,
-  readonlyNonEmptyArray,
-  readonlyRecord,
-  string,
-  struct,
-  tuple,
-  undefined as _undefined,
-  union,
-  unknown,
-} from './Mock'
-import * as $RA from './ReadonlyArray'
-import * as $RR from './ReadonlyRecord'
+import * as $mock from './Mock'
+import { Mock } from './Mock'
+import * as $readonlyArray from './ReadonlyArray'
+import * as $readonlyRecord from './ReadonlyRecord'
 
 describe('Mock', () => {
   describe('undefined', () => {
     it('should return undefined', () => {
-      expect(_undefined()()).toBeUndefined()
+      expect($mock.undefined()()).toBeUndefined()
     })
   })
 
   describe('null', () => {
     it('should return null', () => {
-      expect(_null()()).toBeNull()
+      expect($mock.null()()).toBeNull()
     })
   })
 
   describe('boolean', () => {
     it('should return a random boolean', () => {
-      expect(typeof boolean()()).toBe('boolean')
+      expect(typeof $mock.boolean()()).toBe('boolean')
     })
     it('should allow returning a custom boolean', () => {
       for (let i = 0; i < 10; i++) {
-        expect(boolean(true)()).toBe(true)
+        expect($mock.boolean(true)()).toBe(true)
       }
     })
   })
 
   describe('float', () => {
     it('should return a random float', () => {
-      const x = float()()()
+      const x = $mock.float()()()
 
       expect(Math.floor(x)).not.toBe(x)
     })
     it("shouldn't allow returning an out-of-bounds custom float", () => {
-      expect(float(0, 1)(-42)()).toBeGreaterThanOrEqual(0)
-      expect(float(0, 1)(42)()).toBeLessThan(1)
+      expect($mock.float(0, 1)(-42)()).toBeGreaterThanOrEqual(0)
+      expect($mock.float(0, 1)(42)()).toBeLessThan(1)
     })
   })
 
   describe('integer', () => {
     it('should return a random integer', () => {
-      const x = integer()()()
+      const x = $mock.integer()()()
 
       expect(Math.floor(x)).toBe(x)
     })
     it("shouldn't allow returning a custom float", () => {
-      expect(integer()(3.14)()).toBe(3)
+      expect($mock.integer()(3.14)()).toBe(3)
     })
     it("shouldn't allow returning an out-of-bounds custom integer", () => {
-      expect(integer(0, 1)(-42)()).toBeGreaterThanOrEqual(0)
-      expect(integer(0, 1)(42)()).toBeLessThan(1)
+      expect($mock.integer(0, 1)(-42)()).toBeGreaterThanOrEqual(0)
+      expect($mock.integer(0, 1)(42)()).toBeLessThan(1)
     })
   })
 
   describe('number', () => {
     it('should return a random number', () => {
-      expect(typeof number()()()).toBe('number')
+      expect(typeof $mock.number()()()).toBe('number')
     })
     it('should allow setting bottom boundary', () => {
       for (let i = 0; i < 10; i++) {
-        expect(number(Math.pow(2, 16), -Infinity)()()).toBeGreaterThanOrEqual(
-          Math.pow(2, 16),
-        )
+        expect(
+          $mock.number(Math.pow(2, 16), -Infinity)()(),
+        ).toBeGreaterThanOrEqual(Math.pow(2, 16))
       }
     })
     it('should allow setting top boundary', () => {
       for (let i = 0; i < 10; i++) {
-        expect(number(undefined, -Math.pow(2, 16))()()).toBeLessThan(
+        expect($mock.number(undefined, -Math.pow(2, 16))()()).toBeLessThan(
           -Math.pow(2, 16),
         )
       }
     })
     it('should allow setting bottom and top boundaries', () => {
       for (let i = 0; i < 10; i++) {
-        const x = number(-2, 2)()()
+        const x = $mock.number(-2, 2)()()
 
         expect(x).toBeGreaterThanOrEqual(-2)
         expect(x).toBeLessThan(2)
       }
     })
     it('should allow returning a custom number', () => {
-      expect(number()(1138)()).toBe(1138)
+      expect($mock.number()(1138)()).toBe(1138)
     })
     it('should allow returning one of many custom numbers', () => {
       for (let i = 0; i < 10; i++) {
         expect(
-          [1138, 1337].indexOf(number()(1138, 1337)()),
+          [1138, 1337].indexOf($mock.number()(1138, 1337)()),
         ).toBeGreaterThanOrEqual(0)
       }
     })
     it("shouldn't allow returning an out-of-bounds custom number", () => {
-      expect(number(0, 1)(-42)()).toBeGreaterThanOrEqual(0)
-      expect(number(0, 1)(42)()).toBeLessThan(1)
+      expect($mock.number(0, 1)(-42)()).toBeGreaterThanOrEqual(0)
+      expect($mock.number(0, 1)(42)()).toBeLessThan(1)
     })
   })
 
   describe('string', () => {
     it('should return a random string', () => {
-      expect(typeof string()()).toBe('string')
+      expect(typeof $mock.string()()).toBe('string')
     })
     it('should allow returning a custom string', () => {
-      expect(string('foo')()).toBe('foo')
+      expect($mock.string('foo')()).toBe('foo')
     })
     it('should allow returning one of many custom strings', () => {
       for (let i = 0; i < 10; i++) {
         expect(
-          ['foo', 'bar'].indexOf(string('foo', 'bar')()),
+          ['foo', 'bar'].indexOf($mock.string('foo', 'bar')()),
         ).toBeGreaterThanOrEqual(0)
       }
     })
@@ -148,20 +117,20 @@ describe('Mock', () => {
 
   describe('literal', () => {
     it('should return the provided value', () => {
-      expect(literal(true)()()).toBe(true)
-      expect(literal(1138)()()).toBe(1138)
-      expect(literal('foo')()()).toBe('foo')
+      expect($mock.literal(true)()()).toBe(true)
+      expect($mock.literal(1138)()()).toBe(1138)
+      expect($mock.literal('foo')()()).toBe('foo')
     })
     it('should allow returning a custom value', () => {
-      expect(literal<42 | 1138>(1138)(42)()).toBe(42)
-      expect(literal<'foo' | 'bar'>('foo')('bar')()).toBe('bar')
+      expect($mock.literal<42 | 1138>(1138)(42)()).toBe(42)
+      expect($mock.literal<'foo' | 'bar'>('foo')('bar')()).toBe('bar')
     })
   })
 
   describe('unknown', () => {
     it('should return a random value of any type', () => {
       for (let i = 0; i < 10; i++) {
-        const x = unknown()()()
+        const x = $mock.unknown()()()
 
         expect(
           ['undefined', 'boolean', 'number', 'string', 'object'].indexOf(
@@ -171,11 +140,11 @@ describe('Mock', () => {
       }
     })
     it('should allow returning a custom value', () => {
-      const a = unknown()(true)()
-      const b = unknown()(1138)()
-      const c = unknown()('foo')()
-      const d = unknown()([1138])()
-      const e = unknown()({ foo: 1138 })()
+      const a = $mock.unknown()(true)()
+      const b = $mock.unknown()(1138)()
+      const c = $mock.unknown()('foo')()
+      const d = $mock.unknown()([1138])()
+      const e = $mock.unknown()({ foo: 1138 })()
 
       expect(a).toBe(true)
       expect(b).toBe(1138)
@@ -187,7 +156,7 @@ describe('Mock', () => {
 
   describe('nullable', () => {
     it('should make a mock nullable', () => {
-      const M = nullable(number())
+      const M = $mock.nullable($mock.number())
 
       for (let i = 0; i < 10; i++) {
         expect(
@@ -196,14 +165,14 @@ describe('Mock', () => {
       }
     })
     it('should allow returning undefined', () => {
-      const M = nullable(number())
+      const M = $mock.nullable($mock.number())
 
       expect(M(undefined)()).toBeUndefined()
     })
   })
 
   describe('tuple', () => {
-    const M = tuple(boolean, number(), string)
+    const M = $mock.tuple($mock.boolean, $mock.number(), $mock.string)
 
     it('should return a random tuple with a defined shape', () => {
       const x = M()()
@@ -222,20 +191,20 @@ describe('Mock', () => {
   })
 
   describe('struct', () => {
-    const M = struct({
-      a: boolean,
-      b: number(),
-      c: string,
+    const M = $mock.struct({
+      a: $mock.boolean,
+      b: $mock.number(),
+      c: $mock.string,
     })
-    const deepM = struct({
-      a: boolean,
-      b: struct({
-        c: number(),
-        d: struct({
-          e: string,
-          f: struct({
-            g: readonlyArray(unknown()),
-            h: _undefined,
+    const deepM = $mock.struct({
+      a: $mock.boolean,
+      b: $mock.struct({
+        c: $mock.number(),
+        d: $mock.struct({
+          e: $mock.string,
+          f: $mock.struct({
+            g: $mock.readonlyArray($mock.unknown()),
+            h: $mock.undefined,
           }),
         }),
       }),
@@ -284,10 +253,10 @@ describe('Mock', () => {
 
   describe('partial', () => {
     it('should return a random partial struct with a defined shape', () => {
-      const M = partial({
-        a: boolean,
-        b: number(),
-        c: string,
+      const M = $mock.partial({
+        a: $mock.boolean,
+        b: $mock.number(),
+        c: $mock.string,
       })
 
       for (let i = 0; i < 10; i++) {
@@ -305,10 +274,10 @@ describe('Mock', () => {
       }
     })
     it('should allow overwriting part of the random partial struct', () => {
-      const M = partial({
-        a: boolean,
-        b: number(),
-        c: string,
+      const M = $mock.partial({
+        a: $mock.boolean,
+        b: $mock.number(),
+        c: $mock.string,
       })
 
       for (let i = 0; i < 10; i++) {
@@ -324,10 +293,10 @@ describe('Mock', () => {
       }
     })
     it('should ignore undefined values', () => {
-      const M = partial({
-        a: boolean,
-        b: number(),
-        c: string,
+      const M = $mock.partial({
+        a: $mock.boolean,
+        b: $mock.number(),
+        c: $mock.string,
       })
 
       for (let i = 0; i < 10; i++) {
@@ -345,7 +314,7 @@ describe('Mock', () => {
   })
 
   describe('union', () => {
-    const M = union(boolean, number(), string)
+    const M = $mock.union($mock.boolean, $mock.number(), $mock.string)
 
     it('should return a random value of one of the specified types', () => {
       for (let i = 0; i < 10; i++) {
@@ -366,9 +335,9 @@ describe('Mock', () => {
       expect(c).toBe('foo')
     })
     it('should allow overwriting part of a struct', () => {
-      const x = union(
-        struct({ a: boolean, b: number(), c: string }),
-        struct({ a: boolean, b: number(), c: string }),
+      const x = $mock.union(
+        $mock.struct({ a: $mock.boolean, b: $mock.number(), c: $mock.string }),
+        $mock.struct({ a: $mock.boolean, b: $mock.number(), c: $mock.string }),
       )({ b: 1138 })()
 
       expect(typeof x.a).toBe('boolean')
@@ -379,25 +348,28 @@ describe('Mock', () => {
 
   describe('readonlyArray', () => {
     it('should return a random array', () => {
-      const xs = readonlyArray(number())()()
+      const xs = $mock.readonlyArray($mock.number())()()
 
       expect(xs.reduce((acc, x) => acc && 'number' === typeof x, true)).toBe(
         true,
       )
     })
     it('should return an array with random elements', () => {
-      const xs = readonlyArray(number(), 2)()()
+      const xs = $mock.readonlyArray($mock.number(), 2)()()
 
-      expect($RA.same(N.Eq)(xs)).toBe(false)
+      expect($readonlyArray.same(number.Eq)(xs)).toBe(false)
     })
     it('should allow returning a custom array', () => {
-      const xs = readonlyArray(number())([1138, 1337])()
+      const xs = $mock.readonlyArray($mock.number())([1138, 1337])()
 
       expect(xs).toStrictEqual([1138, 1337])
     })
     it('should allow returning one of many custom arrays', () => {
       for (let i = 0; i < 10; i++) {
-        const xs = readonlyArray(number())([1138, 1337], [138, 337])()
+        const xs = $mock.readonlyArray($mock.number())(
+          [1138, 1337],
+          [138, 337],
+        )()
 
         expect(
           ['1138,1337', '138,337'].indexOf(xs.join(',')),
@@ -405,12 +377,12 @@ describe('Mock', () => {
       }
     })
     it('should allow returning an empty array', () => {
-      const xs = readonlyArray(number(), -Infinity, -Infinity)()()
+      const xs = $mock.readonlyArray($mock.number(), -Infinity, -Infinity)()()
 
       expect(xs).toHaveLength(0)
     })
     it('should allow boundaries on array size', () => {
-      const xs = readonlyArray(number(), 3, 5)()()
+      const xs = $mock.readonlyArray($mock.number(), 3, 5)()()
 
       expect(xs.length).toBeGreaterThanOrEqual(3)
       expect(xs.length).toBeLessThanOrEqual(5)
@@ -419,7 +391,11 @@ describe('Mock', () => {
 
   describe('readonlyNonEmptyArray', () => {
     it("shouldn't allow returning an empty array", () => {
-      const xs = readonlyNonEmptyArray(number(), -Infinity, -Infinity)()()
+      const xs = $mock.readonlyNonEmptyArray(
+        $mock.number(),
+        -Infinity,
+        -Infinity,
+      )()()
 
       expect(xs).toHaveLength(1)
     })
@@ -427,7 +403,7 @@ describe('Mock', () => {
 
   describe('readonlyRecord', () => {
     it('should return a random record', () => {
-      const xs = readonlyRecord(string, number())()()
+      const xs = $mock.readonlyRecord($mock.string, $mock.number())()()
 
       expect(
         Object.values(xs).reduce(
@@ -437,19 +413,22 @@ describe('Mock', () => {
       ).toBe(true)
     })
     it('should return a record with random elements', () => {
-      const xs = readonlyRecord(string, number(), 2)()()
+      const xs = $mock.readonlyRecord($mock.string, $mock.number(), 2)()()
 
-      expect($RR.same(N.Eq)(xs)).toBe(false)
+      expect($readonlyRecord.same(number.Eq)(xs)).toBe(false)
     })
     it('should allow returning a custom record', () => {
-      const xs = readonlyRecord(string, number())({ foo: 1138, bar: 1337 })()
+      const xs = $mock.readonlyRecord(
+        $mock.string,
+        $mock.number(),
+      )({ foo: 1138, bar: 1337 })()
 
       expect(xs.foo).toStrictEqual(1138)
       expect(xs.bar).toStrictEqual(1337)
     })
     it('should allow returning one of many custom records', () => {
       for (let i = 0; i < 10; i++) {
-        const xs = readonlyRecord(string, number())(
+        const xs = $mock.readonlyRecord($mock.string, $mock.number())(
           { foo: 1138, bar: 1337 },
           { mad: 138, max: 337 },
         )()
@@ -461,21 +440,26 @@ describe('Mock', () => {
       }
     })
     it('should ignore undefined values', () => {
-      const xs = readonlyRecord(
-        string,
-        number(),
+      const xs = $mock.readonlyRecord(
+        $mock.string,
+        $mock.number(),
       )({ foo: 1138, bar: undefined })()
 
       expect(xs.foo).toStrictEqual(1138)
       expect('bar' in xs).toBe(false)
     })
     it('should allow returning an empty record', () => {
-      const xs = readonlyRecord(string, number(), -Infinity, -Infinity)()()
+      const xs = $mock.readonlyRecord(
+        $mock.string,
+        $mock.number(),
+        -Infinity,
+        -Infinity,
+      )()()
 
       expect(Object.values(xs)).toHaveLength(0)
     })
     it('should allow boundaries on record size', () => {
-      const xs = readonlyRecord(string, number(), 3, 5)()()
+      const xs = $mock.readonlyRecord($mock.string, $mock.number(), 3, 5)()()
 
       expect(Object.values(xs).length).toBeGreaterThanOrEqual(3)
       expect(Object.values(xs).length).toBeLessThanOrEqual(5)
@@ -483,54 +467,63 @@ describe('Mock', () => {
   })
 
   describe('Functor', () => {
-    const fa = of(42)
+    const fa = $mock.of(42)
     const ab = (a: number) => a + 1
     const bc = (a: number) => a / 2
 
     it('identity', () => {
-      expect(Functor.map(fa, (a) => a)()()).toBe(fa()())
+      expect($mock.Functor.map(fa, (a) => a)()()).toBe(fa()())
     })
     it('composition', () => {
-      expect(Functor.map(fa, (a) => bc(ab(a)))()()).toBe(
-        Functor.map(Functor.map(fa, ab), bc)()(),
+      expect($mock.Functor.map(fa, (a) => bc(ab(a)))()()).toBe(
+        $mock.Functor.map($mock.Functor.map(fa, ab), bc)()(),
       )
     })
 
     describe('map', () => {
-      const firstName = union(of('Mario'), of('Luigi'))
-      const lastName = of('Mario')
+      const firstName = $mock.union($mock.of('Mario'), $mock.of('Luigi'))
+      const lastName = $mock.of('Mario')
       const fullName = <A extends string, B extends string>(
         firstName: A,
         lastName: B,
       ): `${A} ${B}` => `${firstName} ${lastName}` as `${A} ${B}`
 
       it('should transform Mock value using a given function', () => {
-        expect(typeof Functor.map(number(), (a) => a.toString())()()).toBe(
-          'string',
-        )
         expect(
-          Functor.map(readonlyNonEmptyArray(unknown()), (as) => as.length)()(),
+          typeof $mock.Functor.map($mock.number(), (a) => a.toString())()(),
+        ).toBe('string')
+        expect(
+          $mock.Functor.map(
+            $mock.readonlyNonEmptyArray($mock.unknown()),
+            (as) => as.length,
+          )()(),
         ).toBeGreaterThan(0)
         expect(
           ['Mario Mario', 'Luigi Mario'].indexOf(
-            pipe(tuple(firstName, lastName), map(tupled(fullName)))()(),
+            pipe(
+              $mock.tuple(firstName, lastName),
+              $mock.map(tupled(fullName)),
+            )()(),
           ),
         ).toBeGreaterThanOrEqual(0)
       })
       it('should allow returning a custom value', () => {
         expect(
-          Functor.map(
-            readonlyNonEmptyArray(unknown()),
+          $mock.Functor.map(
+            $mock.readonlyNonEmptyArray($mock.unknown()),
             (as) => as.length,
           )(1138)(),
         ).toBe(1138)
         expect(
-          Functor.map(readonlyNonEmptyArray(unknown()), (as) => as.length)()(),
+          $mock.Functor.map(
+            $mock.readonlyNonEmptyArray($mock.unknown()),
+            (as) => as.length,
+          )()(),
         ).toBeGreaterThan(0)
         expect(
           pipe(
-            tuple(firstName, lastName),
-            map(tupled(fullName)),
+            $mock.tuple(firstName, lastName),
+            $mock.map(tupled(fullName)),
           )('Franco Franchi')(),
         ).toBe('Franco Franchi')
       })
@@ -540,36 +533,36 @@ describe('Mock', () => {
   describe('Pointed', () => {
     describe('of', () => {
       it('should return the provided value', () => {
-        expect(Pointed.of(true)()()).toBe(true)
-        expect(Pointed.of(1138)()()).toBe(1138)
-        expect(Pointed.of('foo')()()).toBe('foo')
+        expect($mock.Pointed.of(true)()()).toBe(true)
+        expect($mock.Pointed.of(1138)()()).toBe(1138)
+        expect($mock.Pointed.of('foo')()()).toBe('foo')
       })
       it('should allow returning a custom value', () => {
-        expect(Pointed.of(true)(false)()).toBe(false)
-        expect(Pointed.of(1138)(42)()).toBe(42)
-        expect(Pointed.of('foo')('bar')()).toBe('bar')
+        expect($mock.Pointed.of(true)(false)()).toBe(false)
+        expect($mock.Pointed.of(1138)(42)()).toBe(42)
+        expect($mock.Pointed.of('foo')('bar')()).toBe('bar')
       })
     })
   })
 
   describe('Apply', () => {
-    const fa = of(42)
+    const fa = $mock.of(42)
     const ab = (a: number) => a + 1
     const bc = (a: number) => a / 2
 
     it('associative composition', () => {
       expect(
-        Apply.ap(
-          Apply.ap(
-            Apply.map(
-              of(bc),
+        $mock.Apply.ap(
+          $mock.Apply.ap(
+            $mock.Apply.map(
+              $mock.of(bc),
               (bc) => (ab: (a: number) => number) => (a) => bc(ab(a)),
             ),
-            of(ab),
+            $mock.of(ab),
           ),
           fa,
         )()(),
-      ).toBe(Apply.ap(of(bc), Apply.ap(of(ab), fa))()())
+      ).toBe($mock.Apply.ap($mock.of(bc), $mock.Apply.ap($mock.of(ab), fa))()())
     })
 
     describe('ap', () => {
@@ -578,15 +571,25 @@ describe('Mock', () => {
         `${firstName} ${lastName}`
 
       it('should apply a mocked function to Mock value', () => {
-        expect(typeof Apply.ap(M, number())()()).toBe('string')
+        expect(typeof $mock.Apply.ap(M, $mock.number())()()).toBe('string')
         expect(
-          /^\w+ \w+$/.test(pipe(string, map(curry(fullName)), ap(string))()()),
+          /^\w+ \w+$/.test(
+            pipe(
+              $mock.string,
+              $mock.map(curry(fullName)),
+              $mock.ap($mock.string),
+            )()(),
+          ),
         ).toBe(true)
       })
       it('should allow returning a custom value', () => {
-        expect(Apply.ap(M, number())('foo')()).toBe('foo')
+        expect($mock.Apply.ap(M, $mock.number())('foo')()).toBe('foo')
         expect(
-          pipe(string, map(curry(fullName)), ap(string))('Jonathan')(),
+          pipe(
+            $mock.string,
+            $mock.map(curry(fullName)),
+            $mock.ap($mock.string),
+          )('Jonathan')(),
         ).toBe('Jonathan')
       })
     })
@@ -594,54 +597,76 @@ describe('Mock', () => {
 
   describe('Applicative', () => {
     const a = 42
-    const fa = of(a)
+    const fa = $mock.of(a)
     const ab = (a: number) => a + 1
 
     it('identity', () => {
       expect(
-        Applicative.ap(
-          Applicative.of((a) => a),
+        $mock.Applicative.ap(
+          $mock.Applicative.of((a) => a),
           fa,
         )()(),
       ).toBe(fa()())
     })
     it('homomorphism', () => {
-      expect(Applicative.ap(Applicative.of(ab), Applicative.of(a))()()).toBe(
-        Applicative.of(ab(a))()(),
-      )
+      expect(
+        $mock.Applicative.ap(
+          $mock.Applicative.of(ab),
+          $mock.Applicative.of(a),
+        )()(),
+      ).toBe($mock.Applicative.of(ab(a))()())
     })
     it('interchange', () => {
-      expect(Applicative.ap(Applicative.of(ab), Applicative.of(a))()()).toBe(
-        Applicative.ap(
-          Applicative.of((ab: (a: number) => number) => ab(a)),
-          Applicative.of(ab),
+      expect(
+        $mock.Applicative.ap(
+          $mock.Applicative.of(ab),
+          $mock.Applicative.of(a),
+        )()(),
+      ).toBe(
+        $mock.Applicative.ap(
+          $mock.Applicative.of((ab: (a: number) => number) => ab(a)),
+          $mock.Applicative.of(ab),
         )()(),
       )
     })
   })
 
   describe('Chain', () => {
-    const fa = of(42)
-    const afb = (a: number) => of(a + 1)
-    const bfc = (a: number) => of(a / 2)
+    const fa = $mock.of(42)
+    const afb = (a: number) => $mock.of(a + 1)
+    const bfc = (a: number) => $mock.of(a / 2)
 
     it('associativity', () => {
-      expect(Chain.chain(Chain.chain(fa, afb), bfc)()()).toBe(
-        Chain.chain(fa, (a) => Chain.chain(afb(a), bfc))()(),
+      expect($mock.Chain.chain($mock.Chain.chain(fa, afb), bfc)()()).toBe(
+        $mock.Chain.chain(fa, (a) => $mock.Chain.chain(afb(a), bfc))()(),
       )
     })
 
     describe('chain', () => {
       const M = pipe(
-        Do,
-        apS('first', union(of('Vincent'), of('Esmeralda'), of('Marcellus'))),
-        apS('last', union(of('Vega'), of('Villalobos'), of('Wallace'))),
-        chain(({ first, last }) =>
-          struct({
-            id: string,
-            firstName: of(first),
-            lastName: of(last),
-            email: of(`${first}.${last}@pulp.com`.toLowerCase()),
+        $mock.Do,
+        $mock.apS(
+          'first',
+          $mock.union(
+            $mock.of('Vincent'),
+            $mock.of('Esmeralda'),
+            $mock.of('Marcellus'),
+          ),
+        ),
+        $mock.apS(
+          'last',
+          $mock.union(
+            $mock.of('Vega'),
+            $mock.of('Villalobos'),
+            $mock.of('Wallace'),
+          ),
+        ),
+        $mock.chain(({ first, last }) =>
+          $mock.struct({
+            id: $mock.string,
+            firstName: $mock.of(first),
+            lastName: $mock.of(last),
+            email: $mock.of(`${first}.${last}@pulp.com`.toLowerCase()),
           }),
         ),
       )
@@ -666,24 +691,26 @@ describe('Mock', () => {
 
   describe('Monad', () => {
     const a = 42
-    const fa = of(a)
-    const f = (a: number) => of(a + 1)
+    const fa = $mock.of(a)
+    const f = (a: number) => $mock.of(a + 1)
 
     it('left identity', () => {
-      expect(Monad.chain(of(a), f)()()).toBe(f(a)()())
+      expect($mock.Monad.chain($mock.of(a), f)()()).toBe(f(a)()())
     })
     it('right identity', () => {
-      expect(Monad.chain(fa, of)()()).toBe(fa()())
+      expect($mock.Monad.chain(fa, $mock.of)()()).toBe(fa()())
     })
   })
 
   describe('FromIO', () => {
     describe('fromIO', () => {
       it('should wrap an IO into a Mock', () => {
-        expect(typeof FromIO.fromIO(() => Math.random())()()).toBe('number')
+        expect(typeof $mock.FromIO.fromIO(() => Math.random())()()).toBe(
+          'number',
+        )
       })
       it('should allow returning a custom value', () => {
-        expect(FromIO.fromIO(() => Math.random())(1138)()).toBe(1138)
+        expect($mock.FromIO.fromIO(() => Math.random())(1138)()).toBe(1138)
       })
     })
   })
