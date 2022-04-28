@@ -1,7 +1,7 @@
 {
   "name": "fortepiano",
   "version": "0.1.1",
-  "description": "",
+  "description": "Playing actual music over fp-ts notes",
   "main": "./lib/index.js",
   "module": "./esm/index.js",
   "types": "./index.d.ts",
@@ -31,6 +31,12 @@
     "url": "https://github.com/facile-it/fortepiano/issues"
   },
   "homepage": "https://github.com/facile-it/fortepiano#readme",
+  "keywords": [
+    "typescript",
+    "functional-programming",
+    "fp-ts",
+    "io-ts"
+  ],
   "devDependencies": {
     "@slynova/flydrive": "^1.0.0",
     "@types/jest": "^26.0.24",
