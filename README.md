@@ -1,6 +1,6 @@
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/facile-it/fortepiano/main)](https://github.com/facile-it/fortepiano/actions)
 [![Codecov](https://img.shields.io/codecov/c/gh/facile-it/fortepiano)](https://app.codecov.io/gh/facile-it/fortepiano)
-[![GitHub](https://img.shields.io/github/license/facile-it/fortepiano)](https://github.com/facile-it/fortepiano/blob/master/LICENSE.md)
+[![GitHub](https://img.shields.io/github/license/facile-it/fortepiano)](LICENSE.md)
 [![npm](https://img.shields.io/npm/v/fortepiano)](https://www.npmjs.com/package/fortepiano)
 
 # fortepiano
@@ -42,7 +42,7 @@ import { $axios } from 'fortepiano/http/Axios'
 
 ## Contributing
 
-See the [CONTRIBUTING.md](./CONTRIBUTING.md) file for details.
+See the [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
 
 ## Authors
 
@@ -53,4 +53,4 @@ See the [CONTRIBUTING.md](./CONTRIBUTING.md) file for details.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE.md](./LICENSE.md) file for details.
+This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.
