@@ -26,7 +26,7 @@
     "url": "git+https://github.com/facile-it/fortepiano.git"
   },
   "author": "Alberto Villa <villa.alberto@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/facile-it/fortepiano/issues"
   },
