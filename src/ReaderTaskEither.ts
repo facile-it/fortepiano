@@ -7,7 +7,7 @@ import { Option } from 'fp-ts/Option'
 import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
 import { Task } from 'fp-ts/Task'
 import { TaskEither } from 'fp-ts/TaskEither'
-import { Struct } from './Struct'
+import { Struct } from './struct'
 
 export const pick =
   <R extends Struct>() =>

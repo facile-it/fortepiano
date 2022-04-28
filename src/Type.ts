@@ -3,7 +3,7 @@ import { flow, identity, pipe } from 'fp-ts/function'
 import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
 import * as t from 'io-ts'
 import * as tt from 'io-ts-types'
-import { Struct } from './Struct'
+import { Struct } from './struct'
 
 export const numeric = new t.Type(
   'Numeric',
