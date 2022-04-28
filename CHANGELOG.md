@@ -26,7 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Support [tree shaking](https://webpack.js.org/guides/tree-shaking/) via top-level imports:
-  ```
+  ```typescript
   import { curry } from 'fortepiano/function'
   // ...instead of `import { curry } from 'fortepiano/lib/function'`
   ```
