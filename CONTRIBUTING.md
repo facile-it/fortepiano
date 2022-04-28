@@ -2,7 +2,7 @@
 
 Any relevant modification to this project should be duly noted in `CHANGELOG.md`. Changelog entries should come along code patches via pull requests.
 
-## Style guide
+## Style Guide
 
 `fortepiano` modules should mymic `fp-ts` as best as they can regarding scope, naming and structure (see [`fp-ts` code conventions](https://gcanti.github.io/fp-ts/guides/code-conventions.html)). A custom convention should be used instead for imports and exports.
 
@@ -26,7 +26,7 @@ import * as $type from './Type'
 // ...instead of `import { $type } from '.'`
 
 /**
- * Use namespace imports for io-ts and friends, to avoid collisions
+ * Use namespace imports for `io-ts` and friends, to avoid collisions
  * and enforce consistency.
  */
 import * as t from 'io-ts'
