@@ -1,11 +1,11 @@
-# $fortepiano$ [ˌfɔrteˈpjaːno]
+# fortepiano [ˌfɔrteˈpjaːno]
+
+_Playing actual music over `fp-ts` notes_
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/facile-it/fortepiano/main)](https://github.com/facile-it/fortepiano/actions)
 [![Codecov](https://img.shields.io/codecov/c/gh/facile-it/fortepiano)](https://app.codecov.io/gh/facile-it/fortepiano)
 [![GitHub](https://img.shields.io/github/license/facile-it/fortepiano)](LICENSE.md)
 [![npm](https://img.shields.io/npm/v/fortepiano)](https://www.npmjs.com/package/fortepiano)
-
-Playing actual music over `fp-ts` notes
 
 ## Description
 
@@ -23,7 +23,7 @@ The package is available via [npm](https://www.npmjs.com/package/fortepiano), an
 npm install fortepiano fp-ts io-ts io-ts-types
 ```
 
-Additional packages are required shall you want to use specific abstractions:
+Additional packages are required, shall you want to use specific abstractions:
 
 - [`memcached`](https://www.npmjs.com/package/memcached) and [`@types/memcached`](https://www.npmjs.com/package/@types/memcached) (`cache/Memcached`)
 - [`redis`](https://www.npmjs.com/package/redis) and [`@types/redis`](https://www.npmjs.com/package/@types/redis) (`cache/Redis`)
