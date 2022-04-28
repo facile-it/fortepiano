@@ -12,7 +12,7 @@ import { mock } from './http/Mock'
 import * as $log from './Log'
 import * as $random from './Random'
 import * as $string from './string'
-import { Struct } from './Struct'
+import { Struct } from './struct'
 import * as $type from './Type'
 
 const ERRORS = {

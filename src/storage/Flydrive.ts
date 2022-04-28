@@ -4,7 +4,7 @@ import { constVoid, Lazy, pipe } from 'fp-ts/function'
 import * as $error from '../Error'
 import { memoize } from '../function'
 import { Storage } from '../Storage'
-import * as $struct from '../Struct'
+import * as $struct from '../struct'
 import * as $taskEither from '../TaskEither'
 
 export const $flydrive = (flydrive: Lazy<StorageManager>): Storage => {

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { IO } from 'fp-ts/IO'
 import { ReadonlyRecord } from 'fp-ts/ReadonlyRecord'
-import { Struct } from './Struct'
+import { Struct } from './struct'
 
 const _noArgs =
   (method: 'groupEnd'): IO<void> =>

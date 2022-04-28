@@ -2,7 +2,7 @@ import { option } from 'fp-ts'
 import { flow, pipe } from 'fp-ts/function'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/PathReporter'
-import * as $struct from './Struct'
+import * as $struct from './struct'
 
 const is = (u: unknown): u is Error =>
   t
