@@ -48,7 +48,6 @@
     "eslint": "^7.31.0",
     "eslint-config-facile": "^0.4.1",
     "fp-ts": "^2.0.0",
-    "got": "^11.0.0",
     "io-ts": "^2.0.0",
     "io-ts-types": "^0.5.0",
     "jest": "^26.6.3",
@@ -70,7 +69,6 @@
     "@types/redis": "^2.0.0",
     "axios": "^0.21.2",
     "fp-ts": "^2.0.0",
-    "got": "^11.0.0",
     "io-ts": "^2.0.0",
     "io-ts-types": "^0.5.0",
     "memcached": "^2.0.0",
@@ -87,9 +85,6 @@
       "optional": true
     },
     "axios": {
-      "optional": true
-    },
-    "got": {
       "optional": true
     },
     "memcached": {

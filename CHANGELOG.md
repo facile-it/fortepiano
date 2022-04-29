@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Removed
 
 - Disable imports from `fortepiano/lib/*`.
+- Remove Got HTTP client.
 
 ## [0.1.2](https://github.com/facile-it/fortepiano/compare/v0.1.1...v0.1.2) - 2022-04-29
 
