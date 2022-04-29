@@ -1,7 +1,8 @@
-import * as E from 'fp-ts/Either'
+import { either } from 'fp-ts'
 import { constNull, pipe } from 'fp-ts/function'
 import * as t from 'io-ts'
-import { MatrixC, transpose } from './Matrix'
+import * as $matrix from './Matrix'
+import { MatrixC } from './Matrix'
 
 const arrays = [
   [[], true],
@@ -61,14 +62,22 @@ describe('Matrix', () => {
     it('should return the transposition of a matrix', () => {
       matrices.forEach(([a, b]) =>
         expect(
-          pipe(a, MatrixC(t.number).decode, E.matchW(constNull, transpose)),
+          pipe(
+            a,
+            MatrixC(t.number).decode,
+            either.matchW(constNull, $matrix.transpose),
+          ),
         ).toStrictEqual(b),
       )
     })
     it('should invert the transposition of a matrix', () => {
       matrices.forEach(([a, b]) =>
         expect(
-          pipe(b, MatrixC(t.number).decode, E.matchW(constNull, transpose)),
+          pipe(
+            b,
+            MatrixC(t.number).decode,
+            either.matchW(constNull, $matrix.transpose),
+          ),
         ).toStrictEqual(a),
       )
     })

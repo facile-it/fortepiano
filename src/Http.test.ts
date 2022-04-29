@@ -1,22 +1,22 @@
 import { either } from 'fp-ts'
-import * as E from 'fp-ts/Either'
-import { identity } from 'io-ts'
-import * as $C from './Cache'
-import { cache, HttpError, HttpErrorC, HttpResponse, mock } from './Http'
+import { identity } from 'fp-ts/function'
+import * as $cache from './Cache'
+import * as $http from './Http'
+import { HttpError, HttpErrorC, HttpResponse } from './Http'
 
 jest.useFakeTimers()
 
 describe('Http', () => {
   describe('cache', () => {
-    const _cache = $C.memory()
-    const http = cache(_cache)(mock)
+    const cache = $cache.memory()
+    const http = $http.cache(cache)($http.mock)
 
     describe('get', () => {
       it('should return the same successful result', async () => {
         const h = await http.get('foo')()
         const c = await http.get('foo')()
 
-        if (E.isRight(h)) {
+        if (either.isRight(h)) {
           expect(c).toStrictEqual(h)
         } else {
           expect(h).not.toStrictEqual(c)
@@ -24,7 +24,7 @@ describe('Http', () => {
       })
       it('should return different results when the cache is cleared', async () => {
         const h = await http.get('foo')()
-        await _cache.clear()
+        await cache.clear()
         const c = await http.get('foo')()
 
         expect(c).not.toStrictEqual(h)

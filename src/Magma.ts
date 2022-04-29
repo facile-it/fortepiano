@@ -1,9 +1,9 @@
+import { readonlyArray } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as M from 'fp-ts/Magma'
-import * as RA from 'fp-ts/ReadonlyArray'
+import { Magma } from 'fp-ts/Magma'
 
 export const concatAll =
-  <A>(M: M.Magma<A>) =>
+  <A>(M: Magma<A>) =>
   (startWith: A) =>
   (as: ReadonlyArray<A>): A =>
-    pipe(as, RA.reduce(startWith, M.concat))
+    pipe(as, readonlyArray.reduce(startWith, M.concat))

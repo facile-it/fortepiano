@@ -1,7 +1,5 @@
-import * as E from 'fp-ts/Either'
+import { either, task, taskEither } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as T from 'fp-ts/Task'
-import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { storage } from './Storage'
 
@@ -40,7 +38,7 @@ describe('Cache', () => {
         const _storage = storage(() => new MemoryStorage())
 
         await expect(
-          pipe(_storage.get('foo', t.unknown), T.map(E.isLeft))(),
+          pipe(_storage.get('foo', t.unknown), task.map(either.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should fail with wrong item encoding', async () => {
@@ -50,8 +48,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _storage.set('foo', t.string),
-            TE.apSecond(_storage.get('foo', t.number)),
-            T.map(E.isLeft),
+            taskEither.apSecond(_storage.get('foo', t.number)),
+            task.map(either.isLeft),
           )(),
         ).resolves.toBe(true)
       })
@@ -62,8 +60,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _storage.set('foo', t.string),
-            TE.apSecond(_storage.get('foo', t.string)),
-            T.map(E.isRight),
+            taskEither.apSecond(_storage.get('foo', t.string)),
+            task.map(either.isRight),
           )(),
         ).resolves.toBe(true)
       })
@@ -77,9 +75,9 @@ describe('Cache', () => {
           pipe(
             'foo',
             _storage.set('foo', t.string),
-            TE.apFirst(_storage.delete('foo')),
-            TE.apSecond(_storage.get('foo', t.string)),
-            T.map(E.isLeft),
+            taskEither.apFirst(_storage.delete('foo')),
+            taskEither.apSecond(_storage.get('foo', t.string)),
+            task.map(either.isLeft),
           )(),
         ).resolves.toBe(true)
       })
@@ -93,9 +91,9 @@ describe('Cache', () => {
           pipe(
             'foo',
             _storage.set('foo', t.string),
-            TE.apFirst(_storage.clear),
-            TE.apSecond(_storage.get('foo', t.string)),
-            T.map(E.isLeft),
+            taskEither.apFirst(_storage.clear),
+            taskEither.apSecond(_storage.get('foo', t.string)),
+            task.map(either.isLeft),
           )(),
         ).resolves.toBe(true)
       })

@@ -1,38 +1,38 @@
-import * as TE from 'fp-ts/TaskEither'
+import { taskEither } from 'fp-ts'
 import _fs from 'fs'
 import _path from 'path'
-import * as $E from '../Error'
-import * as $Sto from '../Storage'
-import * as $Str from '../Stream'
-import * as $TE from '../TaskEither'
+import * as $error from '../Error'
+import { Storage } from '../Storage'
+import * as $stream from '../Stream'
+import * as $taskEither from '../TaskEither'
 
-export const $fs = (fs: typeof _fs, root: string): $Sto.Storage => ({
+export const $fs = (fs: typeof _fs, root: string): Storage => ({
   getStream: (path) =>
-    $TE.tryCatch(
+    $taskEither.tryCatch(
       async () => fs.createReadStream(_path.join(root, path)),
-      $E.fromUnknown(Error(`Cannot get stream for file "${path}"`)),
+      $error.fromUnknown(Error(`Cannot get stream for file "${path}"`)),
     ),
-  getUrl: (path) => TE.left(Error(`Cannot get URL for file "${path}"`)),
+  getUrl: (path) => taskEither.left(Error(`Cannot get URL for file "${path}"`)),
   read: (path) =>
-    $TE.tryCatch(
+    $taskEither.tryCatch(
       () => fs.promises.readFile(_path.join(root, path)),
-      $E.fromUnknown(Error(`Cannot read file "${path}"`)),
+      $error.fromUnknown(Error(`Cannot read file "${path}"`)),
     ),
   write: (path) => (data) =>
-    $TE.tryCatch(
+    $taskEither.tryCatch(
       () =>
-        $Str.ReadableStreamC.is(data)
+        $stream.ReadableStreamC.is(data)
           ? new Promise((resolve, reject) => {
               data
                 .pipe(fs.createWriteStream(path).on('error', reject))
                 .on('end', resolve)
             })
           : fs.promises.writeFile(_path.join(root, path), data),
-      $E.fromUnknown(Error(`Cannot write file "${path}"`)),
+      $error.fromUnknown(Error(`Cannot write file "${path}"`)),
     ),
   delete: (path) =>
-    $TE.tryCatch(
+    $taskEither.tryCatch(
       () => fs.promises.rm(_path.join(root, path)),
-      $E.fromUnknown(Error(`Cannot delete file "${path}"`)),
+      $error.fromUnknown(Error(`Cannot delete file "${path}"`)),
     ),
 })

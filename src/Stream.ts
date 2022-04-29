@@ -1,9 +1,9 @@
 import { identity } from 'fp-ts/function'
 import * as t from 'io-ts'
-import { Duplex, Readable, Writable } from 'stream'
+import stream from 'stream'
 
 const isReadable = (u: unknown): u is NodeJS.ReadableStream =>
-  u instanceof Readable
+  u instanceof stream.Readable
 
 export const ReadableStreamC = new t.Type(
   'ReadableStream',
@@ -13,7 +13,7 @@ export const ReadableStreamC = new t.Type(
 )
 
 const isWritable = (u: unknown): u is NodeJS.WritableStream =>
-  u instanceof Writable
+  u instanceof stream.Writable
 
 export const WritableStreamC = new t.Type(
   'WritableStream',
@@ -23,7 +23,7 @@ export const WritableStreamC = new t.Type(
 )
 
 const isReadWrite = (u: unknown): u is NodeJS.ReadWriteStream =>
-  u instanceof Duplex
+  u instanceof stream.Duplex
 
 export const ReadWriteStreamC = new t.Type(
   'ReadWriteStream',

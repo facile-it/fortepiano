@@ -1,7 +1,7 @@
-import * as TE from 'fp-ts/TaskEither'
+import { taskEither } from 'fp-ts'
 
-export const tryCatch: typeof TE.tryCatch = (f, onRejected) =>
-  TE.tryCatch(() => {
+export const tryCatch: typeof taskEither.tryCatch = (f, onRejected) =>
+  taskEither.tryCatch(() => {
     try {
       return f()
     } catch (error) {

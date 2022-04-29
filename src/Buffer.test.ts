@@ -1,4 +1,4 @@
-import * as E from 'fp-ts/Either'
+import { either } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
 import { BufferFromStringC } from './Buffer'
 
@@ -9,7 +9,7 @@ describe('Buffer', () => {
 
       expect(
         pipe(buffer, BufferFromStringC.encode, BufferFromStringC.decode),
-      ).toStrictEqual(E.right(buffer))
+      ).toStrictEqual(either.right(buffer))
     })
   })
 })

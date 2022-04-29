@@ -1,6 +1,5 @@
-import * as E from 'fp-ts/Either'
+import { either, taskEither } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as TE from 'fp-ts/TaskEither'
 import fetch from 'node-fetch'
 import { mocked } from 'ts-jest/utils'
 import { $fetch } from './Fetch'
@@ -27,7 +26,7 @@ describe('Http', () => {
         await expect(
           $fetch(mocked(fetch, true) as any).get('foo')(),
         ).resolves.toStrictEqual(
-          E.right({
+          either.right({
             url: 'bar',
             status: 200,
             headers: {
@@ -44,7 +43,7 @@ describe('Http', () => {
 
         await expect(
           $fetch(mocked(fetch, true) as any).get('foo')(),
-        ).resolves.toStrictEqual(E.left(error))
+        ).resolves.toStrictEqual(either.left(error))
       })
       it('should wrap an HTTP error', async () => {
         mocked(fetch, true).mockResolvedValue({
@@ -64,10 +63,10 @@ describe('Http', () => {
         await expect(
           pipe(
             $fetch(mocked(fetch, true) as any).get('foo'),
-            TE.mapLeft((error: any) => error.response),
+            taskEither.mapLeft((error: any) => error.response),
           )(),
         ).resolves.toStrictEqual(
-          E.left({
+          either.left({
             url: 'bar',
             status: 500,
             headers: {

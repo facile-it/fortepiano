@@ -9,28 +9,28 @@ import {
   URIS3,
   URIS4,
 } from 'fp-ts/HKT'
-import * as IO from 'fp-ts/IO'
-import * as MIO from 'fp-ts/MonadIO'
+import { IO } from 'fp-ts/IO'
+import { MonadIO, MonadIO1, MonadIO2, MonadIO3, MonadIO4 } from 'fp-ts/MonadIO'
 
 export function salt<M extends URIS4>(
-  M: MIO.MonadIO4<M>,
+  M: MonadIO4<M>,
 ): <S, R, E, A, B>(
-  seed: IO.IO<A>,
+  seed: IO<A>,
   f: (salt: A) => Kind4<M, S, R, E, B>,
 ) => Kind4<M, S, R, E, B>
 export function salt<M extends URIS3>(
-  M: MIO.MonadIO3<M>,
+  M: MonadIO3<M>,
 ): <R, E, A, B>(
-  seed: IO.IO<A>,
+  seed: IO<A>,
   f: (salt: A) => Kind3<M, R, E, B>,
 ) => Kind3<M, R, E, B>
 export function salt<M extends URIS2>(
-  M: MIO.MonadIO2<M>,
-): <E, A, B>(seed: IO.IO<A>, f: (salt: A) => Kind2<M, E, B>) => Kind2<M, E, B>
+  M: MonadIO2<M>,
+): <E, A, B>(seed: IO<A>, f: (salt: A) => Kind2<M, E, B>) => Kind2<M, E, B>
 export function salt<M extends URIS>(
-  M: MIO.MonadIO1<M>,
-): <A, B>(seed: IO.IO<A>, f: (salt: A) => Kind<M, B>) => Kind<M, B>
-export function salt<M>(M: MIO.MonadIO<M>) {
-  return <A, B>(seed: IO.IO<A>, f: (salt: A) => HKT<M, B>) =>
+  M: MonadIO1<M>,
+): <A, B>(seed: IO<A>, f: (salt: A) => Kind<M, B>) => Kind<M, B>
+export function salt<M>(M: MonadIO<M>) {
+  return <A, B>(seed: IO<A>, f: (salt: A) => HKT<M, B>) =>
     M.chain(M.fromIO(seed), f)
 }

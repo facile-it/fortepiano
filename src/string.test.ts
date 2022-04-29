@@ -1,39 +1,39 @@
-import { capitalize, lowercase, uncapitalize, uppercase } from './string'
+import * as $string from './string'
 
 describe('string', () => {
   describe('uppercase', () => {
     it('should convert given string to uppercase', () => {
-      expect(uppercase('foo bar')).toBe('FOO BAR')
+      expect($string.uppercase('foo bar')).toBe('FOO BAR')
     })
     it('should support empty strings', () => {
-      expect(uppercase('')).toBe('')
+      expect($string.uppercase('')).toBe('')
     })
   })
 
   describe('lowercase', () => {
     it('should convert given string to lowercase', () => {
-      expect(lowercase('FOo BAr')).toBe('foo bar')
+      expect($string.lowercase('FOo BAr')).toBe('foo bar')
     })
     it('should support empty strings', () => {
-      expect(lowercase('')).toBe('')
+      expect($string.lowercase('')).toBe('')
     })
   })
 
   describe('capitalize', () => {
     it('should capitalize given string', () => {
-      expect(capitalize('foo bar')).toBe('Foo bar')
+      expect($string.capitalize('foo bar')).toBe('Foo bar')
     })
     it('should support empty strings', () => {
-      expect(capitalize('')).toBe('')
+      expect($string.capitalize('')).toBe('')
     })
   })
 
   describe('uncapitalize', () => {
     it('should uncapitalize given string', () => {
-      expect(uncapitalize('FOo BAr')).toBe('fOo BAr')
+      expect($string.uncapitalize('FOo BAr')).toBe('fOo BAr')
     })
     it('should support empty strings', () => {
-      expect(uncapitalize('')).toBe('')
+      expect($string.uncapitalize('')).toBe('')
     })
   })
 })

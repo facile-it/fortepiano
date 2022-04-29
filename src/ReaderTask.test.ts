@@ -1,7 +1,7 @@
-import * as IO from 'fp-ts/IO'
-import * as RT from 'fp-ts/ReaderTask'
-import * as T from 'fp-ts/Task'
-import { pick, picksIOK, picksTaskK, picksW } from './ReaderTask'
+import { IO } from 'fp-ts/IO'
+import { ReaderTask } from 'fp-ts/ReaderTask'
+import { Task } from 'fp-ts/Task'
+import * as $readerTask from './ReaderTask'
 
 describe('ReaderTask', () => {
   describe('pick', () => {
@@ -11,8 +11,12 @@ describe('ReaderTask', () => {
         bar: number
       }
 
-      await expect(pick<R>()('foo')({ foo: 42 })()).resolves.toBe(42)
-      await expect(pick<R>()('bar')({ bar: 1138 })()).resolves.toBe(1138)
+      await expect($readerTask.pick<R>()('foo')({ foo: 42 })()).resolves.toBe(
+        42,
+      )
+      await expect($readerTask.pick<R>()('bar')({ bar: 1138 })()).resolves.toBe(
+        1138,
+      )
     })
   })
 
@@ -22,7 +26,7 @@ describe('ReaderTask', () => {
         foo: number
         bar: number
         host: string
-        fetch: (id: number) => RT.ReaderTask<Pick<R, 'host'>, string>
+        fetch: (id: number) => ReaderTask<Pick<R, 'host'>, string>
       }
 
       const fetch: R['fetch'] =
@@ -32,7 +36,10 @@ describe('ReaderTask', () => {
           `${host}/${id}`
 
       await expect(
-        picksW<R>()('fetch', (fetch) => fetch(42))({ host: 'foobar', fetch })(),
+        $readerTask.picksW<R>()('fetch', (fetch) => fetch(42))({
+          host: 'foobar',
+          fetch,
+        })(),
       ).resolves.toBe('foobar/42')
     })
   })
@@ -42,13 +49,13 @@ describe('ReaderTask', () => {
       interface R {
         foo: number
         bar: number
-        read: (fd: number) => IO.IO<string>
+        read: (fd: number) => IO<string>
       }
 
       const read: R['read'] = (fd) => () => String(fd)
 
       await expect(
-        picksIOK<R>()('read', (read) => read(42))({ read })(),
+        $readerTask.picksIOK<R>()('read', (read) => read(42))({ read })(),
       ).resolves.toBe('42')
     })
   })
@@ -58,13 +65,13 @@ describe('ReaderTask', () => {
       interface R {
         foo: number
         bar: number
-        fetch: (id: number) => T.Task<string>
+        fetch: (id: number) => Task<string>
       }
 
       const fetch: R['fetch'] = (id) => async () => String(id)
 
       await expect(
-        picksTaskK<R>()('fetch', (fetch) => fetch(42))({ fetch })(),
+        $readerTask.picksTaskK<R>()('fetch', (fetch) => fetch(42))({ fetch })(),
       ).resolves.toBe('42')
     })
   })

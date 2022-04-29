@@ -1,20 +1,20 @@
 import { StorageManager } from '@slynova/flydrive'
+import { taskEither } from 'fp-ts'
 import { constVoid, Lazy, pipe } from 'fp-ts/function'
-import * as TE from 'fp-ts/TaskEither'
-import * as $E from '../Error'
+import * as $error from '../Error'
 import { memoize } from '../function'
-import * as $Sto from '../Storage'
-import * as $Str from '../struct'
-import * as $TE from '../TaskEither'
+import { Storage } from '../Storage'
+import * as $struct from '../struct'
+import * as $taskEither from '../TaskEither'
 
-export const $flydrive = (flydrive: Lazy<StorageManager>): $Sto.Storage => {
+export const $flydrive = (flydrive: Lazy<StorageManager>): Storage => {
   const _flydrive = memoize(flydrive)
 
   return {
     getStream: (path, { fileSystem } = {}) =>
-      $TE.tryCatch(
+      $taskEither.tryCatch(
         async () => _flydrive().disk(fileSystem).getStream(path),
-        $E.fromUnknown(
+        $error.fromUnknown(
           Error(
             `Cannot get stream for file "${path}"${
               undefined !== fileSystem ? ` on file system "${fileSystem}"` : ''
@@ -24,7 +24,7 @@ export const $flydrive = (flydrive: Lazy<StorageManager>): $Sto.Storage => {
       ),
     getUrl: (path, { fileSystem } = {}) =>
       pipe(
-        $TE.tryCatch(
+        $taskEither.tryCatch(
           () =>
             _flydrive()
               .disk(fileSystem)
@@ -32,7 +32,7 @@ export const $flydrive = (flydrive: Lazy<StorageManager>): $Sto.Storage => {
               .then(({ exists }) =>
                 exists ? Promise.resolve() : Promise.reject(),
               ),
-          $E.fromUnknown(
+          $error.fromUnknown(
             Error(
               `Cannot find file "${path}"${
                 undefined !== fileSystem
@@ -42,10 +42,10 @@ export const $flydrive = (flydrive: Lazy<StorageManager>): $Sto.Storage => {
             ),
           ),
         ),
-        TE.apSecond(
-          $TE.tryCatch(
+        taskEither.apSecond(
+          $taskEither.tryCatch(
             () => Promise.resolve(_flydrive().disk(fileSystem).getUrl(path)),
-            $E.fromUnknown(
+            $error.fromUnknown(
               Error(
                 `Cannot get URL for file "${path}"${
                   undefined !== fileSystem
@@ -58,13 +58,13 @@ export const $flydrive = (flydrive: Lazy<StorageManager>): $Sto.Storage => {
         ),
       ),
     read: (path, { fileSystem } = {}) =>
-      $TE.tryCatch(
+      $taskEither.tryCatch(
         () =>
           _flydrive()
             .disk(fileSystem)
             .getBuffer(path)
-            .then($Str.lookup('content')),
-        $E.fromUnknown(
+            .then($struct.lookup('content')),
+        $error.fromUnknown(
           Error(
             `Cannot read file "${path}"${
               undefined !== fileSystem
@@ -77,9 +77,9 @@ export const $flydrive = (flydrive: Lazy<StorageManager>): $Sto.Storage => {
     write:
       (path, { fileSystem } = {}) =>
       (data) =>
-        $TE.tryCatch(
+        $taskEither.tryCatch(
           () => _flydrive().disk(fileSystem).put(path, data).then(constVoid),
-          $E.fromUnknown(
+          $error.fromUnknown(
             Error(
               `Cannot write file "${path}"${
                 undefined !== fileSystem
@@ -90,7 +90,7 @@ export const $flydrive = (flydrive: Lazy<StorageManager>): $Sto.Storage => {
           ),
         ),
     delete: (path, { fileSystem } = {}) =>
-      $TE.tryCatch(
+      $taskEither.tryCatch(
         () =>
           _flydrive()
             .disk(fileSystem)
@@ -98,7 +98,7 @@ export const $flydrive = (flydrive: Lazy<StorageManager>): $Sto.Storage => {
             .then(({ wasDeleted }) =>
               false === wasDeleted ? Promise.reject() : Promise.resolve(),
             ),
-        $E.fromUnknown(
+        $error.fromUnknown(
           Error(
             `Cannot delete file "${path}"${
               undefined !== fileSystem

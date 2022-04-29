@@ -1,7 +1,5 @@
-import * as E from 'fp-ts/Either'
+import { either, task, taskEither } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as T from 'fp-ts/Task'
-import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import redis from 'redis-mock'
 import { $redis } from './Redis'
@@ -13,7 +11,7 @@ describe('Cache', () => {
         const _redis = $redis(redis.createClient)
 
         await expect(
-          pipe(_redis.get('foo', t.unknown), T.map(E.isLeft))(),
+          pipe(_redis.get('foo', t.unknown), task.map(either.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should fail with wrong item encoding', async () => {
@@ -23,8 +21,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _redis.set('foo', t.string),
-            TE.apSecond(_redis.get('foo', t.number)),
-            T.map(E.isLeft),
+            taskEither.apSecond(_redis.get('foo', t.number)),
+            task.map(either.isLeft),
           )(),
         ).resolves.toBe(true)
       })
@@ -35,8 +33,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _redis.set('foo', t.string),
-            TE.apSecond(_redis.get('foo', t.string)),
-            T.map(E.isRight),
+            taskEither.apSecond(_redis.get('foo', t.string)),
+            task.map(either.isRight),
           )(),
         ).resolves.toBe(true)
       })
@@ -50,9 +48,9 @@ describe('Cache', () => {
           pipe(
             'foo',
             _redis.set('foo', t.string),
-            TE.apFirst(_redis.delete('foo')),
-            TE.apSecond(_redis.get('foo', t.string)),
-            T.map(E.isLeft),
+            taskEither.apFirst(_redis.delete('foo')),
+            taskEither.apSecond(_redis.get('foo', t.string)),
+            task.map(either.isLeft),
           )(),
         ).resolves.toBe(true)
       })
@@ -66,9 +64,9 @@ describe('Cache', () => {
           pipe(
             'foo',
             _redis.set('foo', t.string),
-            TE.apFirst(_redis.clear),
-            TE.apSecond(_redis.get('foo', t.string)),
-            T.map(E.isLeft),
+            taskEither.apFirst(_redis.clear),
+            taskEither.apSecond(_redis.get('foo', t.string)),
+            task.map(either.isLeft),
           )(),
         ).resolves.toBe(true)
       })

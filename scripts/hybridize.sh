@@ -2,7 +2,7 @@
 
 DIST=./dist
 ESM=esm
-CJS=lib # TODO: change to "cjs" on v0.2.0.
+CJS=cjs
 
 mv "${DIST}/${ESM}/index.d.ts" "${DIST}/" &&
 

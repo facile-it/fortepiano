@@ -1,15 +1,14 @@
-import * as Ap from 'fp-ts/Apply'
-import * as E from 'fp-ts/Eq'
+import { apply, readonlyArray } from 'fp-ts'
+import { Eq } from 'fp-ts/Eq'
 import { constTrue, pipe } from 'fp-ts/function'
-import * as RA from 'fp-ts/ReadonlyArray'
-import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
-import * as $E from './Eq'
+import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
+import * as $eq from './Eq'
 import { curry } from './function'
 
 /**
  * {@link https://en.wikipedia.org/wiki/Cartesian_product}
  */
-export const cartesian = Ap.sequenceT(RA.Apply)
+export const cartesian = apply.sequenceT(readonlyArray.Apply)
 
 /**
  * {@link https://en.wikipedia.org/wiki/Word_(group_theory)}
@@ -68,24 +67,30 @@ export function words<A>(size: number) {
     | ReadonlyArray<Readonly<[A, ...ReadonlyArray<A>]>> =>
     size < 1
       ? ([[]] as const)
-      : pipe(alphabet, curry(RA.replicate)(size), ([head, ...tail]) =>
-          cartesian(head, ...tail),
+      : pipe(
+          alphabet,
+          curry(readonlyArray.replicate)(size),
+          ([head, ...tail]) => cartesian(head, ...tail),
         )
 }
 
 export const allElems =
-  <A>(E: E.Eq<A>) =>
-  (...elems: RNEA.ReadonlyNonEmptyArray<A>) =>
-  (as: ReadonlyArray<A>): as is RNEA.ReadonlyNonEmptyArray<A> =>
-    pipe(elems, RA.intersection(E)(as), curry($E.getEqSize(RA).equals)(elems))
-
-export const anyElem =
-  <A>(E: E.Eq<A>) =>
-  (...elems: RNEA.ReadonlyNonEmptyArray<A>) =>
-  (as: ReadonlyArray<A>): as is RNEA.ReadonlyNonEmptyArray<A> =>
+  <A>(E: Eq<A>) =>
+  (...elems: ReadonlyNonEmptyArray<A>) =>
+  (as: ReadonlyArray<A>): as is ReadonlyNonEmptyArray<A> =>
     pipe(
       elems,
-      RA.some((elem) => pipe(as, RA.elem(E)(elem))),
+      readonlyArray.intersection(E)(as),
+      curry($eq.getEqSize(readonlyArray).equals)(elems),
+    )
+
+export const anyElem =
+  <A>(E: Eq<A>) =>
+  (...elems: ReadonlyNonEmptyArray<A>) =>
+  (as: ReadonlyArray<A>): as is ReadonlyNonEmptyArray<A> =>
+    pipe(
+      elems,
+      readonlyArray.some((elem) => pipe(as, readonlyArray.elem(E)(elem))),
     )
 
 /**
@@ -116,11 +121,11 @@ export const anyElem =
  * ).toBe(true)
  */
 export const same =
-  <A>(E: E.Eq<A>) =>
+  <A>(E: Eq<A>) =>
   (as: ReadonlyArray<A>): boolean =>
     pipe(
       as,
-      RA.matchLeft(constTrue, (head, tail) =>
-        pipe(tail, RA.every(curry(E.equals)(head))),
+      readonlyArray.matchLeft(constTrue, (head, tail) =>
+        pipe(tail, readonlyArray.every(curry(E.equals)(head))),
       ),
     )

@@ -1,20 +1,12 @@
-import * as E from 'fp-ts/Either'
-import * as IO from 'fp-ts/IO'
-import * as IOE from 'fp-ts/IOEither'
-import * as O from 'fp-ts/Option'
-import * as RTE from 'fp-ts/ReaderTaskEither'
-import * as T from 'fp-ts/Task'
-import * as TE from 'fp-ts/TaskEither'
-import {
-  pick,
-  picksEitherK,
-  picksIOEitherK,
-  picksIOK,
-  picksOptionK,
-  picksTaskEitherK,
-  picksTaskK,
-  picksW,
-} from './ReaderTaskEither'
+import { either, option } from 'fp-ts'
+import { Either } from 'fp-ts/Either'
+import { IO } from 'fp-ts/IO'
+import { IOEither } from 'fp-ts/IOEither'
+import { Option } from 'fp-ts/Option'
+import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
+import { Task } from 'fp-ts/Task'
+import { TaskEither } from 'fp-ts/TaskEither'
+import * as $readerTaskEither from './ReaderTaskEither'
 
 describe('ReaderTaskEither', () => {
   describe('pick', () => {
@@ -24,12 +16,12 @@ describe('ReaderTaskEither', () => {
         bar: number
       }
 
-      await expect(pick<R>()('foo')({ foo: 42 })()).resolves.toStrictEqual(
-        E.right(42),
-      )
-      await expect(pick<R>()('bar')({ bar: 1138 })()).resolves.toStrictEqual(
-        E.right(1138),
-      )
+      await expect(
+        $readerTaskEither.pick<R>()('foo')({ foo: 42 })(),
+      ).resolves.toStrictEqual(either.right(42))
+      await expect(
+        $readerTaskEither.pick<R>()('bar')({ bar: 1138 })(),
+      ).resolves.toStrictEqual(either.right(1138))
     })
   })
 
@@ -39,20 +31,21 @@ describe('ReaderTaskEither', () => {
         foo: number
         bar: number
         host: string
-        fetch: (
-          id: number,
-        ) => RTE.ReaderTaskEither<Pick<R, 'host'>, Error, string>
+        fetch: (id: number) => ReaderTaskEither<Pick<R, 'host'>, Error, string>
       }
 
       const fetch: R['fetch'] =
         (id) =>
         ({ host }) =>
         async () =>
-          E.right(`${host}/${id}`)
+          either.right(`${host}/${id}`)
 
       await expect(
-        picksW<R>()('fetch', (fetch) => fetch(42))({ host: 'foobar', fetch })(),
-      ).resolves.toStrictEqual(E.right('foobar/42'))
+        $readerTaskEither.picksW<R>()('fetch', (fetch) => fetch(42))({
+          host: 'foobar',
+          fetch,
+        })(),
+      ).resolves.toStrictEqual(either.right('foobar/42'))
     })
   })
 
@@ -61,14 +54,17 @@ describe('ReaderTaskEither', () => {
       interface R {
         foo: number
         bar: number
-        div: (n: number) => O.Option<number>
+        div: (n: number) => Option<number>
       }
 
-      const div: R['div'] = (n) => (0 === n ? O.none : O.some(1138 / n))
+      const div: R['div'] = (n) =>
+        0 === n ? option.none : option.some(1138 / n)
 
       await expect(
-        picksOptionK<R>()(Error)('div', (div) => div(42))({ div })(),
-      ).resolves.toStrictEqual(E.right(1138 / 42))
+        $readerTaskEither.picksOptionK<R>()(Error)('div', (div) => div(42))({
+          div,
+        })(),
+      ).resolves.toStrictEqual(either.right(1138 / 42))
     })
   })
 
@@ -77,15 +73,15 @@ describe('ReaderTaskEither', () => {
       interface R {
         foo: number
         bar: number
-        div: (n: number) => E.Either<Error, number>
+        div: (n: number) => Either<Error, number>
       }
 
       const div: R['div'] = (n) =>
-        0 === n ? E.left(Error()) : E.right(1138 / n)
+        0 === n ? either.left(Error()) : either.right(1138 / n)
 
       await expect(
-        picksEitherK<R>()('div', (div) => div(42))({ div })(),
-      ).resolves.toStrictEqual(E.right(1138 / 42))
+        $readerTaskEither.picksEitherK<R>()('div', (div) => div(42))({ div })(),
+      ).resolves.toStrictEqual(either.right(1138 / 42))
     })
   })
 
@@ -94,14 +90,14 @@ describe('ReaderTaskEither', () => {
       interface R {
         foo: number
         bar: number
-        read: (fd: number) => IO.IO<string>
+        read: (fd: number) => IO<string>
       }
 
       const read: R['read'] = (fd) => () => String(fd)
 
       await expect(
-        picksIOK<R>()('read', (read) => read(42))({ read })(),
-      ).resolves.toStrictEqual(E.right('42'))
+        $readerTaskEither.picksIOK<R>()('read', (read) => read(42))({ read })(),
+      ).resolves.toStrictEqual(either.right('42'))
     })
   })
 
@@ -110,14 +106,16 @@ describe('ReaderTaskEither', () => {
       interface R {
         foo: number
         bar: number
-        read: (fd: number) => IOE.IOEither<Error, string>
+        read: (fd: number) => IOEither<Error, string>
       }
 
-      const read: R['read'] = (fd) => () => E.right(String(fd))
+      const read: R['read'] = (fd) => () => either.right(String(fd))
 
       await expect(
-        picksIOEitherK<R>()('read', (read) => read(42))({ read })(),
-      ).resolves.toStrictEqual(E.right('42'))
+        $readerTaskEither.picksIOEitherK<R>()('read', (read) => read(42))({
+          read,
+        })(),
+      ).resolves.toStrictEqual(either.right('42'))
     })
   })
 
@@ -126,14 +124,16 @@ describe('ReaderTaskEither', () => {
       interface R {
         foo: number
         bar: number
-        fetch: (id: number) => T.Task<string>
+        fetch: (id: number) => Task<string>
       }
 
       const fetch: R['fetch'] = (id) => async () => String(id)
 
       await expect(
-        picksTaskK<R>()('fetch', (fetch) => fetch(42))({ fetch })(),
-      ).resolves.toStrictEqual(E.right('42'))
+        $readerTaskEither.picksTaskK<R>()('fetch', (fetch) => fetch(42))({
+          fetch,
+        })(),
+      ).resolves.toStrictEqual(either.right('42'))
     })
   })
 
@@ -142,14 +142,16 @@ describe('ReaderTaskEither', () => {
       interface R {
         foo: number
         bar: number
-        fetch: (id: number) => TE.TaskEither<Error, string>
+        fetch: (id: number) => TaskEither<Error, string>
       }
 
-      const fetch: R['fetch'] = (id) => async () => E.right(String(id))
+      const fetch: R['fetch'] = (id) => async () => either.right(String(id))
 
       await expect(
-        picksTaskEitherK<R>()('fetch', (fetch) => fetch(42))({ fetch })(),
-      ).resolves.toStrictEqual(E.right('42'))
+        $readerTaskEither.picksTaskEitherK<R>()('fetch', (fetch) => fetch(42))({
+          fetch,
+        })(),
+      ).resolves.toStrictEqual(either.right('42'))
     })
   })
 })

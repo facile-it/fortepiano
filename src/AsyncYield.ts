@@ -1,50 +1,53 @@
-import * as Appli from 'fp-ts/Applicative'
-import * as _Apply from 'fp-ts/Apply'
-import * as Ch from 'fp-ts/Chain'
-import * as Co from 'fp-ts/Compactable'
-import * as Ei from 'fp-ts/Either'
-import * as Eq from 'fp-ts/Eq'
-import * as Fi from 'fp-ts/Filterable'
-import * as FiWI from 'fp-ts/FilterableWithIndex'
-import * as FIO from 'fp-ts/FromIO'
 import {
-  constFalse,
-  constTrue,
-  flip,
-  flow,
-  Lazy,
-  not,
-  pipe,
-  Predicate,
-  Refinement,
-} from 'fp-ts/function'
-import * as Fu from 'fp-ts/Functor'
-import * as FuWI from 'fp-ts/FunctorWithIndex'
-import * as IO from 'fp-ts/IO'
-import * as Mona from 'fp-ts/Monad'
-import * as MIO from 'fp-ts/MonadIO'
-import * as Mono from 'fp-ts/Monoid'
-import * as O from 'fp-ts/Option'
-import * as P from 'fp-ts/Pointed'
-import * as RA from 'fp-ts/ReadonlyArray'
-import * as S from 'fp-ts/Separated'
-import * as T from 'fp-ts/Task'
+  apply,
+  chain as _chain,
+  either,
+  fromIO as _fromIO,
+  functor,
+  option,
+  predicate,
+  readonlyArray,
+  separated,
+  task,
+} from 'fp-ts'
+import { Applicative1 } from 'fp-ts/Applicative'
+import { Apply1 } from 'fp-ts/Apply'
+import { Chain1 } from 'fp-ts/Chain'
+import { Compactable1 } from 'fp-ts/Compactable'
+import { Eq } from 'fp-ts/Eq'
+import { Filterable1 } from 'fp-ts/Filterable'
+import { FilterableWithIndex1 } from 'fp-ts/FilterableWithIndex'
+import { FromIO1 } from 'fp-ts/FromIO'
+import { constFalse, constTrue, flip, flow, Lazy, pipe } from 'fp-ts/function'
+import { Functor1 } from 'fp-ts/Functor'
+import { FunctorWithIndex1 } from 'fp-ts/FunctorWithIndex'
+import { IO } from 'fp-ts/IO'
+import { Monad1 } from 'fp-ts/Monad'
+import { MonadIO1 } from 'fp-ts/MonadIO'
+import { Monoid } from 'fp-ts/Monoid'
+import { Option } from 'fp-ts/Option'
+import { Pointed1 } from 'fp-ts/Pointed'
+import { Predicate } from 'fp-ts/Predicate'
+import { Refinement } from 'fp-ts/Refinement'
+import { Separated } from 'fp-ts/Separated'
+import { Task } from 'fp-ts/Task'
 import { curry } from './function'
-import * as $IOG from './GeneratorL'
+import * as $yield from './Yield'
+import { Yield } from './Yield'
 
-export const URI = 'IOAsyncGenerator'
+export const URI = 'AsyncYield'
 
 export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
-    [URI]: IOAsyncGenerator<A>
+    [URI]: AsyncYield<A>
   }
 }
 
-export type IOAsyncGenerator<A> = IO.IO<AsyncGenerator<A>>
+export type AsyncYield<A> = Lazy<AsyncGenerator<A>>
 
-export const getMonoid = <A>(): Mono.Monoid<IOAsyncGenerator<A>> => ({
+export const getMonoid = <A>(): Monoid<AsyncYield<A>> => ({
   empty: fromReadonlyArray([]),
   concat: (x, y) =>
     async function* () {
@@ -53,16 +56,14 @@ export const getMonoid = <A>(): Mono.Monoid<IOAsyncGenerator<A>> => ({
     },
 })
 
-export const fromIOGenerator = <A>(
-  as: $IOG.GeneratorL<A>,
-): IOAsyncGenerator<A> =>
+export const fromIOGenerator = <A>(as: Yield<A>): AsyncYield<A> =>
   async function* () {
     for (const a of as()) {
       yield a
     }
   }
 
-export const Functor: Fu.Functor1<URI> = {
+export const Functor: Functor1<URI> = {
   URI,
   map: (fa, f) =>
     async function* () {
@@ -73,24 +74,24 @@ export const Functor: Fu.Functor1<URI> = {
 }
 
 export const map = curry(flip(Functor.map))
-export const flap = Fu.flap(Functor)
-export const bindTo = Fu.bindTo(Functor)
+export const flap = functor.flap(Functor)
+export const bindTo = functor.bindTo(Functor)
 
-export const FunctorWithIndex: FuWI.FunctorWithIndex1<URI, number> = {
+export const FunctorWithIndex: FunctorWithIndex1<URI, number> = {
   ...Functor,
   mapWithIndex: (fa, f) =>
     Functor.map(pipe(fa, zip(range(0))), ([a, i]) => f(i, a)),
 }
 
-export const Pointed: P.Pointed1<URI> = {
+export const Pointed: Pointed1<URI> = {
   URI,
-  of: (a) => fromIOGenerator($IOG.of(a)),
+  of: (a) => fromIOGenerator($yield.of(a)),
 }
 
 export const of = Pointed.of
 export const Do = Pointed.of({})
 
-export const ApplyPar: _Apply.Apply1<URI> = {
+export const ApplyPar: Apply1<URI> = {
   ...Functor,
   ap: (fab, fa) =>
     async function* () {
@@ -125,7 +126,7 @@ export const ApplyPar: _Apply.Apply1<URI> = {
  *
  */
 
-export const ApplySeq: _Apply.Apply1<URI> = {
+export const ApplySeq: Apply1<URI> = {
   ...Functor,
   ap: (fab, fa) =>
     async function* () {
@@ -147,21 +148,21 @@ export const ApplySeq: _Apply.Apply1<URI> = {
 }
 
 export const ap = curry(flip(ApplyPar.ap))
-export const apFirst = _Apply.apFirst(ApplyPar)
-export const apSecond = _Apply.apSecond(ApplyPar)
-export const apS = _Apply.apS(ApplyPar)
+export const apFirst = apply.apFirst(ApplyPar)
+export const apSecond = apply.apSecond(ApplyPar)
+export const apS = apply.apS(ApplyPar)
 
-export const ApplicativePar: Appli.Applicative1<URI> = {
+export const ApplicativePar: Applicative1<URI> = {
   ...Pointed,
   ...ApplyPar,
 }
 
-export const ApplicativeSeq: Appli.Applicative1<URI> = {
+export const ApplicativeSeq: Applicative1<URI> = {
   ...Pointed,
   ...ApplySeq,
 }
 
-export const Chain: Ch.Chain1<URI> = {
+export const Chain: Chain1<URI> = {
   ...ApplySeq,
   chain: (fa, f) => {
     return flatten(Functor.map(fa, f))
@@ -169,44 +170,41 @@ export const Chain: Ch.Chain1<URI> = {
 }
 
 export const chain = curry(flip(Chain.chain))
-export const chainFirst = Ch.chainFirst(Chain)
-export const bind = Ch.bind(Chain)
+export const chainFirst = _chain.chainFirst(Chain)
+export const bind = _chain.bind(Chain)
 
-export const Monad: Mona.Monad1<URI> = { ...ApplicativeSeq, ...Chain }
+export const Monad: Monad1<URI> = { ...ApplicativeSeq, ...Chain }
 
-export const FromIO: FIO.FromIO1<URI> = {
+export const FromIO: FromIO1<URI> = {
   URI,
   fromIO: (fa) => () => Pointed.of(fa())(),
 }
 
 export const fromIO = FromIO.fromIO
-export const fromIOK = FIO.fromIOK(FromIO)
-export const chainIOK = FIO.chainIOK(FromIO, Chain)
-export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
+export const fromIOK = _fromIO.fromIOK(FromIO)
+export const chainIOK = _fromIO.chainIOK(FromIO, Chain)
+export const chainFirstIOK = _fromIO.chainFirstIOK(FromIO, Chain)
 
 export const fromIOReadonlyArray = <A>(
-  fa: IO.IO<ReadonlyArray<A>>,
-): IOAsyncGenerator<A> => pipe(fa, fromIO, chain(fromReadonlyArray))
+  fa: IO<ReadonlyArray<A>>,
+): AsyncYield<A> => pipe(fa, fromIO, chain(fromReadonlyArray))
 
 export const fromIOReadonlyArrayK = <A extends ReadonlyArray<unknown>, B>(
-  f: (...a: A) => IO.IO<ReadonlyArray<B>>,
+  f: (...a: A) => IO<ReadonlyArray<B>>,
 ) => flow(f, fromIOReadonlyArray)
 
 export const chainIOReadonlyArrayK = <A, B>(
-  f: (a: A) => IO.IO<ReadonlyArray<B>>,
+  f: (a: A) => IO<ReadonlyArray<B>>,
 ) => chain(fromIOReadonlyArrayK(f))
 
-export const MonadIO: MIO.MonadIO1<URI> = { ...Monad, ...FromIO }
+export const MonadIO: MonadIO1<URI> = { ...Monad, ...FromIO }
 
 function _filter<A, B extends A>(
-  fa: IOAsyncGenerator<A>,
+  fa: AsyncYield<A>,
   refinement: Refinement<A, B>,
-): IOAsyncGenerator<B>
-function _filter<A>(
-  fa: IOAsyncGenerator<A>,
-  predicate: Predicate<A>,
-): IOAsyncGenerator<A>
-function _filter<A>(fa: IOAsyncGenerator<A>, predicate: Predicate<A>) {
+): AsyncYield<B>
+function _filter<A>(fa: AsyncYield<A>, predicate: Predicate<A>): AsyncYield<A>
+function _filter<A>(fa: AsyncYield<A>, predicate: Predicate<A>) {
   return async function* () {
     for await (const a of fa()) {
       if (!predicate(a)) {
@@ -218,13 +216,14 @@ function _filter<A>(fa: IOAsyncGenerator<A>, predicate: Predicate<A>) {
   }
 }
 
-export const Compactable: Co.Compactable1<URI> = {
+export const Compactable: Compactable1<URI> = {
   URI,
-  compact: (fa) => Functor.map(Filterable.filter(fa, O.isSome), (a) => a.value),
+  compact: (fa) =>
+    Functor.map(Filterable.filter(fa, option.isSome), (a) => a.value),
   separate: (fa) =>
-    S.separated(
-      Functor.map(_filter(fa, Ei.isLeft), (a) => a.left),
-      Functor.map(_filter(fa, Ei.isRight), (a) => a.right),
+    separated.separated(
+      Functor.map(_filter(fa, either.isLeft), (a) => a.left),
+      Functor.map(_filter(fa, either.isRight), (a) => a.right),
     ),
 }
 
@@ -232,18 +231,21 @@ export const compact = Compactable.compact
 export const separate = Compactable.separate
 
 function _partition<A, B extends A>(
-  fa: IOAsyncGenerator<A>,
+  fa: AsyncYield<A>,
   refinement: Refinement<A, B>,
-): S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<B>>
+): Separated<AsyncYield<A>, AsyncYield<B>>
 function _partition<A>(
-  fa: IOAsyncGenerator<A>,
+  fa: AsyncYield<A>,
   predicate: Predicate<A>,
-): S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<A>>
-function _partition<A>(fa: IOAsyncGenerator<A>, predicate: Predicate<A>) {
-  return S.separated(_filter(fa, not(predicate)), _filter(fa, predicate))
+): Separated<AsyncYield<A>, AsyncYield<A>>
+function _partition<A>(fa: AsyncYield<A>, _predicate: Predicate<A>) {
+  return separated.separated(
+    _filter(fa, predicate.not(_predicate)),
+    _filter(fa, _predicate),
+  )
 }
 
-export const Filterable: Fi.Filterable1<URI> = {
+export const Filterable: Filterable1<URI> = {
   ...Functor,
   ...Compactable,
   filter: _filter,
@@ -254,68 +256,64 @@ export const Filterable: Fi.Filterable1<URI> = {
 
 export function filter<A, B extends A>(
   refinement: Refinement<A, B>,
-): (fa: IOAsyncGenerator<A>) => IOAsyncGenerator<B>
+): (fa: AsyncYield<A>) => AsyncYield<B>
 export function filter<A>(
   predicate: Predicate<A>,
-): (fa: IOAsyncGenerator<A>) => IOAsyncGenerator<A>
+): (fa: AsyncYield<A>) => AsyncYield<A>
 export function filter<A>(predicate: Predicate<A>) {
-  return (fa: IOAsyncGenerator<A>) => Filterable.filter(fa, predicate)
+  return (fa: AsyncYield<A>) => Filterable.filter(fa, predicate)
 }
 export const filterMap = curry(flip(Filterable.filterMap))
 export function partition<A, B extends A>(
   refinement: Refinement<A, B>,
-): (
-  fa: IOAsyncGenerator<A>,
-) => S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<B>>
+): (fa: AsyncYield<A>) => Separated<AsyncYield<A>, AsyncYield<B>>
 export function partition<A>(
   predicate: Predicate<A>,
-): (
-  fa: IOAsyncGenerator<A>,
-) => S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<A>>
+): (fa: AsyncYield<A>) => Separated<AsyncYield<A>, AsyncYield<A>>
 export function partition<A>(predicate: Predicate<A>) {
-  return (fa: IOAsyncGenerator<A>) => Filterable.partition(fa, predicate)
+  return (fa: AsyncYield<A>) => Filterable.partition(fa, predicate)
 }
 export const partitionMap = curry(flip(Filterable.partitionMap))
 
 function _filterWithIndex<A, B extends A>(
-  fa: IOAsyncGenerator<A>,
+  fa: AsyncYield<A>,
   refinementWithIndex: (i: number, a: A) => a is B,
-): IOAsyncGenerator<B>
+): AsyncYield<B>
 function _filterWithIndex<A>(
-  fa: IOAsyncGenerator<A>,
+  fa: AsyncYield<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
-): IOAsyncGenerator<A>
+): AsyncYield<A>
 function _filterWithIndex<A>(
-  fa: IOAsyncGenerator<A>,
+  fa: AsyncYield<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
   return Compactable.compact(
     FunctorWithIndex.mapWithIndex(fa, (i, a) =>
-      predicateWithIndex(i, a) ? O.some(a) : O.none,
+      predicateWithIndex(i, a) ? option.some(a) : option.none,
     ),
   )
 }
 
 function _partitionWithIndex<A, B extends A>(
-  fa: IOAsyncGenerator<A>,
+  fa: AsyncYield<A>,
   refinementWithIndex: (i: number, a: A) => a is B,
-): S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<B>>
+): Separated<AsyncYield<A>, AsyncYield<B>>
 function _partitionWithIndex<A>(
-  fa: IOAsyncGenerator<A>,
+  fa: AsyncYield<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
-): S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<A>>
+): Separated<AsyncYield<A>, AsyncYield<A>>
 function _partitionWithIndex<A>(
-  fa: IOAsyncGenerator<A>,
+  fa: AsyncYield<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
   return Compactable.separate(
     FunctorWithIndex.mapWithIndex(fa, (i, a) =>
-      predicateWithIndex(i, a) ? Ei.right(a) : Ei.left(a),
+      predicateWithIndex(i, a) ? either.right(a) : either.left(a),
     ),
   )
 }
 
-export const FilterableWithIndex: FiWI.FilterableWithIndex1<URI, number> = {
+export const FilterableWithIndex: FilterableWithIndex1<URI, number> = {
   ...FunctorWithIndex,
   ...Filterable,
   filterWithIndex: _filterWithIndex,
@@ -328,14 +326,14 @@ export const FilterableWithIndex: FiWI.FilterableWithIndex1<URI, number> = {
 
 export function filterWithIndex<A, B extends A>(
   refinementWithIndex: (i: number, a: A) => a is B,
-): (fa: IOAsyncGenerator<A>) => IOAsyncGenerator<B>
+): (fa: AsyncYield<A>) => AsyncYield<B>
 export function filterWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
-): (fa: IOAsyncGenerator<A>) => IOAsyncGenerator<A>
+): (fa: AsyncYield<A>) => AsyncYield<A>
 export function filterWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
-  return (fa: IOAsyncGenerator<A>) =>
+  return (fa: AsyncYield<A>) =>
     FilterableWithIndex.filterWithIndex(fa, predicateWithIndex)
 }
 export const filterMapWithIndex = curry(
@@ -343,33 +341,29 @@ export const filterMapWithIndex = curry(
 )
 export function partitionWithIndex<A, B extends A>(
   refinementWithIndex: (i: number, a: A) => a is B,
-): (
-  fa: IOAsyncGenerator<A>,
-) => S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<B>>
+): (fa: AsyncYield<A>) => Separated<AsyncYield<A>, AsyncYield<B>>
 export function partitionWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
-): (
-  fa: IOAsyncGenerator<A>,
-) => S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<A>>
+): (fa: AsyncYield<A>) => Separated<AsyncYield<A>, AsyncYield<A>>
 export function partitionWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
-  return (fa: IOAsyncGenerator<A>) =>
+  return (fa: AsyncYield<A>) =>
     FilterableWithIndex.partitionWithIndex(fa, predicateWithIndex)
 }
 export const partitionMapWithIndex = curry(
   flip(FilterableWithIndex.partitionMapWithIndex),
 )
 
-export const range = flow($IOG.range, fromIOGenerator)
-export const replicate = flow($IOG.replicate, fromIOGenerator)
+export const range = flow($yield.range, fromIOGenerator)
+export const replicate = flow($yield.replicate, fromIOGenerator)
 export const fromReadonlyArray = <A>(x: ReadonlyArray<A>) => {
-  return flow($IOG.fromReadonlyArray, fromIOGenerator)(x)
+  return flow($yield.fromReadonlyArray, fromIOGenerator)(x)
 }
 
 export const sieve =
   <A>(f: (init: ReadonlyArray<A>, a: A) => boolean) =>
-  (as: IOAsyncGenerator<A>): IOAsyncGenerator<A> =>
+  (as: AsyncYield<A>): AsyncYield<A> =>
     async function* () {
       const init: Array<A> = []
       for await (const a of as()) {
@@ -382,30 +376,28 @@ export const sieve =
       }
     }
 
-export const prime: IOAsyncGenerator<number> = pipe(
+export const prime: AsyncYield<number> = pipe(
   range(2),
   sieve((init, a) =>
     pipe(
       init,
-      RA.every((_a) => 0 !== a % _a),
+      readonlyArray.every((_a) => 0 !== a % _a),
     ),
   ),
 )
 
-export const exp: IOAsyncGenerator<number> = pipe(
+export const exp: AsyncYield<number> = pipe(
   range(0),
   map((n) => Math.exp(n)),
 )
 
-export const fibonacci: IOAsyncGenerator<number> = async function* () {
+export const fibonacci: AsyncYield<number> = async function* () {
   for (let as = [1, 0] as [number, number]; true; as = [as[1], as[0] + as[1]]) {
     yield as[1]
   }
 }
 
-export const flatten = <A>(
-  as: IOAsyncGenerator<IOAsyncGenerator<A>>,
-): IOAsyncGenerator<A> =>
+export const flatten = <A>(as: AsyncYield<AsyncYield<A>>): AsyncYield<A> =>
   async function* () {
     for await (const a of as()) {
       yield* a()
@@ -414,7 +406,7 @@ export const flatten = <A>(
 
 export const take =
   <A>(n: number) =>
-  (as: IOAsyncGenerator<A>): IOAsyncGenerator<A> =>
+  (as: AsyncYield<A>): AsyncYield<A> =>
     async function* () {
       for await (const [a, i] of pipe(as, zip(range(0)))()) {
         if (i >= n) {
@@ -427,7 +419,7 @@ export const take =
 
 export const drop =
   <A>(n: number) =>
-  (as: IOAsyncGenerator<A>): IOAsyncGenerator<A> =>
+  (as: AsyncYield<A>): AsyncYield<A> =>
     async function* () {
       for await (const [a, i] of pipe(as, zip(range(0)))()) {
         if (i < n) {
@@ -439,8 +431,8 @@ export const drop =
     }
 
 export const zip =
-  <A, B>(bs: IOAsyncGenerator<B>) =>
-  (as: IOAsyncGenerator<A>): IOAsyncGenerator<Readonly<[A, B]>> =>
+  <A, B>(bs: AsyncYield<B>) =>
+  (as: AsyncYield<A>): AsyncYield<Readonly<[A, B]>> =>
     async function* () {
       const _bs = bs()
       for await (const a of as()) {
@@ -453,15 +445,12 @@ export const zip =
       }
     }
 
-export const uniq = <A>(E: Eq.Eq<A>) =>
-  sieve<A>((init, a) => !pipe(init, RA.elem(E)(a)))
+export const uniq = <A>(E: Eq<A>) =>
+  sieve<A>((init, a) => !pipe(init, readonlyArray.elem(E)(a)))
 
 export const match =
-  <A, B>(
-    onEmpty: Lazy<B>,
-    onNonEmpty: (head: A, tail: IOAsyncGenerator<A>) => B,
-  ) =>
-  (as: IOAsyncGenerator<A>): T.Task<B> =>
+  <A, B>(onEmpty: Lazy<B>, onNonEmpty: (head: A, tail: AsyncYield<A>) => B) =>
+  (as: AsyncYield<A>): Task<B> =>
     pipe(
       as().next(),
       (a) => () =>
@@ -471,7 +460,7 @@ export const match =
     )
 
 export const toTask =
-  <A>(as: IOAsyncGenerator<A>): T.Task<ReadonlyArray<A>> =>
+  <A>(as: AsyncYield<A>): Task<ReadonlyArray<A>> =>
   async () => {
     const _as: Array<A> = []
     for await (const a of as()) {
@@ -485,45 +474,45 @@ export const isEmpty = match(constTrue, constFalse)
 
 export const isNonEmpty = flow(
   isEmpty,
-  T.map((a) => !a),
+  task.map((a) => !a),
 )
 
 export const lookup =
   <A>(i: number) =>
-  (as: IOAsyncGenerator<A>): T.Task<O.Option<A>> =>
+  (as: AsyncYield<A>): Task<Option<A>> =>
     i < 0
-      ? T.of(O.none)
+      ? task.of(option.none)
       : pipe(
           as,
           drop(i),
           match(
-            () => O.none,
-            (a) => O.some(a),
+            () => option.none,
+            (a) => option.some(a),
           ),
         )
 
-export const head = <A>(as: IOAsyncGenerator<A>): T.Task<O.Option<A>> =>
+export const head = <A>(as: AsyncYield<A>): Task<Option<A>> =>
   pipe(as, lookup(0))
 
 export function find<A, B extends A>(
   refinement: Refinement<A, B>,
-): (as: IOAsyncGenerator<A>) => T.Task<O.Option<B>>
+): (as: AsyncYield<A>) => Task<Option<B>>
 export function find<A>(
   predicate: Predicate<A>,
-): (as: IOAsyncGenerator<A>) => T.Task<O.Option<A>>
+): (as: AsyncYield<A>) => Task<Option<A>>
 export function find<A>(predicate: Predicate<A>) {
-  return (as: IOAsyncGenerator<A>) => async () => {
+  return (as: AsyncYield<A>) => async () => {
     for await (const a of as()) {
       if (predicate(a)) {
-        return O.some(a)
+        return option.some(a)
       }
     }
 
-    return O.none
+    return option.none
   }
 }
 
 export const elem =
-  <A>(Eq: Eq.Eq<A>) =>
+  <A>(E: Eq<A>) =>
   (a: A) =>
-    find((_a: A) => Eq.equals(a, _a))
+    find((_a: A) => E.equals(a, _a))

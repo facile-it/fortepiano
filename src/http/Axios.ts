@@ -1,34 +1,37 @@
 import { AxiosResponse, AxiosStatic } from 'axios'
-import * as E from 'fp-ts/Either'
+import { either, readonlyRecord } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as RR from 'fp-ts/ReadonlyRecord'
 import * as t from 'io-ts'
-import * as $E from '../Error'
-import * as $H from '../Http'
-import * as $S from '../string'
-import * as $TE from '../TaskEither'
+import * as $error from '../Error'
+import { Http, HttpError, HttpMethod, HttpOptions, HttpResponse } from '../Http'
+import * as $string from '../string'
+import * as $taskEither from '../TaskEither'
 
 const response =
   (url: string) =>
-  (response: AxiosResponse): $H.HttpResponse => ({
+  (response: AxiosResponse): HttpResponse => ({
     url: response.config.url || url,
     status: response.status,
     headers: pipe(
       response.headers,
       t.readonly(t.record(t.string, t.unknown)).decode,
-      E.map(RR.filter(t.union([t.string, t.readonlyArray(t.string)]).is)),
-      E.getOrElse(() => ({})),
+      either.map(
+        readonlyRecord.filter(
+          t.union([t.string, t.readonlyArray(t.string)]).is,
+        ),
+      ),
+      either.getOrElse(() => ({})),
     ),
     body: response.data,
   })
 
 const request = (
   axios: AxiosStatic,
-  method: $H.HttpMethod,
+  method: HttpMethod,
   url: string,
-  options: $H.HttpOptions = {},
+  options: HttpOptions = {},
 ) =>
-  $TE.tryCatch(
+  $taskEither.tryCatch(
     () =>
       axios
         .request({
@@ -53,21 +56,21 @@ const request = (
             throw error
           }
 
-          throw $E.wrap(
-            new $H.HttpError(
+          throw $error.wrap(
+            new HttpError(
               response(url)(error.response),
-              `Cannot make HTTP request "${$S.uppercase(method)} ${url}": ${
-                error.message
-              }`,
+              `Cannot make HTTP request "${$string.uppercase(
+                method,
+              )} ${url}": ${error.message}`,
             ),
           )(error)
         }),
-    $E.fromUnknown(
-      Error(`Cannot make HTTP request "${$S.uppercase(method)} ${url}"`),
+    $error.fromUnknown(
+      Error(`Cannot make HTTP request "${$string.uppercase(method)} ${url}"`),
     ),
   )
 
-export const $axios = (_axios: AxiosStatic): $H.Http => ({
+export const $axios = (_axios: AxiosStatic): Http => ({
   delete: (url, options) => request(_axios, 'delete', url, options),
   get: (url, options) => request(_axios, 'get', url, options),
   patch: (url, options) => request(_axios, 'patch', url, options),

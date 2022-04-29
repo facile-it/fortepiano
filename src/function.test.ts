@@ -1,5 +1,5 @@
+import { option } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
 import { curry, match, memoize, recurse, uncurry } from './function'
 
 describe('function', () => {
@@ -106,10 +106,10 @@ describe('function', () => {
       type Op = Add | Mul | Sub | Div
 
       const calc = match<Op>()({
-        Add: ({ x, y }) => O.some(x + y),
-        Mul: ({ x, y }) => O.some(x * y),
-        Sub: ({ x, y }) => O.some(x - y),
-        Div: ({ x, y }) => (0 === y ? O.none : O.some(x / y)),
+        Add: ({ x, y }) => option.some(x + y),
+        Mul: ({ x, y }) => option.some(x * y),
+        Sub: ({ x, y }) => option.some(x - y),
+        Div: ({ x, y }) => (0 === y ? option.none : option.some(x / y)),
       })
       const op = (_tag: Op['_tag']) => (y: number) => (x: number) =>
         calc({ _tag, x, y })
@@ -120,12 +120,12 @@ describe('function', () => {
 
       expect(
         pipe(
-          O.of(42),
-          O.chain(add(1138)),
-          O.chain(mul(0.1)),
-          O.chain(sub(1337)),
-          O.chain(div(0.1)),
-          O.getOrElse(() => NaN),
+          option.of(42),
+          option.chain(add(1138)),
+          option.chain(mul(0.1)),
+          option.chain(sub(1337)),
+          option.chain(div(0.1)),
+          option.getOrElse(() => NaN),
         ),
       ).toBeCloseTo(-12190)
     })
