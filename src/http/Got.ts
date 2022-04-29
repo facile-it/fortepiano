@@ -60,6 +60,9 @@ const request = (
     ),
   )
 
+/**
+ * @deprecated Use `$axios` instead
+ */
 export const $got = (_got: Got): $H.Http => ({
   delete: (url, options) => request(_got, 'delete', url, options),
   get: (url, options) => request(_got, 'get', url, options),

@@ -28,7 +28,6 @@ Additional packages are required, shall you want to use specific abstractions:
 - [`memcached`](https://www.npmjs.com/package/memcached) and [`@types/memcached`](https://www.npmjs.com/package/@types/memcached) (`cache/Memcached`)
 - [`redis`](https://www.npmjs.com/package/redis) and [`@types/redis`](https://www.npmjs.com/package/@types/redis) (`cache/Redis`)
 - [`axios`](https://www.npmjs.com/package/axios) (`http/Axios`)
-- [`got`](https://www.npmjs.com/package/got) (`http/Got`)
 - [`@slynova/flydrive`](https://www.npmjs.com/package/@slynova/flydrive) (`storage/Flydrive`)
 
 ### Usage
