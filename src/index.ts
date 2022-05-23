@@ -8,6 +8,7 @@ import * as $date from './Date'
 import * as $eq from './Eq'
 import * as $error from './Error'
 import * as _$generatorL from './GeneratorL'
+import * as $has from './Has'
 import * as $http from './Http'
 import * as $log from './Log'
 import * as $magma from './Magma'
@@ -67,6 +68,7 @@ export {
   $eq,
   $error,
   $generatorL,
+  $has,
   $http,
   $log,
   $magma,
