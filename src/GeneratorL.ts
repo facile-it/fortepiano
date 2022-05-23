@@ -19,7 +19,7 @@ import {
   flow,
   identity,
   Lazy,
-  pipe
+  pipe,
 } from 'fp-ts/function'
 import * as Fu from 'fp-ts/Functor'
 import * as FuWI from 'fp-ts/FunctorWithIndex'
@@ -32,7 +32,7 @@ import {
   URIS,
   URIS2,
   URIS3,
-  URIS4
+  URIS4,
 } from 'fp-ts/HKT'
 import * as IO from 'fp-ts/IO'
 import * as Pr from 'fp-ts/Predicate'
@@ -246,7 +246,10 @@ function _filter<A, B extends A>(
   fa: GeneratorL<A>,
   refinement: Re.Refinement<A, B>,
 ): GeneratorL<B>
-function _filter<A>(fa: GeneratorL<A>, predicate: Pr.Predicate<A>): GeneratorL<A>
+function _filter<A>(
+  fa: GeneratorL<A>,
+  predicate: Pr.Predicate<A>,
+): GeneratorL<A>
 function _filter<A>(fa: GeneratorL<A>, predicate: Pr.Predicate<A>) {
   return function* () {
     for (const a of fa()) {
