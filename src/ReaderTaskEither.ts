@@ -9,12 +9,12 @@ import * as TE from 'fp-ts/TaskEither'
 import * as $S from './struct'
 
 export const pick =
-  <R extends $S.struct>() =>
+  <R extends $S.Struct>() =>
   <K extends keyof R>(k: K) =>
     RTE.asks((r: Pick<R, K>) => r[k])
 
 export const picks =
-  <R extends $S.struct>() =>
+  <R extends $S.Struct>() =>
   <K extends keyof R, E, B>(
     k: K,
     f: (r: Pick<R, K>[K]) => RTE.ReaderTaskEither<Pick<R, K>, E, B>,
@@ -22,7 +22,7 @@ export const picks =
     picksW<R>()(k, f)
 
 export const picksW =
-  <R1 extends $S.struct>() =>
+  <R1 extends $S.Struct>() =>
   <K extends keyof R1, R2, E, B>(
     k: K,
     f: (r: Pick<R1, K>[K]) => RTE.ReaderTaskEither<R2, E, B>,
@@ -30,23 +30,23 @@ export const picksW =
     pipe(pick<R1>()(k), RTE.chainW(f))
 
 export const picksOptionK =
-  <R extends $S.struct>() =>
+  <R extends $S.Struct>() =>
   <E>(onNone: Lazy<E>) =>
   <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => O.Option<B>) =>
     picks<R>()(k, RTE.fromOptionK(onNone)(f))
 
 export const picksEitherK =
-  <R extends $S.struct>() =>
+  <R extends $S.Struct>() =>
   <K extends keyof R, _E, B>(k: K, f: (r: Pick<R, K>[K]) => E.Either<_E, B>) =>
     picks<R>()(k, RTE.fromEitherK(f))
 
 export const picksIOK =
-  <R extends $S.struct>() =>
+  <R extends $S.Struct>() =>
   <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => IO.IO<B>) =>
     pipe(pick<R>()(k), RTE.chainIOK(f))
 
 export const picksIOEitherK =
-  <R extends $S.struct>() =>
+  <R extends $S.Struct>() =>
   <K extends keyof R, _E, B>(
     k: K,
     f: (r: Pick<R, K>[K]) => IOE.IOEither<_E, B>,
@@ -54,12 +54,12 @@ export const picksIOEitherK =
     picks<R>()(k, RTE.fromIOEitherK(f))
 
 export const picksTaskK =
-  <R extends $S.struct>() =>
+  <R extends $S.Struct>() =>
   <K extends keyof R, B>(k: K, f: (r: Pick<R, K>[K]) => T.Task<B>) =>
     pipe(pick<R>()(k), RTE.chainTaskK(f))
 
 export const picksTaskEitherK =
-  <R extends $S.struct>() =>
+  <R extends $S.Struct>() =>
   <K extends keyof R, _E, B>(
     k: K,
     f: (r: Pick<R, K>[K]) => TE.TaskEither<_E, B>,

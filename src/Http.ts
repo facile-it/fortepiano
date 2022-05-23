@@ -7,7 +7,6 @@ import * as RR from 'fp-ts/ReadonlyRecord'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
 import { Json } from 'io-ts-types'
-import * as $T from './Type'
 import * as $C from './Cache'
 import * as $Er from './Error'
 import { mock } from './http/Mock'
@@ -15,6 +14,7 @@ import * as $L from './Log'
 import * as $R from './Random'
 import * as $Stri from './string'
 import * as $Stru from './struct'
+import * as $T from './Type'
 
 const ERRORS = {
   BadRequest: 400,
@@ -48,7 +48,7 @@ export class HttpError extends Error {
 }
 
 export interface HttpOptions {
-  readonly body?: $Stru.struct | Buffer
+  readonly body?: $Stru.Struct | Buffer
   readonly headers?: RR.ReadonlyRecord<string, string>
   readonly json?: boolean
   readonly buffer?: boolean

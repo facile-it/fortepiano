@@ -47,11 +47,11 @@ export const group = _multipleArgs('group')
 export const groupCollapsed = _multipleArgs('groupCollapsed')
 export const groupEnd = _noArgs('groupEnd')
 
-export function table<A extends $S.struct, K extends keyof A>(
+export function table<A extends $S.Struct, K extends keyof A>(
   data: ReadonlyArray<A> | RR.ReadonlyRecord<string, A>,
   columns?: ReadonlyArray<K>,
 ): IO.IO<void>
-export function table(data: $S.struct | ReadonlyArray<unknown>): IO.IO<void>
+export function table(data: $S.Struct | ReadonlyArray<unknown>): IO.IO<void>
 export function table(
   a?: undefined | boolean | number | string,
   ...as: ReadonlyArray<unknown>
