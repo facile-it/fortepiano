@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Add `Struct` type.
 - Rename `GeneratorL` module to `Yield`.
+- Add `AggregateError` from TC39.
+- Add `decode` method to `Type` module to help wrapping `io-ts` `Errors` into an `Error` subclass.
 
 ### Deprecated
 
