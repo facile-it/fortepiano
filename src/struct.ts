@@ -6,6 +6,11 @@ import { IntersectionDeep, PartialDeep } from '.'
 import { curry } from './function'
 import * as $t from './Type'
 
+export type Struct = object
+
+/**
+ * @deprecated Use `Struct` instead
+ */
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type struct = object
 
