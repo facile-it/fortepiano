@@ -11,7 +11,7 @@ jobs:
         with:
           node-version: 16.x
           registry-url: https://registry.npmjs.org
-      - run: npm ci
-      - run: npm run release
+      - run: yarn install --immutable
+      - run: yarn release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

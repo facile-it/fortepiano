@@ -23,8 +23,8 @@
   "module": "./esm/index.js",
   "types": "./index.d.ts",
   "scripts": {
-    "prebuild": "npm run clean",
-    "build": "npm run build:esm && npm run build:cjs",
+    "prebuild": "yarn clean",
+    "build": "yarn prebuild && yarn build:esm && yarn build:cjs",
     "build:cjs": "tsc --build ./tsconfig.cjs.json",
     "build:esm": "tsc --build ./tsconfig.esm.json",
     "clean": "rm -rf ./dist/",
@@ -32,8 +32,8 @@
     "eslint:fix": "eslint --fix ./",
     "prettier": "prettier --check ./",
     "prettier:fix": "prettier --write ./",
-    "prerelease": "npm run build && ./scripts/hybridize.sh && cp ./package.json ./*.md ./dist/",
-    "release": "npm publish ./dist/",
+    "prerelease": "yarn build && ./scripts/hybridize.sh && cp ./package.json ./*.md ./dist/",
+    "release": "yarn prerelease && yarn publish ./dist/",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },
