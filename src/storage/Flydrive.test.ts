@@ -106,7 +106,7 @@ describe('Storage', () => {
           pipe(
             Buffer.from('foo'),
             _flydrive.write('foo'),
-            TE.apSecond(_flydrive.read('foo')),
+            TE.chain(() => _flydrive.read('foo')),
           )(),
         ).resolves.toStrictEqual(E.right(Buffer.from('foo')))
       })
@@ -119,8 +119,8 @@ describe('Storage', () => {
           pipe(
             Buffer.from('foo'),
             _flydrive.write('foo'),
-            TE.apFirst(_flydrive.delete('foo')),
-            TE.apSecond(_flydrive.read('foo')),
+            TE.chainFirst(() => _flydrive.delete('foo')),
+            TE.chain(() => _flydrive.read('foo')),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)

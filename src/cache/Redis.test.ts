@@ -23,7 +23,7 @@ describe('Cache', () => {
           pipe(
             'foo',
             _redis.set('foo', t.string),
-            TE.apSecond(_redis.get('foo', t.number)),
+            TE.chain(() => _redis.get('foo', t.number)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
@@ -35,7 +35,7 @@ describe('Cache', () => {
           pipe(
             'foo',
             _redis.set('foo', t.string),
-            TE.apSecond(_redis.get('foo', t.string)),
+            TE.chain(() => _redis.get('foo', t.string)),
             T.map(E.isRight),
           )(),
         ).resolves.toBe(true)
@@ -50,8 +50,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _redis.set('foo', t.string),
-            TE.apFirst(_redis.delete('foo')),
-            TE.apSecond(_redis.get('foo', t.string)),
+            TE.chainFirst(() => _redis.delete('foo')),
+            TE.chain(() => _redis.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
@@ -66,8 +66,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _redis.set('foo', t.string),
-            TE.apFirst(_redis.clear),
-            TE.apSecond(_redis.get('foo', t.string)),
+            TE.chainFirst(() => _redis.clear),
+            TE.chain(() => _redis.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
