@@ -2,10 +2,26 @@
   "name": "fortepiano",
   "version": "0.1.2",
   "description": "Playing actual music over fp-ts notes",
+  "keywords": [
+    "typescript",
+    "functional-programming",
+    "fp-ts",
+    "io-ts"
+  ],
+  "homepage": "https://github.com/facile-it/fortepiano#readme",
+  "bugs": {
+    "url": "https://github.com/facile-it/fortepiano/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/facile-it/fortepiano.git"
+  },
+  "license": "MIT",
+  "author": "Alberto Villa <villa.alberto@gmail.com>",
+  "sideEffects": false,
   "main": "./lib/index.js",
   "module": "./esm/index.js",
   "types": "./index.d.ts",
-  "sideEffects": false,
   "scripts": {
     "prebuild": "npm run clean",
     "build": "npm run build:esm && npm run build:cjs",
@@ -21,22 +37,6 @@
     "test": "jest",
     "test:coverage": "jest --coverage"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/facile-it/fortepiano.git"
-  },
-  "author": "Alberto Villa <villa.alberto@gmail.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/facile-it/fortepiano/issues"
-  },
-  "homepage": "https://github.com/facile-it/fortepiano#readme",
-  "keywords": [
-    "typescript",
-    "functional-programming",
-    "fp-ts",
-    "io-ts"
-  ],
   "devDependencies": {
     "@slynova/flydrive": "^1.0.0",
     "@types/jest": "^26.0.24",
@@ -98,5 +98,6 @@
     "redis": {
       "optional": true
     }
-  }
+  },
+  "packageManager": "yarn@3.2.0"
 }
