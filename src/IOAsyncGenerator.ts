@@ -7,17 +7,7 @@ import * as Eq from 'fp-ts/Eq'
 import * as Fi from 'fp-ts/Filterable'
 import * as FiWI from 'fp-ts/FilterableWithIndex'
 import * as FIO from 'fp-ts/FromIO'
-import {
-  constFalse,
-  constTrue,
-  flip,
-  flow,
-  Lazy,
-  not,
-  pipe,
-  Predicate,
-  Refinement,
-} from 'fp-ts/function'
+import { constFalse, constTrue, flip, flow, Lazy, pipe } from 'fp-ts/function'
 import * as Fu from 'fp-ts/Functor'
 import * as FuWI from 'fp-ts/FunctorWithIndex'
 import * as IO from 'fp-ts/IO'
@@ -26,7 +16,9 @@ import * as MIO from 'fp-ts/MonadIO'
 import * as Mono from 'fp-ts/Monoid'
 import * as O from 'fp-ts/Option'
 import * as P from 'fp-ts/Pointed'
+import * as Pr from 'fp-ts/Predicate'
 import * as RA from 'fp-ts/ReadonlyArray'
+import * as Re from 'fp-ts/Refinement'
 import * as S from 'fp-ts/Separated'
 import * as T from 'fp-ts/Task'
 import { curry } from './function'
@@ -200,13 +192,13 @@ export const MonadIO: MIO.MonadIO1<URI> = { ...Monad, ...FromIO }
 
 function _filter<A, B extends A>(
   fa: IOAsyncGenerator<A>,
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): IOAsyncGenerator<B>
 function _filter<A>(
   fa: IOAsyncGenerator<A>,
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): IOAsyncGenerator<A>
-function _filter<A>(fa: IOAsyncGenerator<A>, predicate: Predicate<A>) {
+function _filter<A>(fa: IOAsyncGenerator<A>, predicate: Pr.Predicate<A>) {
   return async function* () {
     for await (const a of fa()) {
       if (!predicate(a)) {
@@ -233,14 +225,14 @@ export const separate = Compactable.separate
 
 function _partition<A, B extends A>(
   fa: IOAsyncGenerator<A>,
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<B>>
 function _partition<A>(
   fa: IOAsyncGenerator<A>,
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<A>>
-function _partition<A>(fa: IOAsyncGenerator<A>, predicate: Predicate<A>) {
-  return S.separated(_filter(fa, not(predicate)), _filter(fa, predicate))
+function _partition<A>(fa: IOAsyncGenerator<A>, predicate: Pr.Predicate<A>) {
+  return S.separated(_filter(fa, Pr.not(predicate)), _filter(fa, predicate))
 }
 
 export const Filterable: Fi.Filterable1<URI> = {
@@ -253,26 +245,26 @@ export const Filterable: Fi.Filterable1<URI> = {
 }
 
 export function filter<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (fa: IOAsyncGenerator<A>) => IOAsyncGenerator<B>
 export function filter<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (fa: IOAsyncGenerator<A>) => IOAsyncGenerator<A>
-export function filter<A>(predicate: Predicate<A>) {
+export function filter<A>(predicate: Pr.Predicate<A>) {
   return (fa: IOAsyncGenerator<A>) => Filterable.filter(fa, predicate)
 }
 export const filterMap = curry(flip(Filterable.filterMap))
 export function partition<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (
   fa: IOAsyncGenerator<A>,
 ) => S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<B>>
 export function partition<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (
   fa: IOAsyncGenerator<A>,
 ) => S.Separated<IOAsyncGenerator<A>, IOAsyncGenerator<A>>
-export function partition<A>(predicate: Predicate<A>) {
+export function partition<A>(predicate: Pr.Predicate<A>) {
   return (fa: IOAsyncGenerator<A>) => Filterable.partition(fa, predicate)
 }
 export const partitionMap = curry(flip(Filterable.partitionMap))
@@ -506,12 +498,12 @@ export const head = <A>(as: IOAsyncGenerator<A>): T.Task<O.Option<A>> =>
   pipe(as, lookup(0))
 
 export function find<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (as: IOAsyncGenerator<A>) => T.Task<O.Option<B>>
 export function find<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (as: IOAsyncGenerator<A>) => T.Task<O.Option<A>>
-export function find<A>(predicate: Predicate<A>) {
+export function find<A>(predicate: Pr.Predicate<A>) {
   return (as: IOAsyncGenerator<A>) => async () => {
     for await (const a of as()) {
       if (predicate(a)) {

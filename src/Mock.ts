@@ -7,7 +7,6 @@ import {
   constUndefined,
   constVoid,
   flip,
-  not,
   pipe,
 } from 'fp-ts/function'
 import * as F from 'fp-ts/Functor'
@@ -18,6 +17,7 @@ import * as N from 'fp-ts/number'
 import * as Op from 'fp-ts/Option'
 import * as Or from 'fp-ts/Ord'
 import * as P from 'fp-ts/Pointed'
+import * as Pr from 'fp-ts/Predicate'
 import * as R from 'fp-ts/Random'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
@@ -69,7 +69,7 @@ export const Pointed: P.Pointed1<URI> = {
             () => a,
             (_a) =>
               $t.struct.is(a) && $t.struct.is(_a)
-                ? (pipe(_a, $St.filterDeep(not(t.undefined.is)), (_a) =>
+                ? (pipe(_a, $St.filterDeep(Pr.not(t.undefined.is)), (_a) =>
                     $St.patch<A & $St.struct, PartialDeep<A & $St.struct>>(
                       _a as PartialDeep<A & $St.struct>,
                     )(a),

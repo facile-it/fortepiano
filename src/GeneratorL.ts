@@ -19,10 +19,7 @@ import {
   flow,
   identity,
   Lazy,
-  not,
-  pipe,
-  Predicate,
-  Refinement,
+  pipe
 } from 'fp-ts/function'
 import * as Fu from 'fp-ts/Functor'
 import * as FuWI from 'fp-ts/FunctorWithIndex'
@@ -35,9 +32,10 @@ import {
   URIS,
   URIS2,
   URIS3,
-  URIS4,
+  URIS4
 } from 'fp-ts/HKT'
 import * as IO from 'fp-ts/IO'
+import * as Pr from 'fp-ts/Predicate'
 import * as Mona from 'fp-ts/Monad'
 import * as MIO from 'fp-ts/MonadIO'
 import * as Mono from 'fp-ts/Monoid'
@@ -48,6 +46,7 @@ import * as R from 'fp-ts/Random'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
+import * as Re from 'fp-ts/Refinement'
 import * as S from 'fp-ts/Separated'
 import * as T from 'fp-ts/Traversable'
 import * as TWI from 'fp-ts/TraversableWithIndex'
@@ -245,10 +244,10 @@ export const separate = Compactable.separate
 
 function _filter<A, B extends A>(
   fa: GeneratorL<A>,
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): GeneratorL<B>
-function _filter<A>(fa: GeneratorL<A>, predicate: Predicate<A>): GeneratorL<A>
-function _filter<A>(fa: GeneratorL<A>, predicate: Predicate<A>) {
+function _filter<A>(fa: GeneratorL<A>, predicate: Pr.Predicate<A>): GeneratorL<A>
+function _filter<A>(fa: GeneratorL<A>, predicate: Pr.Predicate<A>) {
   return function* () {
     for (const a of fa()) {
       if (!predicate(a)) {
@@ -262,15 +261,15 @@ function _filter<A>(fa: GeneratorL<A>, predicate: Predicate<A>) {
 
 function _partition<A, B extends A>(
   fa: GeneratorL<A>,
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): S.Separated<GeneratorL<A>, GeneratorL<B>>
 function _partition<A>(
   fa: GeneratorL<A>,
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): S.Separated<GeneratorL<A>, GeneratorL<A>>
-function _partition<A>(fa: GeneratorL<A>, predicate: Predicate<A>) {
+function _partition<A>(fa: GeneratorL<A>, predicate: Pr.Predicate<A>) {
   return S.separated(
-    Filterable.filter(fa, not(predicate)),
+    Filterable.filter(fa, Pr.not(predicate)),
     Filterable.filter(fa, predicate),
   )
 }
@@ -285,22 +284,22 @@ export const Filterable: Fi.Filterable1<URI> = {
 }
 
 export function filter<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (fa: GeneratorL<A>) => GeneratorL<B>
 export function filter<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (fa: GeneratorL<A>) => GeneratorL<A>
-export function filter<A>(predicate: Predicate<A>) {
+export function filter<A>(predicate: Pr.Predicate<A>) {
   return (fa: GeneratorL<A>) => Filterable.filter(fa, predicate)
 }
 export const filterMap = curry(flip(Filterable.filterMap))
 export function partition<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<B>>
 export function partition<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<A>>
-export function partition<A>(predicate: Predicate<A>) {
+export function partition<A>(predicate: Pr.Predicate<A>) {
   return (fa: GeneratorL<A>) => Filterable.partition(fa, predicate)
 }
 export const partitionMap = curry(flip(Filterable.partitionMap))
@@ -885,12 +884,12 @@ export const takeRight =
     pipe(ma, toReadonlyArray, RA.takeRight(n), fromReadonlyArray)
 
 export function takeLeftWhile<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (ma: GeneratorL<A>) => GeneratorL<B>
 export function takeLeftWhile<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (ma: GeneratorL<A>) => GeneratorL<A>
-export function takeLeftWhile<A>(predicate: Predicate<A>) {
+export function takeLeftWhile<A>(predicate: Pr.Predicate<A>) {
   return (ma: GeneratorL<A>) =>
     function* () {
       for (const a of ma()) {
@@ -922,12 +921,12 @@ export const dropRight =
     pipe(ma, toReadonlyArray, RA.dropRight(n), fromReadonlyArray)
 
 export function dropLeftWhile<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (ma: GeneratorL<A>) => GeneratorL<B>
 export function dropLeftWhile<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (ma: GeneratorL<A>) => GeneratorL<A>
-export function dropLeftWhile<A>(predicate: Predicate<A>) {
+export function dropLeftWhile<A>(predicate: Pr.Predicate<A>) {
   return (ma: GeneratorL<A>) =>
     function* () {
       const as = ma()
@@ -1145,16 +1144,16 @@ export interface Spanned<I, R> {
 }
 
 export function spanLeft<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (ma: GeneratorL<A>) => Spanned<B, A>
 export function spanLeft<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (ma: GeneratorL<A>) => Spanned<A, A>
-export function spanLeft<A>(predicate: Predicate<A>) {
+export function spanLeft<A>(predicate: Pr.Predicate<A>) {
   return (ma: GeneratorL<A>) => {
     const i = pipe(
       ma,
-      findFirstIndex(not(predicate)),
+      findFirstIndex(Pr.not(predicate)),
       Op.getOrElse(() => Infinity),
     )
     const [init, rest] = pipe(ma, splitAt(i))
@@ -1183,7 +1182,7 @@ export const unzip = <A, B>(
 
 export const isEmpty = matchLeft(constTrue, constFalse)
 
-export const isNonEmpty = not(isEmpty)
+export const isNonEmpty = Pr.not(isEmpty)
 
 export const size = flow(
   mapWithIndex(identity),
@@ -1200,12 +1199,12 @@ export const isOutOfBound =
     n >= 0 && n < size(ma)
 
 export function findFirst<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (ma: GeneratorL<A>) => Op.Option<B>
 export function findFirst<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (ma: GeneratorL<A>) => Op.Option<A>
-export function findFirst<A>(predicate: Predicate<A>) {
+export function findFirst<A>(predicate: Pr.Predicate<A>) {
   return (ma: GeneratorL<A>) => {
     for (const a of ma()) {
       if (predicate(a)) {
@@ -1231,7 +1230,7 @@ export const findFirstMap =
   }
 
 export const findFirstIndex =
-  <A>(predicate: Predicate<A>) =>
+  <A>(predicate: Pr.Predicate<A>) =>
   (ma: GeneratorL<A>): Op.Option<number> =>
     pipe(
       ma,
@@ -1241,12 +1240,12 @@ export const findFirstIndex =
     )
 
 export function findLast<A, B extends A>(
-  refinement: Refinement<A, B>,
+  refinement: Re.Refinement<A, B>,
 ): (ma: GeneratorL<A>) => Op.Option<B>
 export function findLast<A>(
-  predicate: Predicate<A>,
+  predicate: Pr.Predicate<A>,
 ): (ma: GeneratorL<A>) => Op.Option<A>
-export function findLast<A>(predicate: Predicate<A>) {
+export function findLast<A>(predicate: Pr.Predicate<A>) {
   return (ma: GeneratorL<A>) => pipe(ma, reverse, findFirst(predicate))
 }
 
@@ -1256,7 +1255,7 @@ export const findLastMap =
     pipe(ma, reverse, findFirstMap(f))
 
 export const findLastIndex =
-  <A>(predicate: Predicate<A>) =>
+  <A>(predicate: Pr.Predicate<A>) =>
   (ma: GeneratorL<A>): Op.Option<number> =>
     pipe(
       ma,
