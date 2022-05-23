@@ -4,6 +4,15 @@ import * as t from 'io-ts'
 import { failure } from 'io-ts/PathReporter'
 import * as $S from './struct'
 
+/**
+ * @see https://tc39.es/proposal-promise-any/#sec-aggregate-error-objects
+ */
+export class AggregateError extends Error {
+  constructor(readonly errors: ReadonlyArray<Error>, message?: string) {
+    super(message)
+  }
+}
+
 const is = (u: unknown): u is Error =>
   t
     .intersection([
