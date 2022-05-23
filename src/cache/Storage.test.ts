@@ -50,7 +50,7 @@ describe('Cache', () => {
           pipe(
             'foo',
             _storage.set('foo', t.string),
-            TE.apSecond(_storage.get('foo', t.number)),
+            TE.chain(() => _storage.get('foo', t.number)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
@@ -62,7 +62,7 @@ describe('Cache', () => {
           pipe(
             'foo',
             _storage.set('foo', t.string),
-            TE.apSecond(_storage.get('foo', t.string)),
+            TE.chain(() => _storage.get('foo', t.string)),
             T.map(E.isRight),
           )(),
         ).resolves.toBe(true)
@@ -77,8 +77,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _storage.set('foo', t.string),
-            TE.apFirst(_storage.delete('foo')),
-            TE.apSecond(_storage.get('foo', t.string)),
+            TE.chainFirst(() => _storage.delete('foo')),
+            TE.chain(() => _storage.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
@@ -93,8 +93,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _storage.set('foo', t.string),
-            TE.apFirst(_storage.clear),
-            TE.apSecond(_storage.get('foo', t.string)),
+            TE.chainFirst(() => _storage.clear),
+            TE.chain(() => _storage.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)

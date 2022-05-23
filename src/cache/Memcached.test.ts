@@ -25,7 +25,7 @@ describe('Cache', () => {
           pipe(
             'foo',
             _memcached.set('foo', t.string),
-            TE.apSecond(_memcached.get('foo', t.number)),
+            TE.chain(() => _memcached.get('foo', t.number)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
@@ -37,7 +37,7 @@ describe('Cache', () => {
           pipe(
             'foo',
             _memcached.set('foo', t.string),
-            TE.apSecond(_memcached.get('foo', t.string)),
+            TE.chain(() => _memcached.get('foo', t.string)),
             T.map(E.isRight),
           )(),
         ).resolves.toBe(true)
@@ -52,8 +52,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _memcached.set('foo', t.string),
-            TE.apFirst(_memcached.delete('foo')),
-            TE.apSecond(_memcached.get('foo', t.string)),
+            TE.chainFirst(() => _memcached.delete('foo')),
+            TE.chain(() => _memcached.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)
@@ -68,8 +68,8 @@ describe('Cache', () => {
           pipe(
             'foo',
             _memcached.set('foo', t.string),
-            TE.apFirst(_memcached.clear),
-            TE.apSecond(_memcached.get('foo', t.string)),
+            TE.chainFirst(() => _memcached.clear),
+            TE.chain(() => _memcached.get('foo', t.string)),
             T.map(E.isLeft),
           )(),
         ).resolves.toBe(true)

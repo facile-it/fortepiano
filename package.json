@@ -2,13 +2,29 @@
   "name": "fortepiano",
   "version": "0.1.2",
   "description": "Playing actual music over fp-ts notes",
+  "keywords": [
+    "typescript",
+    "functional-programming",
+    "fp-ts",
+    "io-ts"
+  ],
+  "homepage": "https://github.com/facile-it/fortepiano#readme",
+  "bugs": {
+    "url": "https://github.com/facile-it/fortepiano/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/facile-it/fortepiano.git"
+  },
+  "license": "MIT",
+  "author": "Alberto Villa <villa.alberto@gmail.com>",
+  "sideEffects": false,
   "main": "./lib/index.js",
   "module": "./esm/index.js",
   "types": "./index.d.ts",
-  "sideEffects": false,
   "scripts": {
-    "prebuild": "npm run clean",
-    "build": "npm run build:esm && npm run build:cjs",
+    "prebuild": "yarn clean",
+    "build": "yarn prebuild && yarn build:esm && yarn build:cjs",
     "build:cjs": "tsc --build ./tsconfig.cjs.json",
     "build:esm": "tsc --build ./tsconfig.esm.json",
     "clean": "rm -rf ./dist/",
@@ -16,28 +32,13 @@
     "eslint:fix": "eslint --fix ./",
     "prettier": "prettier --check ./",
     "prettier:fix": "prettier --write ./",
-    "prerelease": "npm run build && ./scripts/hybridize.sh && cp ./package.json ./*.md ./dist/",
-    "release": "npm publish ./dist/",
+    "prerelease": "yarn build && ./scripts/hybridize.sh && cp ./package.json ./*.md ./dist/",
+    "release": "yarn prerelease && yarn publish ./dist/",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/facile-it/fortepiano.git"
-  },
-  "author": "Alberto Villa <villa.alberto@gmail.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/facile-it/fortepiano/issues"
-  },
-  "homepage": "https://github.com/facile-it/fortepiano#readme",
-  "keywords": [
-    "typescript",
-    "functional-programming",
-    "fp-ts",
-    "io-ts"
-  ],
   "devDependencies": {
+    "@rushstack/eslint-patch": "^1.1.3",
     "@slynova/flydrive": "^1.0.0",
     "@types/jest": "^26.0.24",
     "@types/memcached": "^2.0.0",
@@ -45,8 +46,8 @@
     "@types/redis": "^2.0.0",
     "@types/redis-mock": "^0.17.0",
     "axios": "^0.21.2",
-    "eslint": "^7.31.0",
-    "eslint-config-facile": "^0.4.1",
+    "eslint": "^8.16.0",
+    "eslint-config-facile": "^0.5.0",
     "fp-ts": "^2.0.0",
     "got": "^11.0.0",
     "io-ts": "^2.0.0",
@@ -57,12 +58,12 @@
     "monocle-ts": "^2.3.10",
     "newtype-ts": "^0.3.4",
     "node-fetch": "^2.6.7",
-    "prettier": "^2.3.2",
+    "prettier": "^2.6.2",
     "redis": "^3.0.0",
     "redis-mock": "^0.56.3",
     "ts-jest": "^26.5.6",
     "ts-node": "^9.1.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.6.4"
   },
   "peerDependencies": {
     "@slynova/flydrive": "^1.0.0",
@@ -98,5 +99,6 @@
     "redis": {
       "optional": true
     }
-  }
+  },
+  "packageManager": "yarn@3.2.0"
 }

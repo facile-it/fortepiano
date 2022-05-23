@@ -21,7 +21,7 @@ describe('Cache', () => {
         await expect(
           pipe(
             c0.set('foo', t.string)('bar'),
-            TE.apSecond(c.get('foo', t.string)),
+            TE.chain(() => c.get('foo', t.string)),
           )(),
         ).resolves.toStrictEqual(E.right('bar'))
       })
@@ -29,7 +29,7 @@ describe('Cache', () => {
         await expect(
           pipe(
             c1.set('foo', t.string)('bar'),
-            TE.apSecond(c.get('foo', t.string)),
+            TE.chain(() => c.get('foo', t.string)),
           )(),
         ).resolves.toStrictEqual(E.right('bar'))
       })
@@ -37,9 +37,9 @@ describe('Cache', () => {
         await expect(
           pipe(
             c.set('foo', t.string)('bar'),
-            TE.apFirst(c0.clear),
-            TE.apS('c', c.get('foo', t.string)),
-            TE.apS('c1', c1.get('foo', t.string)),
+            TE.chainFirst(() => c0.clear),
+            TE.bind('c', () => c.get('foo', t.string)),
+            TE.bind('c1', () => c1.get('foo', t.string)),
           )(),
         ).resolves.toStrictEqual(E.right({ c: 'bar', c1: 'bar' }))
       })
@@ -50,9 +50,9 @@ describe('Cache', () => {
         await expect(
           pipe(
             c.set('foo', t.string)('bar'),
-            TE.apS('c', c.get('foo', t.string)),
-            TE.apS('c0', c0.get('foo', t.string)),
-            TE.apS('c1', c1.get('foo', t.string)),
+            TE.bind('c', () => c.get('foo', t.string)),
+            TE.bind('c0', () => c0.get('foo', t.string)),
+            TE.bind('c1', () => c1.get('foo', t.string)),
           )(),
         ).resolves.toStrictEqual(E.right({ c: 'bar', c0: 'bar', c1: 'bar' }))
       })
@@ -63,11 +63,11 @@ describe('Cache', () => {
         await expect(
           pipe(
             c.set('foo', t.string)('bar'),
-            T.apFirst(c.delete('foo')),
+            T.chainFirst(() => c.delete('foo')),
             T.map(constUndefined),
-            T.apS('c', pipe(c.get('foo', t.string), T.map(E.isLeft))),
-            T.apS('c0', pipe(c0.get('foo', t.string), T.map(E.isLeft))),
-            T.apS('c1', pipe(c1.get('foo', t.string), T.map(E.isLeft))),
+            T.bind('c', () => pipe(c.get('foo', t.string), T.map(E.isLeft))),
+            T.bind('c0', () => pipe(c0.get('foo', t.string), T.map(E.isLeft))),
+            T.bind('c1', () => pipe(c1.get('foo', t.string), T.map(E.isLeft))),
           )(),
         ).resolves.toStrictEqual({ c: true, c0: true, c1: true })
       })
@@ -78,11 +78,11 @@ describe('Cache', () => {
         await expect(
           pipe(
             c.set('foo', t.string)('bar'),
-            T.apFirst(c.clear),
+            T.chainFirst(() => c.clear),
             T.map(constUndefined),
-            T.apS('c', pipe(c.get('foo', t.string), T.map(E.isLeft))),
-            T.apS('c0', pipe(c0.get('foo', t.string), T.map(E.isLeft))),
-            T.apS('c1', pipe(c1.get('foo', t.string), T.map(E.isLeft))),
+            T.bind('c', () => pipe(c.get('foo', t.string), T.map(E.isLeft))),
+            T.bind('c0', () => pipe(c0.get('foo', t.string), T.map(E.isLeft))),
+            T.bind('c1', () => pipe(c1.get('foo', t.string), T.map(E.isLeft))),
           )(),
         ).resolves.toStrictEqual({ c: true, c0: true, c1: true })
       })
