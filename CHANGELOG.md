@@ -9,10 +9,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Add `Struct` type.
+- Rename `GeneratorL` module to `Yield`.
 
 ### Deprecated
 
 - Deprecate `struct` (use `Struct` instead).
+- Deprecate `GeneratorL` module (use `Yield` instead).
 
 ## [0.1.2](https://github.com/facile-it/fortepiano/compare/v0.1.1...v0.1.2) - 2022-04-29
 

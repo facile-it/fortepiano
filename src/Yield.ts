@@ -1,4 +1,4 @@
-import * as $generatorL from 'fp-ts/Alt'
+import * as _Alt from 'fp-ts/Alt'
 import * as Alte from 'fp-ts/Alternative'
 import * as Appli from 'fp-ts/Applicative'
 import * as _Apply from 'fp-ts/Apply'
@@ -55,31 +55,19 @@ import * as W from 'fp-ts/Witherable'
 import { Int } from 'io-ts'
 import { curry } from './function'
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const URI = 'GeneratorL'
+export const URI = 'Yield'
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export type URI = typeof URI
 
 declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
-    [URI]: GeneratorL<A>
+    [URI]: Yield<A>
   }
 }
 
-/**
- * @deprecated Use `Yield` instead
- */
-export type GeneratorL<A> = Lazy<Generator<A>>
+export type Yield<A> = Lazy<Generator<A>>
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const getMonoid = <A>(): Mono.Monoid<GeneratorL<A>> => ({
+export const getMonoid = <A>(): Mono.Monoid<Yield<A>> => ({
   empty: fromReadonlyArray([]),
   concat: (x, y) =>
     function* () {
@@ -88,10 +76,7 @@ export const getMonoid = <A>(): Mono.Monoid<GeneratorL<A>> => ({
     },
 })
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const getEq = <A>(E: Eq.Eq<A>): Eq.Eq<GeneratorL<A>> =>
+export const getEq = <A>(E: Eq.Eq<A>): Eq.Eq<Yield<A>> =>
   Eq.fromEquals((x, y) => {
     const bs = y()
     for (const a of x()) {
@@ -104,10 +89,7 @@ export const getEq = <A>(E: Eq.Eq<A>): Eq.Eq<GeneratorL<A>> =>
     return Boolean(bs.next().done)
   })
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const getOrd = <A>(O: Or.Ord<A>): Or.Ord<GeneratorL<A>> =>
+export const getOrd = <A>(O: Or.Ord<A>): Or.Ord<Yield<A>> =>
   Or.fromCompare((first, second) => {
     const bs = second()
     for (const a of first()) {
@@ -125,9 +107,6 @@ export const getOrd = <A>(O: Or.Ord<A>): Or.Ord<GeneratorL<A>> =>
     return !bs.next().done ? -1 : 0
   })
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Functor: Fu.Functor1<URI> = {
   URI,
   map: (fa, f) =>
@@ -138,22 +117,10 @@ export const Functor: Fu.Functor1<URI> = {
     },
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const map = curry(flip(Functor.map))
-/**
- * @deprecated Use `Yield` module instead
- */
 export const flap = Fu.flap(Functor)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const bindTo = Fu.bindTo(Functor)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Pointed: P.Pointed1<URI> = {
   URI,
   of: (a) =>
@@ -162,130 +129,61 @@ export const Pointed: P.Pointed1<URI> = {
     },
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const of = Pointed.of
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Do = Pointed.of({})
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const FunctorWithIndex: FuWI.FunctorWithIndex1<URI, number> = {
   ...Functor,
   mapWithIndex: (fa, f) =>
     Functor.map(pipe(fa, zip(range(0))), ([a, i]) => f(i, a)),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const mapWithIndex = curry(flip(FunctorWithIndex.mapWithIndex))
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Apply: _Apply.Apply1<URI> = {
   ...Functor,
   ap: (fab, fa) => Chain.chain(fab, curry(Functor.map)(fa)),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const ap = curry(flip(Apply.ap))
-/**
- * @deprecated Use `Yield` module instead
- */
 export const apFirst = _Apply.apFirst(Apply)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const apSecond = _Apply.apSecond(Apply)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const apS = _Apply.apS(Apply)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Applicative: Appli.Applicative1<URI> = { ...Pointed, ...Apply }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Chain: Ch.Chain1<URI> = {
   ...Apply,
   chain: (fa, f) => flatten(Functor.map(fa, f)),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const chain = curry(flip(Chain.chain))
-/**
- * @deprecated Use `Yield` module instead
- */
 export const chainFirst = Ch.chainFirst(Chain)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const bind = Ch.bind(Chain)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const chainWithIndex =
-  <A, B>(f: (i: number, a: A) => GeneratorL<B>) =>
-  (fa: GeneratorL<A>): GeneratorL<B> =>
+  <A, B>(f: (i: number, a: A) => Yield<B>) =>
+  (fa: Yield<A>): Yield<B> =>
     pipe(
       fa,
       zip(range(0)),
       chain(([a, i]) => f(i, a)),
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Monad: Mona.Monad1<URI> = { ...Applicative, ...Chain }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const FromIO: FIO.FromIO1<URI> = {
   URI,
   fromIO: (fa) => pipe(range(0), map(fa)),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const fromIO = FromIO.fromIO
-/**
- * @deprecated Use `Yield` module instead
- */
 export const fromIOK = FIO.fromIOK(FromIO)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const chainIOK = FIO.chainIOK(FromIO, Chain)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const chainFirstIOK = FIO.chainFirstIOK(FromIO, Chain)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const MonadIO: MIO.MonadIO1<URI> = { ...Monad, ...FromIO }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Unfoldable: U.Unfoldable1<URI> = {
   URI,
   unfold: (b, f) =>
@@ -300,42 +198,24 @@ export const Unfoldable: U.Unfoldable1<URI> = {
     },
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const unfold = curry(flip(Unfoldable.unfold))
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const Alt: $generatorL.Alt1<URI> = {
+export const Alt: _Alt.Alt1<URI> = {
   ...Functor,
-  alt: <A>(fa: GeneratorL<A>, that: Lazy<GeneratorL<A>>) =>
+  alt: <A>(fa: Yield<A>, that: Lazy<Yield<A>>) =>
     getMonoid<A>().concat(fa, that()),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const alt = curry(flip(Alt.alt))
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Alternative: Alte.Alternative1<URI> = {
   ...Applicative,
   ...Alt,
   zero: <A>() => getMonoid<A>().empty,
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const zero = Alternative.zero
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Extend: Ex.Extend1<URI> = {
   ...Functor,
   extend: (wa, f) =>
@@ -345,18 +225,9 @@ export const Extend: Ex.Extend1<URI> = {
     ),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const extend = curry(flip(Extend.extend))
-/**
- * @deprecated Use `Yield` module instead
- */
-export const duplicate = <A>(fa: GeneratorL<A>) => pipe(fa, extend(identity))
+export const duplicate = <A>(fa: Yield<A>) => pipe(fa, extend(identity))
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Compactable: Co.Compactable1<URI> = {
   URI,
   compact: (fa) =>
@@ -368,24 +239,15 @@ export const Compactable: Co.Compactable1<URI> = {
     ),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const compact = Compactable.compact
-/**
- * @deprecated Use `Yield` module instead
- */
 export const separate = Compactable.separate
 
 function _filter<A, B extends A>(
-  fa: GeneratorL<A>,
+  fa: Yield<A>,
   refinement: Re.Refinement<A, B>,
-): GeneratorL<B>
-function _filter<A>(
-  fa: GeneratorL<A>,
-  predicate: Pr.Predicate<A>,
-): GeneratorL<A>
-function _filter<A>(fa: GeneratorL<A>, predicate: Pr.Predicate<A>) {
+): Yield<B>
+function _filter<A>(fa: Yield<A>, predicate: Pr.Predicate<A>): Yield<A>
+function _filter<A>(fa: Yield<A>, predicate: Pr.Predicate<A>) {
   return function* () {
     for (const a of fa()) {
       if (!predicate(a)) {
@@ -398,23 +260,20 @@ function _filter<A>(fa: GeneratorL<A>, predicate: Pr.Predicate<A>) {
 }
 
 function _partition<A, B extends A>(
-  fa: GeneratorL<A>,
+  fa: Yield<A>,
   refinement: Re.Refinement<A, B>,
-): S.Separated<GeneratorL<A>, GeneratorL<B>>
+): S.Separated<Yield<A>, Yield<B>>
 function _partition<A>(
-  fa: GeneratorL<A>,
+  fa: Yield<A>,
   predicate: Pr.Predicate<A>,
-): S.Separated<GeneratorL<A>, GeneratorL<A>>
-function _partition<A>(fa: GeneratorL<A>, predicate: Pr.Predicate<A>) {
+): S.Separated<Yield<A>, Yield<A>>
+function _partition<A>(fa: Yield<A>, predicate: Pr.Predicate<A>) {
   return S.separated(
     Filterable.filter(fa, Pr.not(predicate)),
     Filterable.filter(fa, predicate),
   )
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Filterable: Fi.Filterable1<URI> = {
   ...Functor,
   ...Compactable,
@@ -424,61 +283,37 @@ export const Filterable: Fi.Filterable1<URI> = {
   partitionMap: (fa, f) => Compactable.separate(Functor.map(fa, f)),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function filter<A, B extends A>(
   refinement: Re.Refinement<A, B>,
-): (fa: GeneratorL<A>) => GeneratorL<B>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (fa: Yield<A>) => Yield<B>
 export function filter<A>(
   predicate: Pr.Predicate<A>,
-): (fa: GeneratorL<A>) => GeneratorL<A>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (fa: Yield<A>) => Yield<A>
 export function filter<A>(predicate: Pr.Predicate<A>) {
-  return (fa: GeneratorL<A>) => Filterable.filter(fa, predicate)
+  return (fa: Yield<A>) => Filterable.filter(fa, predicate)
 }
-/**
- * @deprecated Use `Yield` module instead
- */
 export const filterMap = curry(flip(Filterable.filterMap))
-/**
- * @deprecated Use `Yield` module instead
- */
 export function partition<A, B extends A>(
   refinement: Re.Refinement<A, B>,
-): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (fa: Yield<A>) => S.Separated<Yield<A>, Yield<B>>
 export function partition<A>(
   predicate: Pr.Predicate<A>,
-): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<A>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (fa: Yield<A>) => S.Separated<Yield<A>, Yield<A>>
 export function partition<A>(predicate: Pr.Predicate<A>) {
-  return (fa: GeneratorL<A>) => Filterable.partition(fa, predicate)
+  return (fa: Yield<A>) => Filterable.partition(fa, predicate)
 }
-/**
- * @deprecated Use `Yield` module instead
- */
 export const partitionMap = curry(flip(Filterable.partitionMap))
 
 function _filterWithIndex<A, B extends A>(
-  fa: GeneratorL<A>,
+  fa: Yield<A>,
   refinementWithIndex: (i: number, a: A) => a is B,
-): GeneratorL<B>
+): Yield<B>
 function _filterWithIndex<A>(
-  fa: GeneratorL<A>,
+  fa: Yield<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
-): GeneratorL<A>
+): Yield<A>
 function _filterWithIndex<A>(
-  fa: GeneratorL<A>,
+  fa: Yield<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
   return Compactable.compact(
@@ -489,15 +324,15 @@ function _filterWithIndex<A>(
 }
 
 function _partitionWithIndex<A, B extends A>(
-  fa: GeneratorL<A>,
+  fa: Yield<A>,
   refinementWithIndex: (i: number, a: A) => a is B,
-): S.Separated<GeneratorL<A>, GeneratorL<B>>
+): S.Separated<Yield<A>, Yield<B>>
 function _partitionWithIndex<A>(
-  fa: GeneratorL<A>,
+  fa: Yield<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
-): S.Separated<GeneratorL<A>, GeneratorL<A>>
+): S.Separated<Yield<A>, Yield<A>>
 function _partitionWithIndex<A>(
-  fa: GeneratorL<A>,
+  fa: Yield<A>,
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
   return Compactable.separate(
@@ -507,9 +342,6 @@ function _partitionWithIndex<A>(
   )
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const FilterableWithIndex: FiWI.FilterableWithIndex1<URI, number> = {
   ...FunctorWithIndex,
   ...Filterable,
@@ -521,64 +353,37 @@ export const FilterableWithIndex: FiWI.FilterableWithIndex1<URI, number> = {
     Compactable.separate(FunctorWithIndex.mapWithIndex(fa, f)),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function filterWithIndex<A, B extends A>(
   refinementWithIndex: (i: number, a: A) => a is B,
-): (fa: GeneratorL<A>) => GeneratorL<B>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (fa: Yield<A>) => Yield<B>
 export function filterWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
-): (fa: GeneratorL<A>) => GeneratorL<A>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (fa: Yield<A>) => Yield<A>
 export function filterWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
-  return (fa: GeneratorL<A>) =>
+  return (fa: Yield<A>) =>
     FilterableWithIndex.filterWithIndex(fa, predicateWithIndex)
 }
-/**
- * @deprecated Use `Yield` module instead
- */
 export const filterMapWithIndex = curry(
   flip(FilterableWithIndex.filterMapWithIndex),
 )
-/**
- * @deprecated Use `Yield` module instead
- */
 export function partitionWithIndex<A, B extends A>(
   refinementWithIndex: (i: number, a: A) => a is B,
-): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (fa: Yield<A>) => S.Separated<Yield<A>, Yield<B>>
 export function partitionWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
-): (fa: GeneratorL<A>) => S.Separated<GeneratorL<A>, GeneratorL<A>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (fa: Yield<A>) => S.Separated<Yield<A>, Yield<A>>
 export function partitionWithIndex<A>(
   predicateWithIndex: (i: number, a: A) => boolean,
 ) {
-  return (fa: GeneratorL<A>) =>
+  return (fa: Yield<A>) =>
     FilterableWithIndex.partitionWithIndex(fa, predicateWithIndex)
 }
-/**
- * @deprecated Use `Yield` module instead
- */
 export const partitionMapWithIndex = curry(
   flip(FilterableWithIndex.partitionMapWithIndex),
 )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Foldable: Fo.Foldable1<URI> = {
   URI,
   reduce: (fa, b, f) =>
@@ -589,32 +394,20 @@ export const Foldable: Fo.Foldable1<URI> = {
     FoldableWithIndex.reduceRightWithIndex(fa, b, (_, a, _b) => f(a, _b)),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const reduce =
   <A, B>(b: B, f: (b: B, a: A) => B) =>
-  (fa: GeneratorL<A>) =>
+  (fa: Yield<A>) =>
     Foldable.reduce(fa, b, f)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const foldMap =
   <M>(M: Mono.Monoid<M>) =>
   <A>(f: (a: A) => M) =>
-  (fa: GeneratorL<A>) =>
+  (fa: Yield<A>) =>
     Foldable.foldMap(M)(fa, f)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const reduceRight =
   <A, B>(b: B, f: (a: A, b: B) => B) =>
-  (fa: GeneratorL<A>) =>
+  (fa: Yield<A>) =>
     Foldable.reduceRight(fa, b, f)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const FoldableWithIndex: FoWI.FoldableWithIndex1<URI, number> = {
   ...Foldable,
   reduceWithIndex: (fa, b, f) =>
@@ -634,117 +427,76 @@ export const FoldableWithIndex: FoWI.FoldableWithIndex1<URI, number> = {
     pipe(fa, toReadonlyArray, RA.reduceRightWithIndex(b, f)),
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const reduceWithIndex =
   <A, B>(b: B, f: (i: number, b: B, a: A) => B) =>
-  (fa: GeneratorL<A>) =>
+  (fa: Yield<A>) =>
     FoldableWithIndex.reduceWithIndex(fa, b, f)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const foldMapWithIndex =
   <M>(M: Mono.Monoid<M>) =>
   <A>(f: (i: number, a: A) => M) =>
-  (fa: GeneratorL<A>) =>
+  (fa: Yield<A>) =>
     FoldableWithIndex.foldMapWithIndex(M)(fa, f)
-/**
- * @deprecated Use `Yield` module instead
- */
 export const reduceRightWithIndex =
   <A, B>(b: B, f: (i: number, a: A, b: B) => B) =>
-  (fa: GeneratorL<A>) =>
+  (fa: Yield<A>) =>
     FoldableWithIndex.reduceRightWithIndex(fa, b, f)
 
 function _traverse<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <A, S, R, E, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (a: A) => Kind4<F, S, R, E, B>,
-) => Kind4<F, S, R, E, GeneratorL<B>>
+) => Kind4<F, S, R, E, Yield<B>>
 function _traverse<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (a: A) => Kind3<F, R, E, B>,
-) => Kind3<F, R, E, GeneratorL<B>>
+) => Kind3<F, R, E, Yield<B>>
 function _traverse<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (a: A) => Kind3<F, R, E, B>,
-) => Kind3<F, R, E, GeneratorL<B>>
+) => Kind3<F, R, E, Yield<B>>
 function _traverse<F extends URIS2>(
   F: Appli.Applicative2<F>,
-): <A, E, B>(
-  ta: GeneratorL<A>,
-  f: (a: A) => Kind2<F, E, B>,
-) => Kind2<F, E, GeneratorL<B>>
+): <A, E, B>(ta: Yield<A>, f: (a: A) => Kind2<F, E, B>) => Kind2<F, E, Yield<B>>
 function _traverse<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
-): <A, B>(
-  ta: GeneratorL<A>,
-  f: (a: A) => Kind2<F, E, B>,
-) => Kind2<F, E, GeneratorL<B>>
+): <A, B>(ta: Yield<A>, f: (a: A) => Kind2<F, E, B>) => Kind2<F, E, Yield<B>>
 function _traverse<F extends URIS>(
   F: Appli.Applicative1<F>,
-): <A, B>(ta: GeneratorL<A>, f: (a: A) => Kind<F, B>) => Kind<F, GeneratorL<B>>
+): <A, B>(ta: Yield<A>, f: (a: A) => Kind<F, B>) => Kind<F, Yield<B>>
 function _traverse<F>(F: Appli.Applicative<F>) {
-  return <A, B>(ta: GeneratorL<A>, f: (a: A) => HKT<F, B>) =>
+  return <A, B>(ta: Yield<A>, f: (a: A) => HKT<F, B>) =>
     TraversableWithIndex.traverseWithIndex(F)(ta, (_: number, a: A) => f(a))
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function sequence<F extends URIS4>(
   F: Appli.Applicative4<F>,
-): <S, R, E, A>(
-  ta: GeneratorL<Kind4<F, S, R, E, A>>,
-) => Kind4<F, S, R, E, GeneratorL<A>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): <S, R, E, A>(ta: Yield<Kind4<F, S, R, E, A>>) => Kind4<F, S, R, E, Yield<A>>
 export function sequence<F extends URIS3>(
   F: Appli.Applicative3<F>,
-): <R, E, A>(ta: GeneratorL<Kind3<F, R, E, A>>) => Kind3<F, R, E, GeneratorL<A>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): <R, E, A>(ta: Yield<Kind3<F, R, E, A>>) => Kind3<F, R, E, Yield<A>>
 export function sequence<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
-): <R, A>(ta: GeneratorL<Kind3<F, R, E, A>>) => Kind3<F, R, E, GeneratorL<A>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): <R, A>(ta: Yield<Kind3<F, R, E, A>>) => Kind3<F, R, E, Yield<A>>
 export function sequence<F extends URIS2>(
   F: Appli.Applicative2<F>,
-): <E, A>(ta: GeneratorL<Kind2<F, E, A>>) => Kind2<F, E, GeneratorL<A>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): <E, A>(ta: Yield<Kind2<F, E, A>>) => Kind2<F, E, Yield<A>>
 export function sequence<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
-): <A>(ta: GeneratorL<Kind2<F, E, A>>) => Kind2<F, E, GeneratorL<A>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): <A>(ta: Yield<Kind2<F, E, A>>) => Kind2<F, E, Yield<A>>
 export function sequence<F extends URIS>(
   F: Appli.Applicative1<F>,
-): <A>(ta: GeneratorL<Kind<F, A>>) => Kind<F, GeneratorL<A>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): <A>(ta: Yield<Kind<F, A>>) => Kind<F, Yield<A>>
 export function sequence<F>(
   F: Appli.Applicative<F>,
-): <A>(ta: GeneratorL<HKT<F, A>>) => HKT<F, GeneratorL<A>> {
-  return <A>(ta: GeneratorL<HKT<F, A>>) => Traversable.traverse(F)(ta, identity)
+): <A>(ta: Yield<HKT<F, A>>) => HKT<F, Yield<A>> {
+  return <A>(ta: Yield<HKT<F, A>>) => Traversable.traverse(F)(ta, identity)
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Traversable: T.Traversable1<URI> = {
   ...Functor,
   ...Foldable,
@@ -752,101 +504,75 @@ export const Traversable: T.Traversable1<URI> = {
   sequence,
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function traverse<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <A, S, R, E, B>(
   f: (a: A) => Kind4<F, S, R, E, B>,
-) => (ta: GeneratorL<A>) => Kind4<F, S, R, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind4<F, S, R, E, Yield<B>>
 export function traverse<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
   f: (a: A) => Kind3<F, R, E, B>,
-) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind3<F, R, E, Yield<B>>
 export function traverse<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
   f: (a: A) => Kind3<F, R, E, B>,
-) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind3<F, R, E, Yield<B>>
 export function traverse<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
   f: (a: A) => Kind2<F, E, B>,
-) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind2<F, E, Yield<B>>
 export function traverse<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
   f: (a: A) => Kind2<F, E, B>,
-) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind2<F, E, Yield<B>>
 export function traverse<F extends URIS>(
   F: Appli.Applicative1<F>,
-): <A, B>(
-  f: (a: A) => Kind<F, B>,
-) => (ta: GeneratorL<A>) => Kind<F, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+): <A, B>(f: (a: A) => Kind<F, B>) => (ta: Yield<A>) => Kind<F, Yield<B>>
 export function traverse<F>(F: Appli.Applicative<F>) {
   return <A, B>(f: (a: A) => HKT<F, B>) =>
-    (ta: GeneratorL<A>) =>
+    (ta: Yield<A>) =>
       Traversable.traverse(F)(ta, f)
 }
 
 function _traverseWithIndex<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <A, S, R, E, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (i: number, a: A) => Kind4<F, S, R, E, B>,
-) => Kind4<F, S, R, E, GeneratorL<B>>
+) => Kind4<F, S, R, E, Yield<B>>
 function _traverseWithIndex<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (i: number, a: A) => Kind3<F, R, E, B>,
-) => Kind3<F, R, E, GeneratorL<B>>
+) => Kind3<F, R, E, Yield<B>>
 function _traverseWithIndex<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (i: number, a: A) => Kind3<F, R, E, B>,
-) => Kind3<F, R, E, GeneratorL<B>>
+) => Kind3<F, R, E, Yield<B>>
 function _traverseWithIndex<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (i: number, a: A) => Kind2<F, E, B>,
-) => Kind2<F, E, GeneratorL<B>>
+) => Kind2<F, E, Yield<B>>
 function _traverseWithIndex<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (i: number, a: A) => Kind2<F, E, B>,
-) => Kind2<F, E, GeneratorL<B>>
+) => Kind2<F, E, Yield<B>>
 function _traverseWithIndex<F extends URIS>(
   F: Appli.Applicative1<F>,
-): <A, B>(
-  ta: GeneratorL<A>,
-  f: (i: number, a: A) => Kind<F, B>,
-) => Kind<F, GeneratorL<B>>
+): <A, B>(ta: Yield<A>, f: (i: number, a: A) => Kind<F, B>) => Kind<F, Yield<B>>
 function _traverseWithIndex<F>(F: Appli.Applicative<F>) {
-  return <A, B>(ta: GeneratorL<A>, f: (i: number, a: A) => HKT<F, B>) =>
+  return <A, B>(ta: Yield<A>, f: (i: number, a: A) => HKT<F, B>) =>
     FoldableWithIndex.reduceWithIndex(ta, F.of(zero<B>()), (i, fbs, a) =>
       F.ap(
         F.map(fbs, (bs) => (b: B) => pipe(bs, append(b))),
@@ -855,9 +581,6 @@ function _traverseWithIndex<F>(F: Appli.Applicative<F>) {
     )
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const TraversableWithIndex: TWI.TraversableWithIndex1<URI, number> = {
   ...FunctorWithIndex,
   ...FoldableWithIndex,
@@ -865,136 +588,109 @@ export const TraversableWithIndex: TWI.TraversableWithIndex1<URI, number> = {
   traverseWithIndex: _traverseWithIndex,
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function traverseWithIndex<F extends URIS4>(
   F: Appli.Applicative4<F>,
 ): <A, S, R, E, B>(
   f: (i: number, a: A) => Kind4<F, S, R, E, B>,
-) => (ta: GeneratorL<A>) => Kind4<F, S, R, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind4<F, S, R, E, Yield<B>>
 export function traverseWithIndex<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
   f: (i: number, a: A) => Kind3<F, R, E, B>,
-) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind3<F, R, E, Yield<B>>
 export function traverseWithIndex<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
   f: (i: number, a: A) => Kind3<F, R, E, B>,
-) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind3<F, R, E, Yield<B>>
 export function traverseWithIndex<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
   f: (i: number, a: A) => Kind2<F, E, B>,
-) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind2<F, E, Yield<B>>
 export function traverseWithIndex<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
   f: (i: number, a: A) => Kind2<F, E, B>,
-) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind2<F, E, Yield<B>>
 export function traverseWithIndex<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B>(
   f: (i: number, a: A) => Kind<F, B>,
-) => (ta: GeneratorL<A>) => Kind<F, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind<F, Yield<B>>
 export function traverseWithIndex<F>(F: Appli.Applicative<F>) {
   return <A, B>(f: (i: number, a: A) => HKT<F, B>) =>
-    (ta: GeneratorL<A>) =>
+    (ta: Yield<A>) =>
       TraversableWithIndex.traverseWithIndex(F)(ta, f)
 }
 
 function _wilt<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B, C>(
-  wa: GeneratorL<A>,
+  wa: Yield<A>,
   f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
-) => Kind3<F, R, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
+) => Kind3<F, R, E, S.Separated<Yield<B>, Yield<C>>>
 function _wilt<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B, C>(
-  wa: GeneratorL<A>,
+  wa: Yield<A>,
   f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
-) => Kind3<F, R, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
+) => Kind3<F, R, E, S.Separated<Yield<B>, Yield<C>>>
 function _wilt<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B, C>(
-  wa: GeneratorL<A>,
+  wa: Yield<A>,
   f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
-) => Kind2<F, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
+) => Kind2<F, E, S.Separated<Yield<B>, Yield<C>>>
 function _wilt<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B, C>(
-  wa: GeneratorL<A>,
+  wa: Yield<A>,
   f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
-) => Kind2<F, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
+) => Kind2<F, E, S.Separated<Yield<B>, Yield<C>>>
 function _wilt<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B, C>(
-  wa: GeneratorL<A>,
+  wa: Yield<A>,
   f: (a: A) => Kind<F, Ei.Either<B, C>>,
-) => Kind<F, S.Separated<GeneratorL<B>, GeneratorL<C>>>
+) => Kind<F, S.Separated<Yield<B>, Yield<C>>>
 function _wilt<F>(F: Appli.Applicative<F>) {
-  return <A, B, C>(wa: GeneratorL<A>, f: (a: A) => HKT<F, Ei.Either<B, C>>) =>
+  return <A, B, C>(wa: Yield<A>, f: (a: A) => HKT<F, Ei.Either<B, C>>) =>
     F.map(Traversable.traverse(F)(wa, f), separate)
 }
 
 function _wither<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
-) => Kind3<F, R, E, GeneratorL<B>>
+) => Kind3<F, R, E, Yield<B>>
 function _wither<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
-) => Kind3<F, R, E, GeneratorL<B>>
+) => Kind3<F, R, E, Yield<B>>
 function _wither<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (a: A) => Kind2<F, E, Op.Option<B>>,
-) => Kind2<F, E, GeneratorL<B>>
+) => Kind2<F, E, Yield<B>>
 function _wither<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
-  ta: GeneratorL<A>,
+  ta: Yield<A>,
   f: (a: A) => Kind2<F, E, Op.Option<B>>,
-) => Kind2<F, E, GeneratorL<B>>
+) => Kind2<F, E, Yield<B>>
 function _wither<F extends URIS>(
   F: Appli.Applicative1<F>,
-): <A, B>(
-  ta: GeneratorL<A>,
-  f: (a: A) => Kind<F, Op.Option<B>>,
-) => Kind<F, GeneratorL<B>>
+): <A, B>(ta: Yield<A>, f: (a: A) => Kind<F, Op.Option<B>>) => Kind<F, Yield<B>>
 function _wither<F>(F: Appli.Applicative<F>) {
-  return <A, B>(ta: GeneratorL<A>, f: (a: A) => HKT<F, Op.Option<B>>) =>
+  return <A, B>(ta: Yield<A>, f: (a: A) => HKT<F, Op.Option<B>>) =>
     F.map(Traversable.traverse(F)(ta, f), compact)
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const Witherable: W.Witherable1<URI> = {
   ...Traversable,
   ...Filterable,
@@ -1002,157 +698,92 @@ export const Witherable: W.Witherable1<URI> = {
   wither: _wither,
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function wilt<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B, C>(
   f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
-) => (
-  wa: GeneratorL<A>,
-) => Kind3<F, R, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (wa: Yield<A>) => Kind3<F, R, E, S.Separated<Yield<B>, Yield<C>>>
 export function wilt<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B, C>(
   f: (a: A) => Kind3<F, R, E, Ei.Either<B, C>>,
-) => (
-  wa: GeneratorL<A>,
-) => Kind3<F, R, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (wa: Yield<A>) => Kind3<F, R, E, S.Separated<Yield<B>, Yield<C>>>
 export function wilt<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B, C>(
   f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
-) => (
-  wa: GeneratorL<A>,
-) => Kind2<F, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (wa: Yield<A>) => Kind2<F, E, S.Separated<Yield<B>, Yield<C>>>
 export function wilt<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B, C>(
   f: (a: A) => Kind2<F, E, Ei.Either<B, C>>,
-) => (
-  wa: GeneratorL<A>,
-) => Kind2<F, E, S.Separated<GeneratorL<B>, GeneratorL<C>>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (wa: Yield<A>) => Kind2<F, E, S.Separated<Yield<B>, Yield<C>>>
 export function wilt<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B, C>(
   f: (a: A) => Kind<F, Ei.Either<B, C>>,
-) => (wa: GeneratorL<A>) => Kind<F, S.Separated<GeneratorL<B>, GeneratorL<C>>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (wa: Yield<A>) => Kind<F, S.Separated<Yield<B>, Yield<C>>>
 export function wilt<F>(F: Appli.Applicative<F>) {
   return <A, B, C>(f: (a: A) => HKT<F, Ei.Either<B, C>>) =>
-    (wa: GeneratorL<A>) =>
+    (wa: Yield<A>) =>
       Witherable.wilt(F)(wa, f)
 }
-/**
- * @deprecated Use `Yield` module instead
- */
 export function wither<F extends URIS3>(
   F: Appli.Applicative3<F>,
 ): <A, R, E, B>(
   f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
-) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind3<F, R, E, Yield<B>>
 export function wither<F extends URIS3, E>(
   F: Appli.Applicative3C<F, E>,
 ): <A, R, B>(
   f: (a: A) => Kind3<F, R, E, Op.Option<B>>,
-) => (ta: GeneratorL<A>) => Kind3<F, R, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind3<F, R, E, Yield<B>>
 export function wither<F extends URIS2>(
   F: Appli.Applicative2<F>,
 ): <A, E, B>(
   f: (a: A) => Kind2<F, E, Op.Option<B>>,
-) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind2<F, E, Yield<B>>
 export function wither<F extends URIS2, E>(
   F: Appli.Applicative2C<F, E>,
 ): <A, B>(
   f: (a: A) => Kind2<F, E, Op.Option<B>>,
-) => (ta: GeneratorL<A>) => Kind2<F, E, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind2<F, E, Yield<B>>
 export function wither<F extends URIS>(
   F: Appli.Applicative1<F>,
 ): <A, B>(
   f: (a: A) => Kind<F, Op.Option<B>>,
-) => (ta: GeneratorL<A>) => Kind<F, GeneratorL<B>>
-/**
- * @deprecated Use `Yield` module instead
- */
+) => (ta: Yield<A>) => Kind<F, Yield<B>>
 export function wither<F>(F: Appli.Applicative<F>) {
   return <A, B>(f: (a: A) => HKT<F, Op.Option<B>>) =>
-    (ta: GeneratorL<A>) =>
+    (ta: Yield<A>) =>
       Witherable.wither(F)(ta, f)
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const makeBy = <A>(f: (i: number) => A): GeneratorL<A> =>
+export const makeBy = <A>(f: (i: number) => A): Yield<A> =>
   function* () {
     for (let i = 0; true; i++) {
       yield f(i)
     }
   }
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const range = (start: number, end = Infinity): GeneratorL<number> =>
+export const range = (start: number, end = Infinity): Yield<number> =>
   pipe(
     makeBy((i) => start + i),
     takeLeftWhile((n) => n <= Math.max(start, end)),
   )
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const replicate = <A>(a: A): GeneratorL<A> => makeBy(() => a)
+export const replicate = <A>(a: A): Yield<A> => makeBy(() => a)
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): GeneratorL<A> =>
+export const fromReadonlyArray = <A>(as: ReadonlyArray<A>): Yield<A> =>
   function* () {
     yield* as
   }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const fromReadonlyRecord = RR.toUnfoldable(Unfoldable)
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const random: GeneratorL<number> = fromIO(R.random)
+export const random: Yield<number> = fromIO(R.random)
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const randomInt = (low: number, high: number): GeneratorL<Int> =>
+export const randomInt = (low: number, high: number): Yield<Int> =>
   fromIO(
     R.randomInt(
       Math.floor(low),
@@ -1160,28 +791,15 @@ export const randomInt = (low: number, high: number): GeneratorL<Int> =>
     ) as IO.IO<Int>,
   )
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const randomRange = (min: number, max: number): GeneratorL<number> =>
+export const randomRange = (min: number, max: number): Yield<number> =>
   fromIO(R.randomRange(min, Math.max(min, max)))
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const randomBool: GeneratorL<boolean> = fromIO(R.randomBool)
+export const randomBool: Yield<boolean> = fromIO(R.randomBool)
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const randomElem = <A>(
-  as: RNEA.ReadonlyNonEmptyArray<A>,
-): GeneratorL<A> => fromIO(R.randomElem(as))
+export const randomElem = <A>(as: RNEA.ReadonlyNonEmptyArray<A>): Yield<A> =>
+  fromIO(R.randomElem(as))
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const prime: GeneratorL<number> = pipe(
+export const prime: Yield<number> = pipe(
   range(2),
   sieve((init, n) =>
     pipe(
@@ -1191,58 +809,40 @@ export const prime: GeneratorL<number> = pipe(
   ),
 )
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const exp: GeneratorL<number> = makeBy((n) => Math.exp(n))
+export const exp: Yield<number> = makeBy((n) => Math.exp(n))
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const fibonacci: GeneratorL<number> = function* () {
+export const fibonacci: Yield<number> = function* () {
   for (let ns = [1, 0] as [number, number]; true; ns = [ns[1], ns[0] + ns[1]]) {
     yield ns[1]
   }
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const flatten = <A>(mma: GeneratorL<GeneratorL<A>>): GeneratorL<A> =>
+export const flatten = <A>(mma: Yield<Yield<A>>): Yield<A> =>
   function* () {
     for (const ma of mma()) {
       yield* ma()
     }
   }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const prepend =
   <A>(a: A) =>
-  (ma: GeneratorL<A>): GeneratorL<A> =>
+  (ma: Yield<A>): Yield<A> =>
     function* () {
       yield a
       yield* ma()
     }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const append =
   <A>(a: A) =>
-  (ma: GeneratorL<A>): GeneratorL<A> =>
+  (ma: Yield<A>): Yield<A> =>
     function* () {
       yield* ma()
       yield a
     }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const takeLeft =
   (n: number) =>
-  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+  <A>(ma: Yield<A>): Yield<A> =>
     function* () {
       for (const [a, i] of pipe(ma, zip(range(0)))()) {
         if (i >= n) {
@@ -1253,31 +853,19 @@ export const takeLeft =
       }
     }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const takeRight =
   (n: number) =>
-  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+  <A>(ma: Yield<A>): Yield<A> =>
     pipe(ma, toReadonlyArray, RA.takeRight(n), fromReadonlyArray)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function takeLeftWhile<A, B extends A>(
   refinement: Re.Refinement<A, B>,
-): (ma: GeneratorL<A>) => GeneratorL<B>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Yield<B>
 export function takeLeftWhile<A>(
   predicate: Pr.Predicate<A>,
-): (ma: GeneratorL<A>) => GeneratorL<A>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Yield<A>
 export function takeLeftWhile<A>(predicate: Pr.Predicate<A>) {
-  return (ma: GeneratorL<A>) =>
+  return (ma: Yield<A>) =>
     function* () {
       for (const a of ma()) {
         if (!predicate(a)) {
@@ -1289,12 +877,9 @@ export function takeLeftWhile<A>(predicate: Pr.Predicate<A>) {
     }
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const dropLeft =
   (n: number) =>
-  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+  <A>(ma: Yield<A>): Yield<A> =>
     function* () {
       for (const [a, i] of pipe(ma, zip(range(0)))()) {
         if (i < n) {
@@ -1305,31 +890,19 @@ export const dropLeft =
       }
     }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const dropRight =
   (n: number) =>
-  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+  <A>(ma: Yield<A>): Yield<A> =>
     pipe(ma, toReadonlyArray, RA.dropRight(n), fromReadonlyArray)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function dropLeftWhile<A, B extends A>(
   refinement: Re.Refinement<A, B>,
-): (ma: GeneratorL<A>) => GeneratorL<B>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Yield<B>
 export function dropLeftWhile<A>(
   predicate: Pr.Predicate<A>,
-): (ma: GeneratorL<A>) => GeneratorL<A>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Yield<A>
 export function dropLeftWhile<A>(predicate: Pr.Predicate<A>) {
-  return (ma: GeneratorL<A>) =>
+  return (ma: Yield<A>) =>
     function* () {
       const as = ma()
       let a = as.next()
@@ -1344,12 +917,9 @@ export function dropLeftWhile<A>(predicate: Pr.Predicate<A>) {
     }
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const scanLeft =
   <A, B>(b: B, f: (b: B, a: A) => B) =>
-  (ma: GeneratorL<A>): GeneratorL<B> =>
+  (ma: Yield<A>): Yield<B> =>
     function* () {
       yield b
       let _b = b
@@ -1359,23 +929,17 @@ export const scanLeft =
       }
     }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const scanRight =
   <A, B>(b: B, f: (a: A, b: B) => B) =>
-  (ma: GeneratorL<A>): GeneratorL<B> =>
+  (ma: Yield<A>): Yield<B> =>
     pipe(
       ma,
       scanLeft(b, (b, a) => f(a, b)),
       reverse,
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function sieve<A>(f: (init: ReadonlyArray<A>, a: A) => boolean) {
-  return (ma: GeneratorL<A>): GeneratorL<A> =>
+  return (ma: Yield<A>): Yield<A> =>
     function* () {
       const init: Array<A> = []
       for (const a of ma()) {
@@ -1389,29 +953,17 @@ export function sieve<A>(f: (init: ReadonlyArray<A>, a: A) => boolean) {
     }
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const uniq = <A>(E: Eq.Eq<A>) =>
   sieve<A>((init, a) => !pipe(init, RA.elem(E)(a)))
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const sort = <B>(O: Or.Ord<B>) => sortBy([O])
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const sortBy =
   <B>(Os: ReadonlyArray<Or.Ord<B>>) =>
-  <A extends B>(ma: GeneratorL<A>): GeneratorL<A> =>
+  <A extends B>(ma: Yield<A>): Yield<A> =>
     pipe(ma, toReadonlyArray, RA.sortBy(Os), fromReadonlyArray)
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const reverse = <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+export const reverse = <A>(ma: Yield<A>): Yield<A> =>
   function* () {
     const as = toReadonlyArray(ma)
     for (let i = as.length - 1; i >= 0; i--) {
@@ -1419,12 +971,9 @@ export const reverse = <A>(ma: GeneratorL<A>): GeneratorL<A> =>
     }
   }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const zipWith =
-  <A, B, C>(mb: GeneratorL<B>, f: (a: A, b: B) => C) =>
-  (ma: GeneratorL<A>): GeneratorL<C> =>
+  <A, B, C>(mb: Yield<B>, f: (a: A, b: B) => C) =>
+  (ma: Yield<A>): Yield<C> =>
     function* () {
       const bs = mb()
       for (const a of ma()) {
@@ -1437,39 +986,27 @@ export const zipWith =
       }
     }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const zip =
-  <B>(mb: GeneratorL<B>) =>
-  <A>(ma: GeneratorL<A>): GeneratorL<Readonly<[A, B]>> =>
+  <B>(mb: Yield<B>) =>
+  <A>(ma: Yield<A>): Yield<Readonly<[A, B]>> =>
     pipe(
       ma,
       zipWith(mb, (a, b) => [a, b] as const),
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const rights = <E, A>(ma: GeneratorL<Ei.Either<E, A>>): GeneratorL<A> =>
+export const rights = <E, A>(ma: Yield<Ei.Either<E, A>>): Yield<A> =>
   pipe(ma, filterMap(Op.fromEither))
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const lefts = <E, A>(ma: GeneratorL<Ei.Either<E, A>>): GeneratorL<E> =>
+export const lefts = <E, A>(ma: Yield<Ei.Either<E, A>>): Yield<E> =>
   pipe(
     ma,
     filter(Ei.isLeft),
     map((e) => e.left),
   )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const prependAll =
   <A>(middle: A) =>
-  (ma: GeneratorL<A>): GeneratorL<A> =>
+  (ma: Yield<A>): Yield<A> =>
     pipe(
       ma,
       matchLeft(
@@ -1484,26 +1021,17 @@ export const prependAll =
       ),
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const intersperse = <A>(middle: A) =>
   flow(prependAll(middle), dropLeft(1))
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const rotate =
   (n: number) =>
-  <A>(ma: GeneratorL<A>): GeneratorL<A> =>
+  <A>(ma: Yield<A>): Yield<A> =>
     pipe(ma, toReadonlyArray, RA.rotate(n), fromReadonlyArray)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const chop =
-  <A, B>(f: (ma: GeneratorL<A>) => Readonly<[B, GeneratorL<A>]>) =>
-  (ma: GeneratorL<A>): GeneratorL<B> =>
+  <A, B>(f: (ma: Yield<A>) => Readonly<[B, Yield<A>]>) =>
+  (ma: Yield<A>): Yield<B> =>
     function* () {
       for (
         let _isNonEmpty = isNonEmpty(ma), [b, _ma] = f(ma);
@@ -1514,30 +1042,21 @@ export const chop =
       }
     }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const chunksOf =
   (n: number) =>
-  <A>(ma: GeneratorL<A>): GeneratorL<GeneratorL<A>> =>
+  <A>(ma: Yield<A>): Yield<Yield<A>> =>
     pipe(ma, chop(splitAt(Math.max(1, n))))
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const matchLeft =
-  <A, B>(onEmpty: Lazy<B>, onNonEmpty: (head: A, tail: GeneratorL<A>) => B) =>
-  (ma: GeneratorL<A>): B =>
+  <A, B>(onEmpty: Lazy<B>, onNonEmpty: (head: A, tail: Yield<A>) => B) =>
+  (ma: Yield<A>): B =>
     pipe(ma().next(), (a) =>
       a.done ? onEmpty() : onNonEmpty(a.value, pipe(ma, dropLeft(1))),
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const matchRight =
-  <A, B>(onEmpty: Lazy<B>, onNonEmpty: (init: GeneratorL<A>, last: A) => B) =>
-  (ma: GeneratorL<A>): B =>
+  <A, B>(onEmpty: Lazy<B>, onNonEmpty: (init: Yield<A>, last: A) => B) =>
+  (ma: Yield<A>): B =>
     pipe(
       ma,
       zip(range(0)),
@@ -1553,19 +1072,11 @@ export const matchRight =
       ),
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const toReadonlyArray = <A>(ma: GeneratorL<A>): ReadonlyArray<A> => [
-  ...ma(),
-]
+export const toReadonlyArray = <A>(ma: Yield<A>): ReadonlyArray<A> => [...ma()]
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const lookup =
   (i: number) =>
-  <A>(ma: GeneratorL<A>): Op.Option<A> =>
+  <A>(ma: Yield<A>): Op.Option<A> =>
     i < 0
       ? Op.none
       : pipe(
@@ -1574,15 +1085,9 @@ export const lookup =
           matchLeft(() => Op.none, Op.some),
         )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const head = lookup(0)
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const last = <A>(ma: GeneratorL<A>): Op.Option<A> => {
+export const last = <A>(ma: Yield<A>): Op.Option<A> => {
   let last: Op.Option<A> = Op.none
   for (const a of ma()) {
     last = Op.some(a)
@@ -1591,10 +1096,7 @@ export const last = <A>(ma: GeneratorL<A>): Op.Option<A> => {
   return last
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const tail = <A>(ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+export const tail = <A>(ma: Yield<A>): Op.Option<Yield<A>> =>
   pipe(
     ma,
     matchLeft(
@@ -1603,40 +1105,25 @@ export const tail = <A>(ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
     ),
   )
 
-/**
- * @deprecated Use `Yield` module instead
- */
-export const init = <A>(ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+export const init = <A>(ma: Yield<A>): Op.Option<Yield<A>> =>
   pipe(
     ma,
     matchRight(() => Op.none, Op.some),
   )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export interface Spanned<I, R> {
-  init: GeneratorL<I>
-  rest: GeneratorL<R>
+  init: Yield<I>
+  rest: Yield<R>
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function spanLeft<A, B extends A>(
   refinement: Re.Refinement<A, B>,
-): (ma: GeneratorL<A>) => Spanned<B, A>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Spanned<B, A>
 export function spanLeft<A>(
   predicate: Pr.Predicate<A>,
-): (ma: GeneratorL<A>) => Spanned<A, A>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Spanned<A, A>
 export function spanLeft<A>(predicate: Pr.Predicate<A>) {
-  return (ma: GeneratorL<A>) => {
+  return (ma: Yield<A>) => {
     const i = pipe(
       ma,
       findFirstIndex(Pr.not(predicate)),
@@ -1648,20 +1135,14 @@ export function spanLeft<A>(predicate: Pr.Predicate<A>) {
   }
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const splitAt =
   (n: number) =>
-  <A>(ma: GeneratorL<A>): Readonly<[GeneratorL<A>, GeneratorL<A>]> =>
+  <A>(ma: Yield<A>): Readonly<[Yield<A>, Yield<A>]> =>
     [pipe(ma, takeLeft(n)), pipe(ma, dropLeft(n))]
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const unzip = <A, B>(
-  mab: GeneratorL<Readonly<[A, B]>>,
-): Readonly<[GeneratorL<A>, GeneratorL<B>]> => [
+  mab: Yield<Readonly<[A, B]>>,
+): Readonly<[Yield<A>, Yield<B>]> => [
   pipe(
     mab,
     map(([a]) => a),
@@ -1672,19 +1153,10 @@ export const unzip = <A, B>(
   ),
 ]
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const isEmpty = matchLeft(constTrue, constFalse)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const isNonEmpty = Pr.not(isEmpty)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const size = flow(
   mapWithIndex(identity),
   last,
@@ -1694,31 +1166,19 @@ export const size = flow(
   ),
 )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const isOutOfBound =
   (n: number) =>
-  (ma: GeneratorL<unknown>): boolean =>
+  (ma: Yield<unknown>): boolean =>
     n >= 0 && n < size(ma)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function findFirst<A, B extends A>(
   refinement: Re.Refinement<A, B>,
-): (ma: GeneratorL<A>) => Op.Option<B>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Op.Option<B>
 export function findFirst<A>(
   predicate: Pr.Predicate<A>,
-): (ma: GeneratorL<A>) => Op.Option<A>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Op.Option<A>
 export function findFirst<A>(predicate: Pr.Predicate<A>) {
-  return (ma: GeneratorL<A>) => {
+  return (ma: Yield<A>) => {
     for (const a of ma()) {
       if (predicate(a)) {
         return Op.some(a)
@@ -1729,12 +1189,9 @@ export function findFirst<A>(predicate: Pr.Predicate<A>) {
   }
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const findFirstMap =
   <A, B>(f: (a: A) => Op.Option<B>) =>
-  (ma: GeneratorL<A>): Op.Option<B> => {
+  (ma: Yield<A>): Op.Option<B> => {
     for (const a of ma()) {
       const b = f(a)
       if (Op.isSome(b)) {
@@ -1745,12 +1202,9 @@ export const findFirstMap =
     return Op.none
   }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const findFirstIndex =
   <A>(predicate: Pr.Predicate<A>) =>
-  (ma: GeneratorL<A>): Op.Option<number> =>
+  (ma: Yield<A>): Op.Option<number> =>
     pipe(
       ma,
       zip(range(0)),
@@ -1758,59 +1212,38 @@ export const findFirstIndex =
       Op.map(([_, i]) => i),
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export function findLast<A, B extends A>(
   refinement: Re.Refinement<A, B>,
-): (ma: GeneratorL<A>) => Op.Option<B>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Op.Option<B>
 export function findLast<A>(
   predicate: Pr.Predicate<A>,
-): (ma: GeneratorL<A>) => Op.Option<A>
-/**
- * @deprecated Use `Yield` module instead
- */
+): (ma: Yield<A>) => Op.Option<A>
 export function findLast<A>(predicate: Pr.Predicate<A>) {
-  return (ma: GeneratorL<A>) => pipe(ma, reverse, findFirst(predicate))
+  return (ma: Yield<A>) => pipe(ma, reverse, findFirst(predicate))
 }
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const findLastMap =
   <A, B>(f: (a: A) => Op.Option<B>) =>
-  (ma: GeneratorL<A>): Op.Option<B> =>
+  (ma: Yield<A>): Op.Option<B> =>
     pipe(ma, reverse, findFirstMap(f))
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const findLastIndex =
   <A>(predicate: Pr.Predicate<A>) =>
-  (ma: GeneratorL<A>): Op.Option<number> =>
+  (ma: Yield<A>): Op.Option<number> =>
     pipe(
       ma,
       zip(range(0)),
       findLastMap(([a, i]) => (predicate(a) ? Op.some(i) : Op.none)),
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const elem =
   <A>(Eq: Eq.Eq<A>) =>
   (a: A) =>
     findFirst((_a: A) => Eq.equals(a, _a))
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const insertAt =
   <A>(i: number, a: A) =>
-  (ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+  (ma: Yield<A>): Op.Option<Yield<A>> =>
     pipe(
       ma,
       lookup(i),
@@ -1827,12 +1260,9 @@ export const insertAt =
       ),
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const modifyAt =
   <A>(i: number, f: (a: A) => A) =>
-  (ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+  (ma: Yield<A>): Op.Option<Yield<A>> =>
     pipe(
       ma,
       lookup(i),
@@ -1844,17 +1274,11 @@ export const modifyAt =
       ),
     )
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const updateAt = <A>(i: number, a: A) => modifyAt(i, () => a)
 
-/**
- * @deprecated Use `Yield` module instead
- */
 export const deleteAt =
   <A>(i: number) =>
-  (ma: GeneratorL<A>): Op.Option<GeneratorL<A>> =>
+  (ma: Yield<A>): Op.Option<Yield<A>> =>
     pipe(
       ma,
       lookup(i),
