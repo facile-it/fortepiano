@@ -25,7 +25,7 @@ export const ErrorC = new t.Type(
   'Error',
   is,
   (u, c) => (is(u) ? t.success(u) : t.failure(u, c)),
-  $S.lookup('message'),
+  (o) => pipe(o, $S.lookup('message')),
 )
 
 const _fromUnknown = (u: unknown) => {
