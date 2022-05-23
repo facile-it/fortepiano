@@ -1,2 +1,4 @@
+.pnp*
+.yarn*
 /coverage/
 /dist/

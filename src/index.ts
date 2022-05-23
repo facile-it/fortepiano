@@ -42,13 +42,12 @@ export type ValuesDeep<A> = A extends { readonly [x: string]: unknown } & {
   : A
 
 export type IntersectionDeep<A, B> = A extends { readonly [x: string]: unknown }
-  ? A &
-      {
-        readonly [K in keyof B]: IntersectionDeep<
-          K extends keyof A ? A[K] : unknown,
-          B[K]
-        >
-      }
+  ? A & {
+      readonly [K in keyof B]: IntersectionDeep<
+        K extends keyof A ? A[K] : unknown,
+        B[K]
+      >
+    }
   : B
 
 export {
