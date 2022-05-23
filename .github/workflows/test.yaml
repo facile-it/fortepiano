@@ -1,12 +1,10 @@
-name: main
 on:
-  push:
-    branches: [main]
   pull_request:
+  push:
     branches: [main]
   workflow_dispatch:
 jobs:
-  build:
+  typescript:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -16,10 +14,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: yarn
       - run: yarn install --immutable
       - run: yarn build
-  test:
+  jest:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -29,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: yarn
       - run: yarn install --immutable
       - run: yarn test:coverage
       - uses: codecov/codecov-action@v2
