@@ -6,6 +6,8 @@ import { ReadonlyNonEmptyArray } from 'fp-ts/ReadonlyNonEmptyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as t from 'io-ts'
 import { NumberFromString } from 'io-ts-types'
+import { failure } from 'io-ts/lib/PathReporter'
+import * as $Er from './Error'
 import * as $S from './struct'
 
 export const numeric = new t.Type(
@@ -115,3 +117,20 @@ export const lax = <P extends t.Props>(props: P, name?: string) =>
         partial.encode,
       ),
   )
+
+export const decode =
+  <C extends t.Mixed>(codec: C) =>
+  (u: unknown): E.Either<Error, t.TypeOf<C>> =>
+    pipe(
+      u,
+      codec.decode,
+      E.mapLeft(failure),
+      E.mapLeft(RA.map(Error)),
+      E.mapLeft(
+        (errors) =>
+          new $Er.AggregateError(
+            errors,
+            `Cannot decode input with codec "${codec.name}"`,
+          ),
+      ),
+    )

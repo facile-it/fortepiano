@@ -1,8 +1,9 @@
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import * as t from 'io-ts'
+import * as $Er from './Error'
 import * as $RA from './ReadonlyArray'
-import { alias, lax, literal, literalUnion, numeric } from './Type'
+import { alias, decode, lax, literal, literalUnion, numeric } from './Type'
 
 describe('Type', () => {
   describe('numeric', () => {
@@ -99,6 +100,23 @@ describe('Type', () => {
           ),
         ).toStrictEqual(output),
       )
+    })
+  })
+
+  describe('decode', () => {
+    test('decoding unsupported input', () => {
+      const result = decode(t.union([t.number, numeric]))('foo')
+      if (E.isRight(result)) {
+        throw new Error()
+      }
+
+      expect(result.left.message).toStrictEqual(
+        'Cannot decode input with codec "(number | Numeric)"',
+      )
+      expect(result.left).toBeInstanceOf($Er.AggregateError)
+      if (result.left instanceof $Er.AggregateError) {
+        expect(result.left.errors).toHaveLength(2)
+      }
     })
   })
 })
