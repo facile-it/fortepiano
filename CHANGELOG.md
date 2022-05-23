@@ -8,10 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Add `Struct` type.
-- Rename `GeneratorL` module to `Yield`.
-- Add `AggregateError` from TC39.
+- Add `AggregateError` inspired from TC39.
 - Add `decode` method to `Type` module to help wrapping `io-ts` `Errors` into an `Error` subclass.
+
+### Changed
+
+- Replace `struct` type with `Struct`.
+- Rename `GeneratorL` module to `Yield`.
+- Use `cause` property to record wrapped errors (inspired by TC39).
 
 ### Deprecated
 

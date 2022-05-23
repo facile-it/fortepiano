@@ -47,20 +47,25 @@ export const fromUnknown = (e: Error) =>
     O.getOrElse(() => e),
   )
 
-const withPrev = (prev: Error) => (error: Error) => {
-  ;(error as any).prev = prev
+/**
+ * @see https://tc39.es/proposal-error-cause/
+ */
+const withCause = (cause: Error) => (error: Error) => {
+  ;(error as any).cause = cause
+  // TODO: remove on 0.2.0.
+  ;(error as any).prev = cause
 
   return error
 }
 
 export const wrap =
   (e: Error) =>
-  (u: unknown): Error & { readonly prev?: Error } =>
+  (u: unknown): Error & { readonly cause?: Error } =>
     pipe(
       u,
       _fromUnknown,
       O.match(
         () => e,
-        (error) => withPrev(error)(e),
+        (error) => withCause(error)(e),
       ),
     )
