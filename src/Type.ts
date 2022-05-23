@@ -40,7 +40,7 @@ export function literal(a: number | string | RegExp, name?: string) {
     : t.literal(a, name)
 }
 
-const isStruct = (u: unknown): u is $S.struct =>
+const isStruct = (u: unknown): u is $S.Struct =>
   'object' === typeof u && null !== u && !Array.isArray(u)
 
 export const struct = new t.Type(

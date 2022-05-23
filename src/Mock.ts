@@ -70,8 +70,8 @@ export const Pointed: P.Pointed1<URI> = {
             (_a) =>
               $t.struct.is(a) && $t.struct.is(_a)
                 ? (pipe(_a, $St.filterDeep(Pr.not(t.undefined.is)), (_a) =>
-                    $St.patch<A & $St.struct, PartialDeep<A & $St.struct>>(
-                      _a as PartialDeep<A & $St.struct>,
+                    $St.patch<A & $St.Struct, PartialDeep<A & $St.Struct>>(
+                      _a as PartialDeep<A & $St.Struct>,
                     )(a),
                   ) as A)
                 : (_a as A),
