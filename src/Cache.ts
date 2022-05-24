@@ -12,7 +12,7 @@ import * as $R from './Random'
 export interface Cache {
   readonly get: <A>(
     key: string,
-    codec: t.Type<A, unknown>,
+    codec: t.Type<A, J.Json>,
   ) => TE.TaskEither<Error, A>
   readonly set: <A>(
     key: string,

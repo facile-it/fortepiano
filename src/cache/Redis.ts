@@ -1,7 +1,6 @@
 import * as Ei from 'fp-ts/Either'
 import { flow, Lazy, pipe } from 'fp-ts/function'
 import * as TE from 'fp-ts/TaskEither'
-import * as t from 'io-ts'
 import { JsonFromString } from 'io-ts-types'
 import { RedisClient } from 'redis'
 import * as $C from '../Cache'
@@ -38,7 +37,7 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
         ),
         TE.chainEitherK(
           flow(
-            codec.decode,
+            JsonFromString.pipe(codec).decode,
             Ei.mapLeft(
               $Er.fromUnknown(
                 Error(`Cannot decode cache item "${key}" into "${codec.name}"`),
@@ -55,17 +54,15 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
             () =>
               new Promise((resolve, reject) =>
                 _redis()
-                  .then((client) => {
-                    return client.set(
+                  .then((client) =>
+                    client.set(
                       key,
-                      t.UnknownRecord.is(value)
-                        ? JsonFromString.pipe(codec).encode(value)
-                        : String(codec.encode(value)),
+                      JsonFromString.pipe(codec).encode(value),
                       'EX',
                       _ttl / 1000,
                       (error) => (null !== error ? reject(error) : resolve()),
-                    )
-                  })
+                    ),
+                  )
                   .catch(reject),
               ),
             $Er.fromUnknown(Error(`Cannot write cache item "${key}"`)),
