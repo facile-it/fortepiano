@@ -10,12 +10,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Add `AggregateError` inspired from TC39.
 - Add `decode` method to `Type` module to help wrapping `io-ts` `Errors` into an `Error` subclass.
+- Add unit tests for the `set` function of the `Redis` module. 
 
 ### Changed
 
 - Replace `struct` type with `Struct`.
 - Rename `GeneratorL` module to `Yield`.
 - Use `cause` property to record wrapped errors (inspired by TC39).
+- Decode from Json and then from the given codec in the `get` function of the `Redis` module.
 
 ### Deprecated
 
