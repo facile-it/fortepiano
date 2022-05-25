@@ -37,7 +37,8 @@ export const $redis = (redis: Lazy<RedisClient>, ttl = Infinity): $C.Cache => {
         ),
         TE.chainEitherK(
           flow(
-            JsonFromString.pipe(codec).decode,
+            JsonFromString.decode,
+            Ei.chain(codec.decode),
             Ei.mapLeft(
               $Er.fromUnknown(
                 Error(`Cannot decode cache item "${key}" into "${codec.name}"`),
