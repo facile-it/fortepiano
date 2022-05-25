@@ -1,5 +1,5 @@
 import * as E from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { constVoid, pipe } from 'fp-ts/function'
 import * as T from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
 import * as t from 'io-ts'
@@ -39,6 +39,40 @@ describe('Cache', () => {
             T.map(E.isRight),
           )(),
         ).resolves.toBe(true)
+      })
+    })
+
+    describe('set', () => {
+      it('should set string item properly', async () => {
+        const _redis = $redis(redis.createClient)
+
+        const result = await _redis.set('foo', t.string)('foo')()
+
+        expect(result).toStrictEqual(E.of(constVoid()))
+        await expect(_redis.get('foo', t.string)()).resolves.toStrictEqual(
+          E.of('foo'),
+        )
+      })
+      it('should set number item properly', async () => {
+        const _redis = $redis(redis.createClient)
+
+        const result = await _redis.set('foo', t.number)(42)()
+
+        expect(result).toStrictEqual(E.of(constVoid()))
+        await expect(_redis.get('foo', t.number)()).resolves.toStrictEqual(
+          E.of(42),
+        )
+      })
+      it('should set object item properly', async () => {
+        const _redis = $redis(redis.createClient)
+        const codec = t.type({ foo: t.string, bar: t.number })
+
+        const result = await _redis.set('foo', codec)({ foo: 'foo', bar: 42 })()
+
+        expect(result).toStrictEqual(E.of(constVoid()))
+        await expect(_redis.get('foo', codec)()).resolves.toStrictEqual(
+          E.of({ foo: 'foo', bar: 42 }),
+        )
       })
     })
 
