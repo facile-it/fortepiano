@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add `decode` method to `Type` module to help wrapping `io-ts` `Errors` into an `Error` subclass.
 - Add unit tests for the `set` function of the `Redis` module.
 - Add `Has` module and enhance `ReaderTaskEither` for smart dependencies management (inspired by [Effect-TS](https://www.matechs.com/open-source)):
+
   ```typescript
   // Foo.ts
   import { TaskEither } from 'fp-ts/TaskEither'
@@ -24,9 +25,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   export const TagFoo = $has.tag<Foo>()
 
   export const $foo = {
-    bar: $readerTaskEither.derivesTaskEither(TagFoo, 'bar')
+    bar: $readerTaskEither.derivesTaskEither(TagFoo, 'bar'),
   }
   ```
+
   ```typescript
   // Bar.ts
   import { IOEither } from 'fp-ts/IOEither'
@@ -40,6 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
   export const bar = $readerTaskEither.deriveIOEither(TagBar)
   ```
+
   ```typescript
   // index.ts
   import { $has } from 'fortepiano'
@@ -49,18 +52,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   import { $foo, TagFoo } from './Foo'
 
   // const a: ReaderTaskEither<Has<Foo> & Has<Bar>, Error, boolean>
-  const a = pipe(
-    $foo.bar(42),
-    readerTaskEither.chainW(bar)
-  )
+  const a = pipe($foo.bar(42), readerTaskEither.chainW(bar))
 
   // const b: TaskEither<Error, boolean>
   const b = a(
     // Let's mock our dependencies.
     pipe(
-      $has.singleton(TagFoo, { bar: () => taskEither.of('foobar')}),
-      $has.upsertAt(TagBar, () => ioEither.of(true))
-    )
+      $has.singleton(TagFoo, { bar: () => taskEither.of('foobar') }),
+      $has.upsertAt(TagBar, () => ioEither.of(true)),
+    ),
   )
   ```
 
