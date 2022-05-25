@@ -13,7 +13,7 @@ describe('Cache', () => {
         const _redis = $redis(redis.createClient)
 
         await expect(
-          pipe(_redis.get('foo', t.any), T.map(E.isLeft))(),
+          pipe(_redis.get('foo', t.unknown), T.map(E.isLeft))(),
         ).resolves.toBe(true)
       })
       it('should fail with wrong item encoding', async () => {
