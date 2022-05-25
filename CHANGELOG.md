@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Add `AggregateError` inspired from TC39.
 - Add `decode` method to `Type` module to help wrapping `io-ts` `Errors` into an `Error` subclass.
-- Add unit tests for the `set` function of the `Redis` module. 
+- Add unit tests for the `set` function of the `Redis` module.
 
 ### Changed
 
