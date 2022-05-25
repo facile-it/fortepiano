@@ -33,6 +33,8 @@ import * as $type from './Type'
 import * as $validation from './Validation'
 import * as $yield from './Yield'
 
+export type ValueOf<A> = A[keyof A]
+
 export type PartialDeep<A> = A extends { readonly [x: string]: unknown }
   ? Partial<{ readonly [K in keyof A]: PartialDeep<A[K]> }>
   : A
