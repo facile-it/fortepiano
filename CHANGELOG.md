@@ -11,6 +11,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add `AggregateError` inspired from TC39.
 - Add `decode` method to `Type` module to help wrapping `io-ts` `Errors` into an `Error` subclass.
 - Add unit tests for the `set` function of the `Redis` module.
+- Add `Has` module and enhance `ReaderTaskEither` for smart dependencies management (inspired by [Effect-TS](https://www.matechs.com/open-source)):
+  ```typescript
+  import { TaskEither } from 'fp-ts/TaskEither'
+  import { $has, $readerTaskEither } from 'fortepiano'
+
+  export interface Foo {
+    bar(a: number): TaskEither<Error, string>
+  }
+
+  export const TagFoo = $has.tag<Foo>()
+
+  export const $foo = {
+    bar: $readerTaskEither.derivesTaskEither(TagFoo, 'bar')
+  }
+
+  // const a: ReaderTaskEither<Has<Foo>, Error, string>
+  const a = $foo.bar(42)
+  ```
 
 ### Changed
 
