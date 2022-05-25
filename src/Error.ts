@@ -4,6 +4,15 @@ import * as t from 'io-ts'
 import { failure } from 'io-ts/PathReporter'
 import * as $S from './struct'
 
+/**
+ * @see https://tc39.es/proposal-promise-any/#sec-aggregate-error-objects
+ */
+export class AggregateError extends Error {
+  constructor(readonly errors: ReadonlyArray<Error>, message?: string) {
+    super(message)
+  }
+}
+
 const is = (u: unknown): u is Error =>
   t
     .intersection([
@@ -16,7 +25,7 @@ export const ErrorC = new t.Type(
   'Error',
   is,
   (u, c) => (is(u) ? t.success(u) : t.failure(u, c)),
-  $S.lookup('message'),
+  (o) => pipe(o, $S.lookup('message')),
 )
 
 const _fromUnknown = (u: unknown) => {
@@ -38,20 +47,25 @@ export const fromUnknown = (e: Error) =>
     O.getOrElse(() => e),
   )
 
-const withPrev = (prev: Error) => (error: Error) => {
-  ;(error as any).prev = prev
+/**
+ * @see https://tc39.es/proposal-error-cause/
+ */
+const withCause = (cause: Error) => (error: Error) => {
+  ;(error as any).cause = cause
+  // TODO: remove on 0.2.0.
+  ;(error as any).prev = cause
 
   return error
 }
 
 export const wrap =
   (e: Error) =>
-  (u: unknown): Error & { readonly prev?: Error } =>
+  (u: unknown): Error & { readonly cause?: Error } =>
     pipe(
       u,
       _fromUnknown,
       O.match(
         () => e,
-        (error) => withPrev(error)(e),
+        (error) => withCause(error)(e),
       ),
     )

@@ -1,5 +1,5 @@
 import { pipe } from 'fp-ts/function'
-import { fromUnknown } from './Error'
+import { fromUnknown, wrap } from './Error'
 
 describe('Error', () => {
   describe('fromUnknown', () => {
@@ -11,6 +11,14 @@ describe('Error', () => {
     })
     it('should discard other values and return default Error object', () => {
       expect(pipe(1138, fromUnknown(Error('bar'))).message).toBe('bar')
+    })
+  })
+
+  describe('wrap', () => {
+    test('wrapping a cause', () => {
+      expect(pipe(Error('foo'), wrap(Error('bar'))).cause).toStrictEqual(
+        Error('foo'),
+      )
     })
   })
 })
