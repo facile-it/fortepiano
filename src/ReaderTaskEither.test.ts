@@ -34,6 +34,7 @@ import {
   deriveTask,
   deriveTaskEither,
   pick,
+  picks,
   picksEitherK,
   picksIOEitherK,
   picksIOK,
@@ -80,6 +81,31 @@ describe('ReaderTaskEither', () => {
       await expect(pick<R>()('bar')({ bar: 1138 })()).resolves.toStrictEqual(
         E.right(1138),
       )
+    })
+  })
+
+  describe('picks', () => {
+    it('should return a computation on part of the context', async () => {
+      interface R {
+        http: {
+          host: string
+          fetch: (
+            id: number,
+          ) => RTE.ReaderTaskEither<Pick<R, 'http'>, Error, string>
+        }
+      }
+
+      const fetch: R['http']['fetch'] =
+        (id) =>
+        ({ http }) =>
+        async () =>
+          E.right(`${http.host}/${id}`)
+
+      await expect(
+        picks<R>()('http', ({ fetch }) => fetch(42))({
+          http: { host: 'foobar', fetch },
+        })(),
+      ).resolves.toStrictEqual(E.right('foobar/42'))
     })
   })
 
