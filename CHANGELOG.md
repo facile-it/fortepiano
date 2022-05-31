@@ -69,12 +69,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Replace `struct` type with `Struct`.
 - Rename `GeneratorL` module to `Yield`.
 - Use `cause` property to record wrapped errors (inspired by TC39).
-- Decode from Json and then from the given codec in the `get` function of the `Redis` module.
 
 ### Deprecated
 
 - Deprecate `struct` (use `Struct` instead).
 - Deprecate `GeneratorL` module (use `Yield` instead).
+
+### Fixed
+
+- Decode from Json and then from the given codec in the `get` function of the `Redis` module.
 
 ## [0.1.2](https://github.com/facile-it/fortepiano/compare/v0.1.1...v0.1.2) - 2022-04-29
 
