@@ -33,7 +33,7 @@
     "prettier": "prettier --check ./",
     "prettier:fix": "prettier --write ./",
     "prerelease": "yarn build && ./scripts/hybridize.sh && cp ./package.json ./*.md ./dist/",
-    "release": "yarn prerelease && yarn publish ./dist/",
+    "release": "yarn prerelease && yarn npm publish ./dist/",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },
