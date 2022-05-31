@@ -8,6 +8,7 @@ import * as $date from './Date'
 import * as $eq from './Eq'
 import * as $error from './Error'
 import * as _$generatorL from './GeneratorL'
+import * as $has from './Has'
 import * as $http from './Http'
 import * as $log from './Log'
 import * as $magma from './Magma'
@@ -31,6 +32,8 @@ import * as $taskEither from './TaskEither'
 import * as $type from './Type'
 import * as $validation from './Validation'
 import * as $yield from './Yield'
+
+export type ValueOf<A> = A[keyof A]
 
 export type PartialDeep<A> = A extends { readonly [x: string]: unknown }
   ? Partial<{ readonly [K in keyof A]: PartialDeep<A[K]> }>
@@ -67,6 +70,7 @@ export {
   $eq,
   $error,
   $generatorL,
+  $has,
   $http,
   $log,
   $magma,
