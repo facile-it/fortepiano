@@ -51,7 +51,7 @@ describe('string', () => {
   })
 
   describe('suffix', () => {
-    it('should add a suffx string', () => {
+    it('should add a suffix string', () => {
       expect(suffix('bar')('foo')).toBe('foobar')
     })
   })
