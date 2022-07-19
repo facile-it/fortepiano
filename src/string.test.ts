@@ -1,4 +1,11 @@
-import { capitalize, lowercase, uncapitalize, uppercase } from './string'
+import {
+  capitalize,
+  lowercase,
+  prefix,
+  suffix,
+  uncapitalize,
+  uppercase,
+} from './string'
 
 describe('string', () => {
   describe('uppercase', () => {
@@ -34,6 +41,18 @@ describe('string', () => {
     })
     it('should support empty strings', () => {
       expect(uncapitalize('')).toBe('')
+    })
+  })
+
+  describe('prefix', () => {
+    it('should add a prefix string', () => {
+      expect(prefix('bar')('foo')).toBe('barfoo')
+    })
+  })
+
+  describe('suffix', () => {
+    it('should add a suffx string', () => {
+      expect(suffix('bar')('foo')).toBe('foobar')
     })
   })
 })
