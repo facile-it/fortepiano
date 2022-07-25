@@ -12,8 +12,10 @@ export const capitalize = <S extends string>(s: S): Capitalize<S> =>
 export const uncapitalize = <S extends string>(s: S): Uncapitalize<S> =>
   (S.isEmpty(s) ? s : s[0].toLowerCase() + s.slice(1)) as Uncapitalize<S>
 
-export const prefix = (prefix: string) => (s: string) => `${prefix}${s}`
+export const prefix = (prefix: string) => (s: string) =>
+  S.Semigroup.concat(prefix, s)
 
-export const suffix = (suffix: string) => (s: string) => `${s}${suffix}`
+export const suffix = (suffix: string) => (s: string) =>
+  S.Semigroup.concat(s, suffix)
 
 export const test = (re: RegExp) => (s: string) => re.test(s)
