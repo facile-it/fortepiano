@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add `prefix` to `string` module.
 - Add `suffix` to `string` module.
 
+### Fixed
+
+- Update `yarn.lock` in order to fix "typescript (18.x)" and "jest (18.x)" jobs in CI.
+
 ## [0.1.4](https://github.com/facile-it/fortepiano/compare/v0.1.3...v0.1.4) - 2022-06-24
 
 ### Security
