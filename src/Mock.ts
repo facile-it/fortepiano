@@ -1,3 +1,8 @@
+import { PartialDeep } from '.'
+import { curry, recurse, run } from './function'
+import * as $St from './struct'
+import * as $t from './Type'
+import * as $Y from './Yield'
 import * as Appli from 'fp-ts/Applicative'
 import * as _Apply from 'fp-ts/Apply'
 import * as C from 'fp-ts/Chain'
@@ -24,11 +29,6 @@ import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as Se from 'fp-ts/Semigroup'
 import * as t from 'io-ts'
-import { PartialDeep } from '.'
-import { curry, recurse, run } from './function'
-import * as $St from './struct'
-import * as $t from './Type'
-import * as $Y from './Yield'
 
 export const URI = 'Mock'
 
@@ -208,6 +208,86 @@ export const partial = <A>(
     RR.map(nullable),
     struct,
   ) as any
+
+export function union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
+  a: Mock<A>,
+  b: Mock<B>,
+  c: Mock<C>,
+  d: Mock<D>,
+  e: Mock<E>,
+  f: Mock<F>,
+  g: Mock<G>,
+  h: Mock<H>,
+  i: Mock<I>,
+  j: Mock<J>,
+  k: Mock<K>,
+  l: Mock<L>,
+  m: Mock<M>,
+  n: Mock<N>,
+  o: Mock<O>,
+): Mock<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O>
+
+export function union<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
+  a: Mock<A>,
+  b: Mock<B>,
+  c: Mock<C>,
+  d: Mock<D>,
+  e: Mock<E>,
+  f: Mock<F>,
+  g: Mock<G>,
+  h: Mock<H>,
+  i: Mock<I>,
+  j: Mock<J>,
+  k: Mock<K>,
+  l: Mock<L>,
+  m: Mock<M>,
+  n: Mock<N>,
+): Mock<A | B | C | D | E | F | G | H | I | J | K | L | M | N>
+
+export function union<A, B, C, D, E, F, G, H, I, J, K, L, M>(
+  a: Mock<A>,
+  b: Mock<B>,
+  c: Mock<C>,
+  d: Mock<D>,
+  e: Mock<E>,
+  f: Mock<F>,
+  g: Mock<G>,
+  h: Mock<H>,
+  i: Mock<I>,
+  j: Mock<J>,
+  k: Mock<K>,
+  l: Mock<L>,
+  m: Mock<M>,
+): Mock<A | B | C | D | E | F | G | H | I | J | K | L | M>
+
+export function union<A, B, C, D, E, F, G, H, I, J, K, L>(
+  a: Mock<A>,
+  b: Mock<B>,
+  c: Mock<C>,
+  d: Mock<D>,
+  e: Mock<E>,
+  f: Mock<F>,
+  g: Mock<G>,
+  h: Mock<H>,
+  i: Mock<I>,
+  j: Mock<J>,
+  k: Mock<K>,
+  l: Mock<L>,
+): Mock<A | B | C | D | E | F | G | H | I | J | K | L>
+
+export function union<A, B, C, D, E, F, G, H, I, J, K>(
+  a: Mock<A>,
+  b: Mock<B>,
+  c: Mock<C>,
+  d: Mock<D>,
+  e: Mock<E>,
+  f: Mock<F>,
+  g: Mock<G>,
+  h: Mock<H>,
+  i: Mock<I>,
+  j: Mock<J>,
+  k: Mock<K>,
+): Mock<A | B | C | D | E | F | G | H | I | J | K>
 
 export function union<A, B, C, D, E, F, G, H, I, J>(
   a: Mock<A>,
