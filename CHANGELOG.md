@@ -10,7 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Add `prefix` to `string` module.
 - Add `suffix` to `string` module.
-- Add overloads to `$mock.union` function.
+
+### Changed
+
+- Changed overloads of `$mock.union` function.
+
 
 ### Fixed
 
