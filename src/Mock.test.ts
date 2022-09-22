@@ -345,7 +345,23 @@ describe('Mock', () => {
   })
 
   describe('union', () => {
-    const M = union(boolean, number(), string)
+    const M = union(
+      boolean,
+      number(),
+      string,
+      boolean,
+      number(),
+      string,
+      boolean,
+      number(),
+      string,
+      boolean,
+      number(),
+      string,
+      boolean,
+      number(),
+      string,
+    )
 
     it('should return a random value of one of the specified types', () => {
       for (let i = 0; i < 10; i++) {
