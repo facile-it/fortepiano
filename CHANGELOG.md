@@ -15,7 +15,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Changed overloads of `$mock.union` function.
 
-
 ### Fixed
 
 - Update `yarn.lock` in order to fix "typescript (18.x)" and "jest (18.x)" jobs in CI.
