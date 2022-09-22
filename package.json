@@ -1,6 +1,6 @@
 {
   "name": "fortepiano",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Playing actual music over fp-ts notes",
   "keywords": [
     "typescript",
