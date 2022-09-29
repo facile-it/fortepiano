@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Add `collectWithPreservedIndex` to `ReadonlyRecord` module.
+- Add `collectWithPreservedIndex` function to `ReadonlyRecord` module.
 
 ## [0.1.5](https://github.com/facile-it/fortepiano/compare/v0.1.4...v0.1.5) - 2022-09-22
 
