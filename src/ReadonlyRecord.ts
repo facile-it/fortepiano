@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as $RA from './ReadonlyArray'
 
-export const collectWithPreservedIndex =
+export const collectWithIndex =
   <K extends string, A, B>(f: (k: K, a: A) => B) =>
   (r: RR.ReadonlyRecord<K, A>): ReadonlyArray<B> =>
     Object.entries(r).map(([k, v]) => f(k as K, v as A))

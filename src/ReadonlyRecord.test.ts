@@ -1,9 +1,9 @@
 import { pipe } from 'fp-ts/function'
 import * as RR from 'fp-ts/ReadonlyRecord'
-import { collectWithPreservedIndex, values } from './ReadonlyRecord'
+import { collectWithIndex, values } from './ReadonlyRecord'
 
 describe('ReadonlyRecord', () => {
-  describe('collectWithPreservedIndex', () => {
+  describe('collectWithIndex', () => {
     it('should resolve generic records into an array of indexed values', () => {
       ;(
         [
@@ -49,7 +49,7 @@ describe('ReadonlyRecord', () => {
           ],
         ] as Array<[any, Array<any>]>
       ).forEach(([record, expected]) =>
-        expect(collectWithPreservedIndex((_, v) => v)(record)).toEqual(
+        expect(collectWithIndex((_, v) => v)(record)).toEqual(
           expected,
         ),
       )
