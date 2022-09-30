@@ -49,9 +49,7 @@ describe('ReadonlyRecord', () => {
           ],
         ] as Array<[any, Array<any>]>
       ).forEach(([record, expected]) =>
-        expect(collectWithIndex((_, v) => v)(record)).toEqual(
-          expected,
-        ),
+        expect(collectWithIndex((_, v) => v)(record)).toEqual(expected),
       )
     })
   })
