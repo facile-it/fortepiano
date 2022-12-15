@@ -22,4 +22,9 @@ export const suffix =
   <S extends string>(s: S): `${S}${Suffix}` =>
     `${s}${suffix}`
 
+export const intercalate =
+  <M extends string>(middle: M) =>
+  <S0 extends string, S1 extends string>(s0: S0, s1: S1): `${S0}${M}${S1}` =>
+    `${s0}${middle}${s1}`
+
 export const test = (re: RegExp) => (s: string) => re.test(s)
