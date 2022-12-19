@@ -1,5 +1,6 @@
 import {
   capitalize,
+  infix,
   lowercase,
   prefix,
   suffix,
@@ -53,6 +54,13 @@ describe('string', () => {
   describe('suffix', () => {
     it('should add a suffix string', () => {
       expect(suffix('bar')('foo')).toBe('foobar')
+    })
+  })
+
+  describe('infix', () => {
+    it('should insert a string between two strings', () => {
+      expect(infix(' ')('foo', 'bar')).toBe('foo bar')
+      expect(infix('-')(infix(' ')('foo', 'bar'), 'baz')).toBe('foo bar-baz')
     })
   })
 })
