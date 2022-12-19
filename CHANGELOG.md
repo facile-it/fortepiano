@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Add `intercalate` to `string` module.
+- Add `infix` to `string` module.
 
 ## [0.1.6](https://github.com/facile-it/fortepiano/compare/v0.1.5...v0.1.6) - 2022-09-30
 

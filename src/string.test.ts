@@ -1,6 +1,6 @@
 import {
   capitalize,
-  intercalate,
+  infix,
   lowercase,
   prefix,
   suffix,
@@ -57,9 +57,10 @@ describe('string', () => {
     })
   })
 
-  describe('intercalate', () => {
+  describe('infix', () => {
     it('should insert a string between two strings', () => {
-      expect(intercalate(' ')('foo', 'bar')).toBe('foo bar')
+      expect(infix(' ')('foo', 'bar')).toBe('foo bar')
+      expect(infix('-')(infix(' ')('foo', 'bar'), 'baz')).toBe('foo bar-baz')
     })
   })
 })
