@@ -31,7 +31,7 @@ const ERRORS = {
   LengthRequired: 411,
   PreconditionFailed: 412,
   PayloadTooLarge: 413,
-  RequestURITooLong: 414,
+  RequestUriTooLong: 414,
   UnsupportedMediaType: 415,
   RequestedRangeNotSatisfiable: 416,
   ExpectationFailed: 417,
