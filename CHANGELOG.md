@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Complete the list of `Http` errors.
 
+### Security
+
+- Fix CVE-2023-26136.
+
 ## [0.1.7](https://github.com/facile-it/fortepiano/compare/v0.1.6...v0.1.7) - 2023-01-02
 
 ### Added
