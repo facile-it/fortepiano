@@ -49,7 +49,7 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
 
 - [Davide Caruso](https://github.com/davidecaruso)
 - [Pier Roberto Lucisano](https://github.com/pierroberto)
-- [Alberto Villa](https://github.com/xzhavilla)
+- [Alberto Villa](https://github.com/xzhayon)
 
 ## License
 
