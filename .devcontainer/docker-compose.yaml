@@ -1,0 +1,8 @@
+services:
+  workspace:
+    extends:
+      file: docker-compose.yaml
+      service: workspace
+    volumes:
+      - ${HOME}/.ssh:/root/.ssh:cached
+    command: /bin/sh -c "while sleep 1000; do :; done"
