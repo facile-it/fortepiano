@@ -1,18 +1,18 @@
 {
-    "customizations": {
-      "vscode": {
-        "extensions": [
-          "arcanis.vscode-zipfs",
-          "dbaeumer.vscode-eslint",
-          "esbenp.prettier-vscode",
-          "ms-azuretools.vscode-docker",
-          "Orta.vscode-jest",
-          "unional.vscode-sort-package-json"
-        ]
-      }
-    },
-    "dockerComposeFile": ["../docker-compose.yaml", "docker-compose.yaml"],
-    "service": "workspace",
-    "workspaceFolder": "/opt/${localWorkspaceFolderBasename}",
-    "postCreateCommand": ["apk", "--update", "add", "git", "openssh-client"]
-  }
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "arcanis.vscode-zipfs",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "Orta.vscode-jest",
+        "unional.vscode-sort-package-json"
+      ]
+    }
+  },
+  "dockerComposeFile": ["../docker-compose.yaml", "docker-compose.yaml"],
+  "service": "workspace",
+  "workspaceFolder": "/opt/${localWorkspaceFolderBasename}",
+  "postCreateCommand": ["apk", "--update", "add", "git", "openssh-client"]
+}
