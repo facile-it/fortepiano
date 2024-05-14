@@ -1,0 +1,7 @@
+services:
+  workspace:
+    image: node:16-alpine
+    user: root
+    volumes:
+      - .:/opt/${COMPOSE_PROJECT_NAME}:cached
+    working_dir: /opt/${COMPOSE_PROJECT_NAME}
