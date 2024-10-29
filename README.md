@@ -23,13 +23,6 @@ The package is available via [npm](https://www.npmjs.com/package/fortepiano), an
 npm install fortepiano fp-ts io-ts io-ts-types
 ```
 
-Additional packages are required, shall you want to use specific abstractions:
-
-- [`memcached`](https://www.npmjs.com/package/memcached) and [`@types/memcached`](https://www.npmjs.com/package/@types/memcached) (`cache/Memcached`)
-- [`redis`](https://www.npmjs.com/package/redis) and [`@types/redis`](https://www.npmjs.com/package/@types/redis) (`cache/Redis`)
-- [`axios`](https://www.npmjs.com/package/axios) (`http/Axios`)
-- [`@slynova/flydrive`](https://www.npmjs.com/package/@slynova/flydrive) (`storage/Flydrive`)
-
 ### Usage
 
 Import modules (e.g., values) from package index and types from specific modules. "Function" module and abstraction implementations are an exception:
@@ -38,7 +31,6 @@ Import modules (e.g., values) from package index and types from specific modules
 import { $type } from 'fortepiano'
 import { Struct } from 'fortepiano/struct'
 import { curry } from 'fortepiano/function'
-import { $axios } from 'fortepiano/http/Axios'
 ```
 
 ## Contributing

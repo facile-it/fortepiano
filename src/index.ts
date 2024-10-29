@@ -1,7 +1,5 @@
 import * as $aggregate from './Aggregate'
 import * as $binary from './Binary'
-import * as $buffer from './Buffer'
-import * as $cache from './Cache'
 import * as $console from './Console'
 import * as $crypto from './Crypto'
 import * as $date from './Date'
@@ -9,7 +7,6 @@ import * as $eq from './Eq'
 import * as $error from './Error'
 import * as _$generatorL from './GeneratorL'
 import * as $has from './Has'
-import * as $http from './Http'
 import * as $log from './Log'
 import * as $magma from './Magma'
 import * as $matrix from './Matrix'
@@ -25,7 +22,6 @@ import * as $readonlyArray from './ReadonlyArray'
 import * as $readonlyRecord from './ReadonlyRecord'
 import * as $readonlyTuple from './ReadonlyTuple'
 import * as $storage from './Storage'
-import * as $stream from './Stream'
 import * as $string from './string'
 import * as $struct from './struct'
 import * as $taskEither from './TaskEither'
@@ -62,8 +58,6 @@ const $generatorL = _$generatorL
 export {
   $aggregate,
   $binary,
-  $buffer,
-  $cache,
   $console,
   $crypto,
   $date,
@@ -71,7 +65,6 @@ export {
   $error,
   $generatorL,
   $has,
-  $http,
   $log,
   $magma,
   $matrix,
@@ -87,7 +80,6 @@ export {
   $readonlyRecord,
   $readonlyTuple,
   $storage,
-  $stream,
   $string,
   $struct,
   $taskEither,
