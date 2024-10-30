@@ -5,15 +5,11 @@ import * as $crypto from './Crypto'
 import * as $date from './Date'
 import * as $eq from './Eq'
 import * as $error from './Error'
-import * as _$generatorL from './GeneratorL'
 import * as $has from './Has'
-import * as $log from './Log'
 import * as $magma from './Magma'
 import * as $matrix from './Matrix'
 import * as $mock from './Mock'
-import * as $number from './number'
 import * as $option from './Option'
-import * as $random from './Random'
 import * as $reader from './Reader'
 import * as $readerEither from './ReaderEither'
 import * as $readerTask from './ReaderTask'
@@ -21,7 +17,6 @@ import * as $readerTaskEither from './ReaderTaskEither'
 import * as $readonlyArray from './ReadonlyArray'
 import * as $readonlyRecord from './ReadonlyRecord'
 import * as $readonlyTuple from './ReadonlyTuple'
-import * as $storage from './Storage'
 import * as $string from './string'
 import * as $struct from './struct'
 import * as $taskEither from './TaskEither'
@@ -50,11 +45,6 @@ export type IntersectionDeep<A, B> = A extends { readonly [x: string]: unknown }
     }
   : B
 
-/**
- * @deprecated Use `$yield` instead
- */
-const $generatorL = _$generatorL
-
 export {
   $aggregate,
   $binary,
@@ -63,15 +53,11 @@ export {
   $date,
   $eq,
   $error,
-  $generatorL,
   $has,
-  $log,
   $magma,
   $matrix,
   $mock,
-  $number,
   $option,
-  $random,
   $reader,
   $readerEither,
   $readerTask,
@@ -79,7 +65,6 @@ export {
   $readonlyArray,
   $readonlyRecord,
   $readonlyTuple,
-  $storage,
   $string,
   $struct,
   $taskEither,
