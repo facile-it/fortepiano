@@ -7,7 +7,7 @@ import * as $t from './Type'
 
 export type Struct = object
 
-type PartialDeep<A> = A extends { readonly [x: string]: unknown }
+export type PartialDeep<A> = A extends { readonly [x: string]: unknown }
   ? Partial<{ readonly [K in keyof A]: PartialDeep<A[K]> }>
   : A
 
