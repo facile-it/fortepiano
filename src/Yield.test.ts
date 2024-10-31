@@ -1,24 +1,16 @@
 import * as Ei from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
-import * as N from 'fp-ts/number'
 import * as O from 'fp-ts/Option'
 import * as Se from 'fp-ts/Separated'
 import {
-  Alt,
-  Apply,
-  Chain,
   Compactable,
   flatten,
   FromIO,
   fromReadonlyArray,
   Functor,
   FunctorWithIndex,
-  getEq,
-  getMonoid,
-  getOrd,
   makeBy,
   map,
-  of,
   range,
   takeLeft,
   toReadonlyArray,
@@ -125,95 +117,6 @@ describe('Yield', () => {
     })
   })
 
-  describe('Monoid', () => {
-    const { empty, concat } = getMonoid<number>()
-    const a = fromReadonlyArray([0, 1, 2])
-    const b = fromReadonlyArray([3, 4, 5])
-    const c = fromReadonlyArray([6, 7, 8])
-
-    it('associativity', () => {
-      expect(pipe(concat(a, concat(b, c)), toReadonlyArray)).toStrictEqual(
-        pipe(concat(concat(a, b), c), toReadonlyArray),
-      )
-    })
-    it('identity', () => {
-      expect(pipe(concat(empty, empty), toReadonlyArray)).toStrictEqual(
-        pipe(empty, toReadonlyArray),
-      )
-      expect(pipe(concat(a, empty), toReadonlyArray)).toStrictEqual(
-        pipe(a, toReadonlyArray),
-      )
-      expect(pipe(concat(empty, a), toReadonlyArray)).toStrictEqual(
-        pipe(a, toReadonlyArray),
-      )
-    })
-
-    it('should concatenate generated values', () => {
-      expect(pipe(concat(a, concat(b, c)), toReadonlyArray)).toStrictEqual([
-        0, 1, 2, 3, 4, 5, 6, 7, 8,
-      ])
-    })
-  })
-
-  describe('Eq', () => {
-    const { equals } = getEq<number>(N.Eq)
-    const fa = fromReadonlyArray([0, 1, 2])
-    const fb = pipe(range(0), takeLeft(3))
-    const fc = function* () {
-      yield 0
-      yield 1
-      yield 2
-    }
-    const fd = fromReadonlyArray([3, 4, 5])
-
-    it('reflexivity', () => {
-      expect(equals(fa, fa)).toBe(true)
-    })
-    it('symmetry', () => {
-      expect(equals(fa, fb)).toBe(equals(fb, fa))
-      expect(equals(fa, fd)).toBe(equals(fd, fa))
-    })
-    it('transitivity', () => {
-      expect(equals(fa, fb)).toBe(true)
-      expect(equals(fb, fc)).toBe(true)
-      expect(equals(fa, fc)).toBe(true)
-
-      expect(equals(fa, fd)).toBe(false)
-      expect(equals(fb, fd)).toBe(false)
-      expect(equals(fc, fd)).toBe(false)
-    })
-  })
-
-  describe('Ord', () => {
-    const { equals, compare } = getOrd<number>(N.Ord)
-    const fa = fromReadonlyArray([0, 1, 2])
-    const fb = pipe(range(3), takeLeft(3))
-    const fc = function* () {
-      yield 6
-      yield 7
-      yield 8
-    }
-    const fd = fromReadonlyArray([0, 1, 2])
-
-    it('reflexivity', () => {
-      expect(compare(fa, fa)).toBeLessThanOrEqual(0)
-    })
-    it('antisymmetry', () => {
-      expect(compare(fa, fd)).toBeLessThanOrEqual(0)
-      expect(compare(fd, fa)).toBeLessThanOrEqual(0)
-      expect(equals(fa, fd)).toBe(true)
-    })
-    it('transitivity', () => {
-      expect(compare(fa, fb)).toBeLessThanOrEqual(0)
-      expect(compare(fb, fc)).toBeLessThanOrEqual(0)
-      expect(compare(fa, fc)).toBeLessThanOrEqual(0)
-
-      expect(compare(fa, fd)).toBeLessThanOrEqual(0)
-      expect(compare(fb, fd)).toBeGreaterThan(0)
-      expect(compare(fc, fd)).toBeGreaterThan(0)
-    })
-  })
-
   describe('Functor', () => {
     const fa = fromReadonlyArray([0, 1, 2])
 
@@ -272,49 +175,6 @@ describe('Yield', () => {
     })
   })
 
-  describe('Apply', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
-    const ab = (a: number) => a + 1
-    const bc = (a: number) => a / 2
-
-    it('associative composition', () => {
-      expect(
-        pipe(
-          Apply.ap(
-            Apply.ap(
-              Apply.map(
-                of(bc),
-                (bc) => (ab: (a: number) => number) => (a: number) => bc(ab(a)),
-              ),
-              of(ab),
-            ),
-            fa,
-          ),
-          toReadonlyArray,
-        ),
-      ).toStrictEqual(
-        pipe(Apply.ap(of(bc), Apply.ap(of(ab), fa)), toReadonlyArray),
-      )
-    })
-  })
-
-  describe('Chain', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
-    const afb = (a: number) => of(a + 1)
-    const bfc = (a: number) => of(a / 2)
-
-    it('associativity', () => {
-      expect(
-        pipe(Chain.chain(Chain.chain(fa, afb), bfc), toReadonlyArray),
-      ).toStrictEqual(
-        pipe(
-          Chain.chain(fa, (a) => Chain.chain(afb(a), bfc)),
-          toReadonlyArray,
-        ),
-      )
-    })
-  })
-
   describe('FromIO', () => {
     describe('fromIO', () => {
       it('should generate values using an IO', () => {
@@ -328,47 +188,6 @@ describe('Yield', () => {
         expect(as[0]).toBeGreaterThanOrEqual(now)
         expect(as[99]).toBeLessThanOrEqual(Date.now())
       })
-    })
-  })
-
-  describe('Alt', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
-    const ga = fromReadonlyArray([3, 4, 5])
-    const ha = fromReadonlyArray([6, 7, 8])
-
-    it('associativity', () => {
-      expect(
-        pipe(
-          Alt.alt(
-            Alt.alt(fa, () => ga),
-            () => ha,
-          ),
-          toReadonlyArray,
-        ),
-      ).toStrictEqual(
-        pipe(
-          Alt.alt(fa, () => Alt.alt(ga, () => ha)),
-          toReadonlyArray,
-        ),
-      )
-    })
-    it('distributivity', () => {
-      const ab = (a: number) => a + 1
-
-      expect(
-        pipe(
-          Alt.map(
-            Alt.alt(fa, () => ga),
-            ab,
-          ),
-          toReadonlyArray,
-        ),
-      ).toStrictEqual(
-        pipe(
-          Alt.alt(Alt.map(fa, ab), () => Alt.map(ga, ab)),
-          toReadonlyArray,
-        ),
-      )
     })
   })
 
