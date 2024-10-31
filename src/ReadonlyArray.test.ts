@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as S from 'fp-ts/string'
-import { allElems, anyElem, cartesian, same, words } from './ReadonlyArray'
+import { anyElem, cartesian, same, words } from './ReadonlyArray'
 
 const arrays: ReadonlyArray<
   [
@@ -113,29 +113,6 @@ describe('ReadonlyArray', () => {
     })
     it('should support returning the empty word', () => {
       expect(pipe([0, 1], words(-Infinity))).toStrictEqual([[]])
-    })
-  })
-
-  describe('allElems', () => {
-    it('should return false when the array has no elements', () => {
-      expect(allElems(S.Eq)('a')([])).toBe(false)
-    })
-    it('should return false when all elements are missing', () => {
-      expect(allElems(S.Eq)('a')(['b'])).toBe(false)
-    })
-    it('should return false when some elements are missing', () => {
-      expect(allElems(S.Eq)('a', 'b')(['a'])).toBe(false)
-    })
-    it('should return true when all elements are found', () => {
-      expect(allElems(S.Eq)('a', 'b')(['b', 'a'])).toBe(true)
-    })
-    it('should return true when all elements are found along with others', () => {
-      expect(allElems(S.Eq)('a', 'b')(['c', 'b', 'a'])).toBe(true)
-    })
-    it('should return true when duplicate elements are found', () => {
-      expect(allElems(S.Eq)('a', 'a', 'b')(['b', 'b', 'a', 'a', 'a'])).toBe(
-        true,
-      )
     })
   })
 

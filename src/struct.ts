@@ -2,11 +2,23 @@ import { pipe, Predicate } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as S from 'fp-ts/struct'
-import { IntersectionDeep, PartialDeep } from '.'
 import { curry } from './function'
 import * as $t from './Type'
 
 export type Struct = object
+
+type PartialDeep<A> = A extends { readonly [x: string]: unknown }
+  ? Partial<{ readonly [K in keyof A]: PartialDeep<A[K]> }>
+  : A
+
+type IntersectionDeep<A, B> = A extends { readonly [x: string]: unknown }
+  ? A & {
+      readonly [K in keyof B]: IntersectionDeep<
+        K extends keyof A ? A[K] : unknown,
+        B[K]
+      >
+    }
+  : B
 
 /**
  * @deprecated Use `Struct` instead
@@ -17,18 +29,6 @@ export type struct = object
 export const toReadonlyArray = <A extends Struct>(
   a: A,
 ): ReadonlyArray<Readonly<[keyof A, A[keyof A]]>> => RR.toReadonlyArray(a)
-
-export const lookup =
-  <S extends Struct, K extends keyof S>(k: K) =>
-  (s: S): S[K] =>
-    s[k]
-
-export const modifyAt =
-  <S extends Struct, K extends keyof S>(k: K, f: (a: S[K]) => S[K]) =>
-  (s: S): S => ({ ...s, [k]: f(s[k]) })
-
-export const updateAt = <S extends Struct, K extends keyof S>(k: K, a: S[K]) =>
-  modifyAt(k, () => a)
 
 export const filterDeep =
   <A extends Struct>(f: Predicate<unknown /*ValuesDeep<A>*/>) =>

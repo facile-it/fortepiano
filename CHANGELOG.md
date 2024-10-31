@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0](https://github.com/facile-it/fortepiano/compare/v0.1.9...v1.0.0) - 2024-05-14
+## Unreleased
 
 ### Removed
 
@@ -21,6 +21,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Remove `Got` module.
 - Remove `Flydrive` module.
 - Remove `Fs` module.
+- Remove `Random` module.
+- Remove `Log` module.
+- Remove `Void` module.
+- Remove `GeneratorL` module.
+- Remove `number` module.
+- Remove `Console` module.
+- Remove `Crypto` module.
+- Remove `Binary` module.
+- Remove `Date` module.
+- Remove `AsyncYield` module.
+- Remove `Magma` module.
+- Remove `Matrix` module.
+- Remove `Option` module.
+- Remove `Reader` module.
+- Remove `ReaderEither` module.
+- Remove `ReaderTask` module.
+- Remove `ReaderTaskEither` module.
+- Remove `ReadonlyTuple` module.
+- Remove `TaskEither` module.
+- Remove `Validation` module.
+- Remove `Has` module.
+- Remove `Aggregate` module.
+- Remove `Eq` module.
+- Remove `string` module.
+- Remove `Error` module.
+- Remove unused functions from `Yield`, `ReadonlyArray`, `Type`, `function` and `struct` modules.
 
 ## [0.1.9](https://github.com/facile-it/fortepiano/compare/v0.1.8...v0.1.9) - 2024-05-14
 

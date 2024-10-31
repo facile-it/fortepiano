@@ -3,7 +3,6 @@ import * as E from 'fp-ts/Eq'
 import { constTrue, pipe } from 'fp-ts/function'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
-import * as $E from './Eq'
 import { curry } from './function'
 
 /**
@@ -72,12 +71,6 @@ export function words<A>(size: number) {
           cartesian(head, ...tail),
         )
 }
-
-export const allElems =
-  <A>(E: E.Eq<A>) =>
-  (...elems: RNEA.ReadonlyNonEmptyArray<A>) =>
-  (as: ReadonlyArray<A>): as is RNEA.ReadonlyNonEmptyArray<A> =>
-    pipe(elems, RA.intersection(E)(as), curry($E.getEqSize(RA).equals)(elems))
 
 export const anyElem =
   <A>(E: E.Eq<A>) =>

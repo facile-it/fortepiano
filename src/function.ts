@@ -14,44 +14,6 @@ export function curry(f: (...args: any) => any) {
   }
 }
 
-export function uncurry<A, B, C, D>(
-  f: (a: A) => (b: B) => (c: C) => D,
-): D extends (...args: any) => any ? never : (a: A, b: B, c: C) => D
-export function uncurry<A, B, C>(
-  f: (a: A) => (b: B) => C,
-): C extends (...args: any) => any ? never : (a: A, b: B) => C
-export function uncurry(f: (...args: any) => any) {
-  return (...args: ReadonlyArray<unknown>) =>
-    args.reduce((_f: any, arg) => _f(arg), f)
-}
-
-export const memoize = <A extends (...args: any) => any>(f: A): A => {
-  const cache: Record<string, ReturnType<A>> = {}
-
-  return ((...args: any): ReturnType<A> => {
-    let key = ''
-    try {
-      key = JSON.stringify(args)
-    } catch (error) {
-      return f(...args)
-    }
-
-    if (!(key in cache)) {
-      const result = f(...args)
-      cache[key] =
-        result instanceof Promise
-          ? result.catch((error) => {
-              delete cache[key]
-
-              throw error
-            })
-          : result
-    }
-
-    return cache[key]
-  }) as any
-}
-
 /**
  * @example
  * const pi = (max: number) => (): ((n?: number) => number) =>
@@ -83,46 +45,3 @@ export const recurse = <A extends (...args: any) => any>(
 
   return self
 }
-
-/**
- * @example
- * type _Op<A> = { _tag: A; x: number; y: number }
- * type Add = _Op<'Add'>
- * type Mul = _Op<'Mul'>
- * type Sub = _Op<'Sub'>
- * type Div = _Op<'Div'>
- * type Op = Add | Mul | Sub | Div
- *
- * const calc = match<Op>()({
- *   Add: ({ x, y }) => option.some(x + y),
- *   Mul: ({ x, y }) => option.some(x * y),
- *   Sub: ({ x, y }) => option.some(x - y),
- *   Div: ({ x, y }) => (0 === y ? option.none : option.some(x / y)),
- * })
- * const op = (_tag: Op['_tag']) => (y: number) => (x: number) => calc({ _tag, x, y })
- * const add = op('Add')
- * const mul = op('Mul')
- * const sub = op('Sub')
- * const div = op('Div')
- *
- * expect(
- *   pipe(
- *     option.of(42),
- *     option.chain(add(1138)),
- *     option.chain(mul(0.1)),
- *     option.chain(sub(1337)),
- *     option.chain(div(0.1)),
- *     option.getOrElse(() => NaN)
- *   )
- * ).toBeCloseTo(-12190)
- */
-export const match =
-  <A extends { readonly [k in K]: string }, K extends string = '_tag'>() =>
-  <T extends A[K], B>(
-    onCases: {
-      readonly [t in T]: (a: Extract<A, { readonly [k in K]: t }>) => B
-    },
-    k: K = '_tag' as K,
-  ) =>
-  (a: A): B =>
-    onCases[a[k] as T](a as Extract<A, { readonly [k in K]: T }>)
