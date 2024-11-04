@@ -390,7 +390,13 @@ export const readonlyRecord = <K extends string, T>(
 ): Mock<RR.ReadonlyRecord<K, T>> =>
   pipe(
     readonlyArray(tuple(KM, TM), Math.max(0, min), Math.max(0, min, max))(),
-    IO.map(RR.fromFoldable(Se.last<T>(), RA.Foldable)),
+    IO.map(
+      (entries) =>
+        RR.fromFoldable(
+          Se.last<T>(),
+          RA.Foldable,
+        )(entries) as RR.ReadonlyRecord<K, T>,
+    ),
     fromIO,
   )
 
