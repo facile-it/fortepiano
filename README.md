@@ -7,7 +7,11 @@ _Playing actual music over `fp-ts` notes_ 🎶
 [![GitHub](https://img.shields.io/github/license/facile-it/fortepiano)](LICENSE.md)
 [![npm](https://img.shields.io/npm/v/fortepiano)](https://www.npmjs.com/package/fortepiano)
 
+## Description
+
 **Fortepiano** is a mocking library for TypeScript. It promotes immutability, composability and purity, making it ideal for projects that embrace functional programming principles.
+
+## Getting Started
 
 ### Installation
 
@@ -25,7 +29,7 @@ or using yarn:
 yarn add fortepiano fp-ts io-ts
 ```
 
-## Usage
+### Usage
 
 Fortepiano uses a functional API to create and configure mocks, encouraging pure function usage and immutable mock objects.
 
