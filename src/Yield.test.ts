@@ -1,20 +1,5 @@
-import * as Ei from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
-import * as Se from 'fp-ts/Separated'
-import {
-  Compactable,
-  flatten,
-  FromIO,
-  fromReadonlyArray,
-  Functor,
-  FunctorWithIndex,
-  makeBy,
-  map,
-  range,
-  takeLeft,
-  toReadonlyArray,
-} from './Yield'
+import { FromIO, makeBy, range, takeLeft, toReadonlyArray } from './Yield'
 
 describe('Yield', () => {
   describe('makeBy', () => {
@@ -65,28 +50,6 @@ describe('Yield', () => {
     })
   })
 
-  describe('fromReadonlyArray', () => {
-    it('should transform an array into a generator', () => {
-      expect(
-        pipe(fromReadonlyArray([42, 1138, 1337]), toReadonlyArray),
-      ).toStrictEqual([42, 1138, 1337])
-    })
-  })
-
-  describe('flatten', () => {
-    it('should flatten nested generators', () => {
-      expect(
-        pipe(
-          fromReadonlyArray([0, 1, 2]),
-          // eslint-disable-next-line fp-ts/prefer-chain
-          map((a) => fromReadonlyArray([3 * a, 3 * a + 1, 3 * a + 2])),
-          flatten,
-          toReadonlyArray,
-        ),
-      ).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 8])
-    })
-  })
-
   describe('takeLeft', () => {
     it('should select only specified elements', () => {
       const x = pipe(range(0), takeLeft(5), toReadonlyArray)
@@ -117,64 +80,6 @@ describe('Yield', () => {
     })
   })
 
-  describe('Functor', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
-
-    it('identity', () => {
-      expect(
-        pipe(
-          Functor.map(fa, (a) => a),
-          toReadonlyArray,
-        ),
-      ).toStrictEqual(pipe(fa, toReadonlyArray))
-    })
-    it('composition', () => {
-      const ab = (a: number) => a + 1
-      const bc = (a: number) => a / 2
-
-      expect(
-        pipe(
-          Functor.map(fa, (a) => bc(ab(a))),
-          toReadonlyArray,
-        ),
-      ).toStrictEqual(
-        pipe(Functor.map(Functor.map(fa, ab), bc), toReadonlyArray),
-      )
-    })
-  })
-
-  describe('FunctorWithIndex', () => {
-    const fa = fromReadonlyArray([0, 1, 2])
-
-    it('identity', () => {
-      expect(
-        pipe(
-          FunctorWithIndex.mapWithIndex(fa, (_, a) => a),
-          toReadonlyArray,
-        ),
-      ).toStrictEqual(pipe(fa, toReadonlyArray))
-    })
-    it('composition', () => {
-      const ab = (a: number) => a + 1
-      const bc = (a: number) => a / 2
-
-      expect(
-        pipe(
-          FunctorWithIndex.mapWithIndex(fa, (_, a) => bc(ab(a))),
-          toReadonlyArray,
-        ),
-      ).toStrictEqual(
-        pipe(
-          FunctorWithIndex.mapWithIndex(
-            FunctorWithIndex.mapWithIndex(fa, (_, a) => ab(a)),
-            (_, b) => bc(b),
-          ),
-          toReadonlyArray,
-        ),
-      )
-    })
-  })
-
   describe('FromIO', () => {
     describe('fromIO', () => {
       it('should generate values using an IO', () => {
@@ -187,47 +92,6 @@ describe('Yield', () => {
 
         expect(as[0]).toBeGreaterThanOrEqual(now)
         expect(as[99]).toBeLessThanOrEqual(Date.now())
-      })
-    })
-  })
-
-  describe('Compactable', () => {
-    describe('compact', () => {
-      it('should remove None elements', () => {
-        expect(
-          pipe(
-            fromReadonlyArray([
-              O.none,
-              O.some(0),
-              O.none,
-              O.some(1),
-              O.none,
-              O.some(2),
-            ]),
-            Compactable.compact,
-            toReadonlyArray,
-          ),
-        ).toStrictEqual([0, 1, 2])
-      })
-    })
-
-    describe('separate', () => {
-      it('should split Left and Right elements', () => {
-        expect(
-          pipe(
-            fromReadonlyArray([
-              Ei.left('a'),
-              Ei.right(0),
-              Ei.left('b'),
-              Ei.right(1),
-              Ei.left('c'),
-              Ei.right(2),
-            ]),
-            Compactable.separate,
-            (as) =>
-              Se.separated(toReadonlyArray(as.left), toReadonlyArray(as.right)),
-          ),
-        ).toStrictEqual(Se.separated(['a', 'b', 'c'], [0, 1, 2]))
       })
     })
   })
