@@ -20,12 +20,6 @@ type IntersectionDeep<A, B> = A extends { readonly [x: string]: unknown }
     }
   : B
 
-/**
- * @deprecated Use `Struct` instead
- */
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type struct = object
-
 export const toReadonlyArray = <A extends Struct>(
   a: A,
 ): ReadonlyArray<Readonly<[keyof A, A[keyof A]]>> => RR.toReadonlyArray(a)
