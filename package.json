@@ -55,7 +55,7 @@
     "eslint": "^8.16.0",
     "eslint-config-facile": "^0.5.0",
     "fp-ts": "^2.9.3",
-    "io-ts": "^2.0.0",
+    "io-ts": "^2.2.20",
     "jest": "^26.6.3",
     "prettier": "^2.6.2",
     "ts-jest": "^26.5.6",
