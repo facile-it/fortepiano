@@ -19,7 +19,7 @@
   "license": "MIT",
   "author": "Alberto Villa <villa.alberto@gmail.com>",
   "sideEffects": false,
-  "main": "./lib/index.js",
+  "main": "./cjs/index.js",
   "module": "./esm/index.js",
   "types": "./index.d.ts",
   "scripts": {
