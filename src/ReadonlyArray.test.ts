@@ -1,49 +1,7 @@
 import * as E from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
-import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as S from 'fp-ts/string'
 import { same } from './ReadonlyArray'
-
-const arrays: ReadonlyArray<
-  [
-    RNEA.ReadonlyNonEmptyArray<ReadonlyArray<unknown>>,
-    ReadonlyArray<ReadonlyArray<unknown>>,
-  ]
-> = [
-  [[[]], []],
-  [[[0, 1]], [[0], [1]]],
-  [[[0, 1], []], []],
-  [[[], ['a', 'b']], []],
-  [
-    [
-      [0, 1],
-      ['a', 'b'],
-    ],
-    [
-      [0, 'a'],
-      [0, 'b'],
-      [1, 'a'],
-      [1, 'b'],
-    ],
-  ],
-  [
-    [
-      [0, 1],
-      ['a', 'b'],
-      [false, true],
-    ],
-    [
-      [0, 'a', false],
-      [0, 'a', true],
-      [0, 'b', false],
-      [0, 'b', true],
-      [1, 'a', false],
-      [1, 'a', true],
-      [1, 'b', false],
-      [1, 'b', true],
-    ],
-  ],
-]
 
 describe('ReadonlyArray', () => {
   describe('same', () => {
