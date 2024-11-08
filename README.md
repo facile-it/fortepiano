@@ -1,3 +1,7 @@
+<p align="center">
+<img src="./logo.png" width=70px" height="auto"/>
+</p>
+
 # fortepiano [ˌfɔrteˈpjaːno]
 
 _Playing actual music over `fp-ts` notes_ 🎶
