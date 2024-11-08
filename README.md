@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./logo.png" width=70px" height="auto"/>
+<img src="./logo.png" width=150px" height="auto"/>
 </p>
 
 # fortepiano [ˌfɔrteˈpjaːno]
