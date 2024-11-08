@@ -35,6 +35,7 @@
     "prerelease": "yarn build && ./scripts/hybridize.sh && cp ./package.json ./*.md ./dist/",
     "release": "yarn prerelease && npm publish ./dist/",
     "test": "jest",
+    "test:watch": "jest --watchAll",
     "test:coverage": "jest --coverage"
   },
   "devDependencies": {
