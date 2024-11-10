@@ -8,6 +8,16 @@
     "fp-ts",
     "io-ts"
   ],
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
+    }
+  },
+  "files": [
+    "./dist/cjs/**",
+    "./dist/esm/**"
+  ],
   "homepage": "https://github.com/facile-it/fortepiano#readme",
   "bugs": {
     "url": "https://github.com/facile-it/fortepiano/issues"
@@ -19,9 +29,9 @@
   "license": "MIT",
   "author": "Alberto Villa <villa.alberto@gmail.com>",
   "sideEffects": false,
-  "main": "./cjs/index.js",
-  "module": "./esm/index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "scripts": {
     "prebuild": "yarn clean",
     "build": "yarn prebuild && yarn build:esm && yarn build:cjs",
@@ -32,7 +42,7 @@
     "eslint:fix": "eslint --fix ./",
     "prettier": "prettier --check ./",
     "prettier:fix": "prettier --write ./",
-    "prerelease": "yarn build && ./scripts/hybridize.sh && cp ./package.json ./*.md ./dist/",
+    "prerelease": "yarn build && cp ./package.json ./*.md ./dist/",
     "release": "yarn prerelease && npm publish ./dist/",
     "test": "jest",
     "test:watch": "jest --watchAll",
