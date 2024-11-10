@@ -1,8 +1,6 @@
 import { constTrue, pipe, tupled } from 'fp-ts/function'
 import * as N from 'fp-ts/number'
 import * as RA from 'fp-ts/ReadonlyArray'
-import { curry } from './function'
-
 import {
   ap,
   Applicative,
@@ -35,7 +33,8 @@ import {
   undefined as _undefined,
   union,
   unknown,
-} from './Mock'
+} from '.'
+import { curry } from './utils/function'
 
 describe('Mock', () => {
   describe('undefined', () => {
