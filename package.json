@@ -6,7 +6,7 @@
     "typescript",
     "functional-programming",
     "fp-ts",
-    "io-ts"
+    "testing"
   ],
   "exports": {
     ".": {
