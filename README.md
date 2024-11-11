@@ -13,7 +13,7 @@ _Playing actual music over `fp-ts` notes_ 🎶
 
 ## Description
 
-**Fortepiano** is a mocking library for TypeScript. It promotes immutability, composability and purity, making it ideal for projects that embrace functional programming principles.
+Fortepiano is a mocking library for TypeScript. It promotes immutability, composability and purity, making it ideal for projects that embrace functional programming principles.
 
 ## Getting Started
 
