@@ -1,4 +1,5 @@
-import { pipe, Predicate } from 'fp-ts/function'
+import { pipe } from 'fp-ts/function'
+import { Predicate } from 'fp-ts/Predicate'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as S from 'fp-ts/struct'
