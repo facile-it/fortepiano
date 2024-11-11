@@ -19,18 +19,16 @@ _Playing actual music over `fp-ts` notes_ 🎶
 
 ### Installation
 
-The package must be installed along with its peer dependencies.
-
-Via npm:
+To install the stable version via npm:
 
 ```bash
-npm install fortepiano fp-ts io-ts
+npm install fortepiano
 ```
 
 or using yarn:
 
 ```bash
-yarn add fortepiano fp-ts io-ts
+yarn add fortepiano
 ```
 
 ### Usage
