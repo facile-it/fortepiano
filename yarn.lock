@@ -3128,18 +3128,22 @@ __metadata:
     "@types/node": ^22.8.7
     eslint: ^8.16.0
     eslint-config-facile: ^0.5.0
-    fp-ts: ^2.9.3
+    fp-ts: ^2.16.0
     io-ts: ^2.2.20
     jest: ^26.6.3
     prettier: ^2.6.2
     ts-jest: ^26.5.6
     ts-node: ^10.9.2
     typescript: ^4.6.4
-  peerDependencies:
-    fp-ts: ^2.9.3
-    io-ts: ^2.2.20
   languageName: unknown
   linkType: soft
+
+"fp-ts@npm:^2.16.0":
+  version: 2.16.9
+  resolution: "fp-ts@npm:2.16.9"
+  checksum: 910a443dbd2a1a3f76527e8b9c1ccaae103cffd797b812cb2fdd7143fca5c010a05df35dca18bb7b2083249ceaec59fa0436c0c3f4b5b60bf5c62934c1a23ce5
+  languageName: node
+  linkType: hard
 
 "fp-ts@npm:^2.9.3":
   version: 2.12.1

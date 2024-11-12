@@ -2,13 +2,7 @@ import * as Appli from 'fp-ts/Applicative'
 import * as _Apply from 'fp-ts/Apply'
 import * as C from 'fp-ts/Chain'
 import * as FIO from 'fp-ts/FromIO'
-import {
-  constNull,
-  constUndefined,
-  constVoid,
-  flip,
-  pipe,
-} from 'fp-ts/function'
+import { constNull, constUndefined, constVoid, pipe } from 'fp-ts/function'
 import * as F from 'fp-ts/Functor'
 import * as IO from 'fp-ts/IO'
 import * as M from 'fp-ts/Monad'
@@ -24,7 +18,7 @@ import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as RR from 'fp-ts/ReadonlyRecord'
 import * as Se from 'fp-ts/Semigroup'
 import * as t from 'io-ts'
-import { curry, recurse, run } from './utils/function'
+import { curry, flip, recurse, run } from './utils/function'
 import * as $St from './utils/struct'
 import { PartialDeep } from './utils/struct'
 import * as $t from './utils/Type'
