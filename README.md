@@ -19,7 +19,7 @@ Fortepiano is a mocking library for TypeScript. It promotes immutability, compos
 
 ### Installation
 
-To install the stable version via npm:
+To install the stable version:
 
 ```bash
 npm install fortepiano
