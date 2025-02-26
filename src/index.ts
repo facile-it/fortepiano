@@ -28,7 +28,6 @@ import { curry, recurse, run } from './utils/function'
 import * as $St from './utils/struct'
 import { PartialDeep } from './utils/struct'
 import * as $t from './utils/Type'
-import * as $Y from './utils/Yield'
 
 export const URI = 'Mock'
 
@@ -366,12 +365,22 @@ export const readonlyArray = <A>(
   M: Mock<A>,
   min = 0,
   max = 10,
-): Mock<ReadonlyArray<A>> =>
-  pipe(
-    R.randomInt(Math.max(0, min), Math.max(0, min, max)),
-    IO.map((n) => pipe($Y.fromIO(M()), $Y.takeLeft(n), $Y.toReadonlyArray)),
-    fromIO,
-  )
+): Mock<ReadonlyArray<A>> => {
+  return (a) => () => {
+    let res: ReadonlyArray<A> = []
+
+    if (a !== undefined && a.length > 0) {
+      return a
+    }
+
+    const rndNum = R.randomInt(Math.max(0, min), Math.max(0, min, max))()
+    for (let i = 0; i < rndNum; i++) {
+      const x = M()()
+      res = [...res, x]
+    }
+    return res
+  }
+}
 
 export const readonlyNonEmptyArray = <A>(
   M: Mock<A>,
