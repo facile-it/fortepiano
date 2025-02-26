@@ -366,19 +366,14 @@ export const readonlyArray = <A>(
   min = 0,
   max = 10,
 ): Mock<ReadonlyArray<A>> => {
-  return (a) => () => {
-    let res: ReadonlyArray<A> = []
-
-    if (a !== undefined && a.length > 0) {
-      return a
+  return (as) => () => {
+    if (as?.length) {
+      return as
     }
 
-    const rndNum = R.randomInt(Math.max(0, min), Math.max(0, min, max))()
-    for (let i = 0; i < rndNum; i++) {
-      const x = M()()
-      res = [...res, x]
-    }
-    return res
+    const rndNum = R.randomInt(Math.max(0, min), Math.max(min, max))()
+
+    return Array.from({ length: rndNum }, M())
   }
 }
 
