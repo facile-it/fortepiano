@@ -371,7 +371,7 @@ export const readonlyArray = <A>(
       return as
     }
 
-    const rndNum = R.randomInt(Math.max(0, min), Math.max(min, max))()
+    const rndNum = R.randomInt(Math.max(0, min), Math.max(0, min, max))()
 
     return Array.from({ length: rndNum }, M())
   }
