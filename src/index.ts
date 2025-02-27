@@ -367,7 +367,7 @@ export const readonlyArray = <A>(
   max = 10,
 ): Mock<ReadonlyArray<A>> => {
   return (as) => () => {
-    if (as?.length) {
+    if (as !== undefined) {
       return as
     }
 

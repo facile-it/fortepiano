@@ -417,6 +417,11 @@ describe('Mock', () => {
 
       expect(xs).toStrictEqual([1138, 1337])
     })
+    it('should return an empty array when a custom empty array is provided', () => {
+      const xs = readonlyArray(number())([])()
+
+      expect(xs).toStrictEqual([])
+    })
     it('should allow returning one of many custom arrays', () => {
       for (let i = 0; i < 10; i++) {
         const xs = readonlyArray(number())([1138, 1337], [138, 337])()
