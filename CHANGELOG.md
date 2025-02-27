@@ -48,7 +48,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Remove `Error` module.
 - Remove `ReadonlyRecord` module.
 - Remove `ReadonlyArray` module.
-- Remove unused functions from `Yield`, `ReadonlyArray`, `Type`, `function` and `struct` modules.
+- Remove `Yield` module.
+- Remove unused functions `ReadonlyArray`, `Type`, `function` and `struct` modules.
 
 ## [0.1.9](https://github.com/facile-it/fortepiano/compare/v0.1.8...v0.1.9) - 2024-05-14
 
