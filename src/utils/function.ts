@@ -1,5 +1,11 @@
 import { Lazy } from 'fp-ts/function'
 
+export function flip<A, B, C>(f: (a: A, b: B) => C): (b: B, a: A) => C {
+  return (b, a) => {
+    return f(a, b)
+  }
+}
+
 export const run = <A>(f: Lazy<A>): A => f()
 
 export function curry<A, B, C>(f: (a: A, b: B) => C): (a: A) => (b: B) => C
