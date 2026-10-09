@@ -28,7 +28,7 @@ jobs:
           cache: yarn
       - run: yarn install --immutable
       - run: yarn test:coverage
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
   prettier:
     runs-on: ubuntu-latest
     steps:
