@@ -1,6 +1,6 @@
 # Contributing
 
-Any relevant modification to this project should be duly noted in `CHANGELOG.md`. Changelog entries should come along code patches via pull requests.
+Any relevant modification that affects the published package should be accompanied by a changeset. Run `yarn changeset` when opening a pull request, describe the change, and commit the generated file in `.changeset/`. Do not edit `CHANGELOG.md` manually: it is updated by maintainers when the Version Packages PR is merged.
 
 ## Style Guide
 
