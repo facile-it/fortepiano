@@ -25,6 +25,7 @@ jobs:
           publish: yarn release
           commit: Version Packages
           title: Version Packages
+          createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
