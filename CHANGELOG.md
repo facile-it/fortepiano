@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+### Patch Changes
+
+- [#107](https://github.com/facile-it/fortepiano/pull/107) [`8268baf`](https://github.com/facile-it/fortepiano/commit/8268bafa66db140d4ee91917ef86ba712ce338e5) Thanks [@pierroberto](https://github.com/pierroberto)! - Add Changesets to automate versioning, changelog generation, and npm releases.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
