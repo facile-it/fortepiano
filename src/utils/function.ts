@@ -1,4 +1,4 @@
-import { Lazy } from 'fp-ts/function'
+import type { Lazy } from 'fp-ts/function'
 
 export function flip<A, B, C>(f: (a: A, b: B) => C): (b: B, a: A) => C {
   return (b, a) => {

@@ -1,6 +1,6 @@
 import { identity } from 'fp-ts/function'
 import * as t from 'io-ts'
-import * as $S from './struct'
+import type * as $S from './struct'
 
 const isStruct = (u: unknown): u is $S.Struct =>
   'object' === typeof u && null !== u && !Array.isArray(u)

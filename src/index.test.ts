@@ -1,6 +1,7 @@
 import { constTrue, pipe, tupled } from 'fp-ts/function'
 import * as N from 'fp-ts/number'
 import * as RA from 'fp-ts/ReadonlyArray'
+import type { Mock } from '.'
 import {
   ap,
   Applicative,
@@ -16,7 +17,6 @@ import {
   integer,
   literal,
   map,
-  Mock,
   Monad,
   null as _null,
   nullable,
