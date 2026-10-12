@@ -1,6 +1,6 @@
 {
   "name": "fortepiano",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Playing actual music over fp-ts notes",
   "keywords": [
     "typescript",
@@ -10,8 +10,9 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/esm/index.d.ts",
       "require": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.js"
+      "import": "./dist/cjs/index.js"
     }
   },
   "files": [
@@ -42,13 +43,17 @@
     "eslint:fix": "eslint --fix ./",
     "prettier": "prettier --check ./",
     "prettier:fix": "prettier --write ./",
-    "prerelease": "yarn build && cp ./package.json ./*.md ./dist/",
-    "release": "yarn prerelease && npm publish ./dist/",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "prerelease": "yarn build",
+    "release": "yarn prerelease && changeset publish",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "test:coverage": "jest --coverage"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
     "@rushstack/eslint-patch": "^1.10.4",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.0",
@@ -62,5 +67,9 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   },
-  "packageManager": "yarn@3.2.3"
+  "peerDependencies": {
+    "fp-ts": "^2.5.0",
+    "io-ts": "^2.2.0"
+  },
+  "packageManager": "yarn@4.18.1"
 }
