@@ -56,7 +56,7 @@
     "@changesets/cli": "^3.0.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.6.5",
-    "eslint": "^9.39.5",
+    "eslint": "^10.12.0",
     "eslint-config-facile": "^1.2.0",
     "fp-ts": "^2.16.0",
     "io-ts": "^2.2.20",
