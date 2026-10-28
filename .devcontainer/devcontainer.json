@@ -14,5 +14,5 @@
   "dockerComposeFile": ["../docker-compose.yaml", "docker-compose.yaml"],
   "service": "workspace",
   "workspaceFolder": "/opt/${localWorkspaceFolderBasename}",
-  "postCreateCommand": ["apk", "--update", "add", "git", "openssh-client"]
+  "postCreateCommand": ["sh", "-c", "apk --update add git openssh-client && yarn install"]
 }
